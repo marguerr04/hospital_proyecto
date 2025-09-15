@@ -1,0 +1,63 @@
+﻿@layout Components.Layout.RazorVacio
+
+@page "/login"
+
+@*<h3>Login</h3> *@
+<div class="login-container">
+    <div class="login-card">
+        <div class="login-header">
+            <img src="/img/logo_login.png" alt="Logo Hospital" />
+        </div>
+
+        <div class="mb-3">
+            <label for="username" class="form-label">Usuario</label>
+            <input @bind="Username" id="username" class="form-control" />
+        </div>
+
+        <div class="mb-3">
+            <label for="password" class="form-label">Contraseña</label>
+            <input @bind="Password" id="password" type="password" class="form-control" />
+        </div>
+
+        <button class="btn btn-primary w-100" @onclick="DoLogin">Ingresar</button>
+
+        @if (!string.IsNullOrEmpty(ErrorMessage))
+        {
+            <div class="alert alert-danger mt-3">@ErrorMessage</div>
+        }
+
+        <div class="login-footer">
+            <a href="#">¿Olvidaste tu contraseña?</a>
+        </div>
+    </div>
+</div>
+@code {
+    private string Username = "";
+    private string Password = "";
+    private string ErrorMessage = "";
+
+    [Inject] private NavigationManager Navigation { get; set; } = default!;
+
+    private void DoLogin()
+    {
+        // Limpiamos el mensaje de error anterior
+        ErrorMessage = "";
+
+        // Si es Admin, va al Dashboard
+        if (Username == "admin" && Password == "1234")
+        {
+            Navigation.NavigateTo("/dashboard");
+        }
+        // Si es Médico, va al Formulario de Solicitud
+        else if (Username == "medico" && Password == "1234")
+        {
+            Navigation.NavigateTo("/solicitudform");
+        }
+        // Si no es ninguno de los dos, muestra un error
+        else
+        {
+            ErrorMessage = "Usuario o contraseña incorrectos";
+            StateHasChanged(); // refresca UI para mostrar el error
+        }
+    }
+}

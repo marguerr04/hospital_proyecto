@@ -1,0 +1,50 @@
+﻿body {
+}
+
+/* Estilos para el contenedor del Login */
+.login-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    background-image: url('/img/fondo_login.jpeg'); 
+    background-size: cover;
+    background-position: center;
+    position: relative;
+}
+
+    /* Capa oscura sobre el fondo */
+    .login-container::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: rgba(0, 0, 0, 0.5);
+        z-index: 1;
+    }
+
+/* Tarjeta de Login */
+.login-card {
+    background-color: white;
+    padding: 2.5rem;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    width: 100%;
+    max-width: 420px;
+    z-index: 2; /* Para que esté por encima de la capa oscura */
+    text-align: center;
+}
+
+.login-header img {
+    max-width: 150px;
+    margin-bottom: 1.5rem;
+}
+
+.login-footer {
+    margin-top: 1rem;
+    font-size: 0.9rem;
+}
+
+

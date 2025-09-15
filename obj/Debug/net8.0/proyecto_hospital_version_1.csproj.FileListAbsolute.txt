@@ -165,3 +165,4 @@ C:\Users\guerr\Documents\Proyecto_hospital_v1\proyecto_hospital_version_1\bin\De
 C:\Users\guerr\Documents\Proyecto_hospital_v1\proyecto_hospital_version_1\bin\Debug\net8.0\runtimes\win\lib\net6.0\System.Windows.Extensions.dll
 C:\Users\guerr\Documents\Proyecto_hospital_v1\proyecto_hospital_version_1\obj\Debug\net8.0\proyecto_hospital_version_1.csproj.AssemblyReference.cache
 C:\Users\guerr\Documents\Proyecto_hospital_v1\proyecto_hospital_version_1\obj\Debug\net8.0\proyecto.9DE61C0F.Up2Date
+C:\Users\guerr\Documents\Proyecto_hospital_v1\proyecto_hospital_version_1\obj\Debug\net8.0\proyecto_hospital_version_1.sourcelink.json

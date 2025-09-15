@@ -3,24 +3,44 @@
   "WorkspaceRootPath": "C:\\Users\\guerr\\Documents\\Proyecto_hospital_v1\\proyecto_hospital_version_1\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{8134E959-9103-466C-9FB3-E92E3ADB258D}|proyecto_hospital_version_1.csproj|c:\\users\\guerr\\documents\\proyecto_hospital_v1\\proyecto_hospital_version_1\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{8134E959-9103-466C-9FB3-E92E3ADB258D}|proyecto_hospital_version_1.csproj|solutionrelative:program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{8134E959-9103-466C-9FB3-E92E3ADB258D}|proyecto_hospital_version_1.csproj|c:\\users\\guerr\\documents\\proyecto_hospital_v1\\proyecto_hospital_version_1\\components\\pages\\solicitudform.razor||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{8134E959-9103-466C-9FB3-E92E3ADB258D}|proyecto_hospital_version_1.csproj|solutionrelative:components\\pages\\solicitudform.razor||{40D31677-CBC0-4297-A9EF-89D907823A98}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{8134E959-9103-466C-9FB3-E92E3ADB258D}|proyecto_hospital_version_1.csproj|c:\\users\\guerr\\documents\\proyecto_hospital_v1\\proyecto_hospital_version_1\\migrations\\20250914053440_initialcreate.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{8134E959-9103-466C-9FB3-E92E3ADB258D}|proyecto_hospital_version_1.csproj|solutionrelative:migrations\\20250914053440_initialcreate.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{8134E959-9103-466C-9FB3-E92E3ADB258D}|proyecto_hospital_version_1.csproj|c:\\users\\guerr\\documents\\proyecto_hospital_v1\\proyecto_hospital_version_1\\components\\pages\\panel.razor||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{8134E959-9103-466C-9FB3-E92E3ADB258D}|proyecto_hospital_version_1.csproj|solutionrelative:components\\pages\\panel.razor||{40D31677-CBC0-4297-A9EF-89D907823A98}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{8134E959-9103-466C-9FB3-E92E3ADB258D}|proyecto_hospital_version_1.csproj|c:\\users\\guerr\\documents\\proyecto_hospital_v1\\proyecto_hospital_version_1\\migrations\\applicationdbcontextmodelsnapshot.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{8134E959-9103-466C-9FB3-E92E3ADB258D}|proyecto_hospital_version_1.csproj|solutionrelative:migrations\\applicationdbcontextmodelsnapshot.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{8134E959-9103-466C-9FB3-E92E3ADB258D}|proyecto_hospital_version_1.csproj|c:\\users\\guerr\\documents\\proyecto_hospital_v1\\proyecto_hospital_version_1\\components\\pages\\dashboard.razor||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{8134E959-9103-466C-9FB3-E92E3ADB258D}|proyecto_hospital_version_1.csproj|solutionrelative:components\\pages\\dashboard.razor||{40D31677-CBC0-4297-A9EF-89D907823A98}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{8134E959-9103-466C-9FB3-E92E3ADB258D}|proyecto_hospital_version_1.csproj|c:\\users\\guerr\\documents\\proyecto_hospital_v1\\proyecto_hospital_version_1\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
-      "RelativeMoniker": "D:0:0:{8134E959-9103-466C-9FB3-E92E3ADB258D}|proyecto_hospital_version_1.csproj|solutionrelative:appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
+      "AbsoluteMoniker": "D:0:0:{8134E959-9103-466C-9FB3-E92E3ADB258D}|proyecto_hospital_version_1.csproj|c:\\users\\guerr\\documents\\proyecto_hospital_v1\\proyecto_hospital_version_1\\components\\pages\\home.razor||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{8134E959-9103-466C-9FB3-E92E3ADB258D}|proyecto_hospital_version_1.csproj|solutionrelative:components\\pages\\home.razor||{40D31677-CBC0-4297-A9EF-89D907823A98}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{8134E959-9103-466C-9FB3-E92E3ADB258D}|proyecto_hospital_version_1.csproj|c:\\users\\guerr\\documents\\proyecto_hospital_v1\\proyecto_hospital_version_1\\data\\applicationdbcontext.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{8134E959-9103-466C-9FB3-E92E3ADB258D}|proyecto_hospital_version_1.csproj|solutionrelative:data\\applicationdbcontext.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{8134E959-9103-466C-9FB3-E92E3ADB258D}|proyecto_hospital_version_1.csproj|c:\\users\\guerr\\documents\\proyecto_hospital_v1\\proyecto_hospital_version_1\\components\\pages\\login.razor||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{8134E959-9103-466C-9FB3-E92E3ADB258D}|proyecto_hospital_version_1.csproj|solutionrelative:components\\pages\\login.razor||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{8134E959-9103-466C-9FB3-E92E3ADB258D}|proyecto_hospital_version_1.csproj|c:\\users\\guerr\\documents\\proyecto_hospital_v1\\proyecto_hospital_version_1\\wwwroot\\css\\custom.css||{A5401142-F49D-43DB-90B1-F57BA349E55C}",
+      "RelativeMoniker": "D:0:0:{8134E959-9103-466C-9FB3-E92E3ADB258D}|proyecto_hospital_version_1.csproj|solutionrelative:wwwroot\\css\\custom.css||{A5401142-F49D-43DB-90B1-F57BA349E55C}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{8134E959-9103-466C-9FB3-E92E3ADB258D}|proyecto_hospital_version_1.csproj|c:\\users\\guerr\\documents\\proyecto_hospital_v1\\proyecto_hospital_version_1\\components\\layout\\razorvacio.razor||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{8134E959-9103-466C-9FB3-E92E3ADB258D}|proyecto_hospital_version_1.csproj|solutionrelative:components\\layout\\razorvacio.razor||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{8134E959-9103-466C-9FB3-E92E3ADB258D}|proyecto_hospital_version_1.csproj|c:\\users\\guerr\\documents\\proyecto_hospital_v1\\proyecto_hospital_version_1\\components\\layout\\navmenu.razor||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{8134E959-9103-466C-9FB3-E92E3ADB258D}|proyecto_hospital_version_1.csproj|solutionrelative:components\\layout\\navmenu.razor||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{8134E959-9103-466C-9FB3-E92E3ADB258D}|proyecto_hospital_version_1.csproj|c:\\users\\guerr\\documents\\proyecto_hospital_v1\\proyecto_hospital_version_1\\components\\app.razor||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{8134E959-9103-466C-9FB3-E92E3ADB258D}|proyecto_hospital_version_1.csproj|solutionrelative:components\\app.razor||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{8134E959-9103-466C-9FB3-E92E3ADB258D}|proyecto_hospital_version_1.csproj|c:\\users\\guerr\\documents\\proyecto_hospital_v1\\proyecto_hospital_version_1\\wwwroot\\app.css||{A5401142-F49D-43DB-90B1-F57BA349E55C}",
+      "RelativeMoniker": "D:0:0:{8134E959-9103-466C-9FB3-E92E3ADB258D}|proyecto_hospital_version_1.csproj|solutionrelative:wwwroot\\app.css||{A5401142-F49D-43DB-90B1-F57BA349E55C}"
     }
   ],
   "DocumentGroupContainers": [
@@ -30,71 +50,136 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 2,
+          "SelectedChildIndex": 3,
           "Children": [
             {
               "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "Home.razor",
+              "DocumentMoniker": "C:\\Users\\guerr\\Documents\\Proyecto_hospital_v1\\proyecto_hospital_version_1\\Components\\Pages\\Home.razor",
+              "RelativeDocumentMoniker": "Components\\Pages\\Home.razor",
+              "ToolTip": "C:\\Users\\guerr\\Documents\\Proyecto_hospital_v1\\proyecto_hospital_version_1\\Components\\Pages\\Home.razor",
+              "RelativeToolTip": "Components\\Pages\\Home.razor",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2025-09-15T06:11:18.449Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
               "DocumentIndex": 2,
-              "Title": "ApplicationDbContextModelSnapshot.cs",
-              "DocumentMoniker": "C:\\Users\\guerr\\Documents\\Proyecto_hospital_v1\\proyecto_hospital_version_1\\Migrations\\ApplicationDbContextModelSnapshot.cs",
-              "RelativeDocumentMoniker": "Migrations\\ApplicationDbContextModelSnapshot.cs",
-              "ToolTip": "C:\\Users\\guerr\\Documents\\Proyecto_hospital_v1\\proyecto_hospital_version_1\\Migrations\\ApplicationDbContextModelSnapshot.cs",
-              "RelativeToolTip": "Migrations\\ApplicationDbContextModelSnapshot.cs",
-              "ViewState": "AQIAAEkAAAAAAAAAAAAQwAAAAAAAAAAA",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-09-14T05:36:02.011Z",
+              "Title": "Dashboard.razor",
+              "DocumentMoniker": "C:\\Users\\guerr\\Documents\\Proyecto_hospital_v1\\proyecto_hospital_version_1\\Components\\Pages\\Dashboard.razor",
+              "RelativeDocumentMoniker": "Components\\Pages\\Dashboard.razor",
+              "ToolTip": "C:\\Users\\guerr\\Documents\\Proyecto_hospital_v1\\proyecto_hospital_version_1\\Components\\Pages\\Dashboard.razor",
+              "RelativeToolTip": "Components\\Pages\\Dashboard.razor",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAAAAAAAARAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2025-09-15T06:11:10.301Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
               "DocumentIndex": 1,
-              "Title": "20250914053440_InitialCreate.cs",
-              "DocumentMoniker": "C:\\Users\\guerr\\Documents\\Proyecto_hospital_v1\\proyecto_hospital_version_1\\Migrations\\20250914053440_InitialCreate.cs",
-              "RelativeDocumentMoniker": "Migrations\\20250914053440_InitialCreate.cs",
-              "ToolTip": "C:\\Users\\guerr\\Documents\\Proyecto_hospital_v1\\proyecto_hospital_version_1\\Migrations\\20250914053440_InitialCreate.cs",
-              "RelativeToolTip": "Migrations\\20250914053440_InitialCreate.cs",
-              "ViewState": "AQIAABYAAAAAAAAAAAAQwAAAAAAAAAAA",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-09-14T05:34:40.988Z",
+              "Title": "Panel.razor",
+              "DocumentMoniker": "C:\\Users\\guerr\\Documents\\Proyecto_hospital_v1\\proyecto_hospital_version_1\\Components\\Pages\\Panel.razor",
+              "RelativeDocumentMoniker": "Components\\Pages\\Panel.razor",
+              "ToolTip": "C:\\Users\\guerr\\Documents\\Proyecto_hospital_v1\\proyecto_hospital_version_1\\Components\\Pages\\Panel.razor",
+              "RelativeToolTip": "Components\\Pages\\Panel.razor",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2025-09-15T06:06:56.568Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
               "DocumentIndex": 0,
-              "Title": "Program.cs",
-              "DocumentMoniker": "C:\\Users\\guerr\\Documents\\Proyecto_hospital_v1\\proyecto_hospital_version_1\\Program.cs",
-              "RelativeDocumentMoniker": "Program.cs",
-              "ToolTip": "C:\\Users\\guerr\\Documents\\Proyecto_hospital_v1\\proyecto_hospital_version_1\\Program.cs",
-              "RelativeToolTip": "Program.cs",
-              "ViewState": "AQIAABwAAAAAAAAAAAAkwDAAAAAZAAAA",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-09-14T05:24:23.049Z",
+              "Title": "SolicitudForm.razor",
+              "DocumentMoniker": "C:\\Users\\guerr\\Documents\\Proyecto_hospital_v1\\proyecto_hospital_version_1\\Components\\Pages\\SolicitudForm.razor",
+              "RelativeDocumentMoniker": "Components\\Pages\\SolicitudForm.razor",
+              "ToolTip": "C:\\Users\\guerr\\Documents\\Proyecto_hospital_v1\\proyecto_hospital_version_1\\Components\\Pages\\SolicitudForm.razor",
+              "RelativeToolTip": "Components\\Pages\\SolicitudForm.razor",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAAAgAAAAAAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2025-09-15T05:58:36.085Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 7,
+              "Title": "NavMenu.razor",
+              "DocumentMoniker": "C:\\Users\\guerr\\Documents\\Proyecto_hospital_v1\\proyecto_hospital_version_1\\Components\\Layout\\NavMenu.razor",
+              "RelativeDocumentMoniker": "Components\\Layout\\NavMenu.razor",
+              "ToolTip": "C:\\Users\\guerr\\Documents\\Proyecto_hospital_v1\\proyecto_hospital_version_1\\Components\\Layout\\NavMenu.razor",
+              "RelativeToolTip": "Components\\Layout\\NavMenu.razor",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2025-09-15T05:15:55.014Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
               "DocumentIndex": 4,
-              "Title": "ApplicationDbContext.cs",
-              "DocumentMoniker": "C:\\Users\\guerr\\Documents\\Proyecto_hospital_v1\\proyecto_hospital_version_1\\Data\\ApplicationDbContext.cs",
-              "RelativeDocumentMoniker": "Data\\ApplicationDbContext.cs",
-              "ToolTip": "C:\\Users\\guerr\\Documents\\Proyecto_hospital_v1\\proyecto_hospital_version_1\\Data\\ApplicationDbContext.cs",
-              "RelativeToolTip": "Data\\ApplicationDbContext.cs",
-              "ViewState": "AQIAABgAAAAAAAAAAAAzwA8AAAAzAAAA",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-09-14T05:23:57.179Z",
+              "Title": "Login.razor",
+              "DocumentMoniker": "C:\\Users\\guerr\\Documents\\Proyecto_hospital_v1\\proyecto_hospital_version_1\\Components\\Pages\\Login.razor",
+              "RelativeDocumentMoniker": "Components\\Pages\\Login.razor",
+              "ToolTip": "C:\\Users\\guerr\\Documents\\Proyecto_hospital_v1\\proyecto_hospital_version_1\\Components\\Pages\\Login.razor",
+              "RelativeToolTip": "Components\\Pages\\Login.razor",
+              "ViewState": "AQIAAB4AAAAAAAAAAAAAACsAAAAaAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2025-09-15T05:09:22.345Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 3,
-              "Title": "appsettings.json",
-              "DocumentMoniker": "C:\\Users\\guerr\\Documents\\Proyecto_hospital_v1\\proyecto_hospital_version_1\\appsettings.json",
-              "RelativeDocumentMoniker": "appsettings.json",
-              "ToolTip": "C:\\Users\\guerr\\Documents\\Proyecto_hospital_v1\\proyecto_hospital_version_1\\appsettings.json",
-              "RelativeToolTip": "appsettings.json",
-              "ViewState": "AQIAAAAAAAAAAAAAAAAAAAoAAABqAAAA",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
-              "WhenOpened": "2025-09-14T05:02:56.594Z",
+              "DocumentIndex": 6,
+              "Title": "RazorVacio.razor",
+              "DocumentMoniker": "C:\\Users\\guerr\\Documents\\Proyecto_hospital_v1\\proyecto_hospital_version_1\\Components\\Layout\\RazorVacio.razor",
+              "RelativeDocumentMoniker": "Components\\Layout\\RazorVacio.razor",
+              "ToolTip": "C:\\Users\\guerr\\Documents\\Proyecto_hospital_v1\\proyecto_hospital_version_1\\Components\\Layout\\RazorVacio.razor",
+              "RelativeToolTip": "Components\\Layout\\RazorVacio.razor",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAAAIAAAAFAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2025-09-15T05:08:15.679Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 8,
+              "Title": "App.razor",
+              "DocumentMoniker": "C:\\Users\\guerr\\Documents\\Proyecto_hospital_v1\\proyecto_hospital_version_1\\Components\\App.razor",
+              "RelativeDocumentMoniker": "Components\\App.razor",
+              "ToolTip": "C:\\Users\\guerr\\Documents\\Proyecto_hospital_v1\\proyecto_hospital_version_1\\Components\\App.razor",
+              "RelativeToolTip": "Components\\App.razor",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAAAYAAAAuAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2025-09-15T05:06:19.384Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 5,
+              "Title": "custom.css",
+              "DocumentMoniker": "C:\\Users\\guerr\\Documents\\Proyecto_hospital_v1\\proyecto_hospital_version_1\\wwwroot\\css\\custom.css",
+              "RelativeDocumentMoniker": "wwwroot\\css\\custom.css",
+              "ToolTip": "C:\\Users\\guerr\\Documents\\Proyecto_hospital_v1\\proyecto_hospital_version_1\\wwwroot\\css\\custom.css",
+              "RelativeToolTip": "wwwroot\\css\\custom.css",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAAAoAAAAbAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003000|",
+              "WhenOpened": "2025-09-15T05:05:51.61Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 9,
+              "Title": "app.css",
+              "DocumentMoniker": "C:\\Users\\guerr\\Documents\\Proyecto_hospital_v1\\proyecto_hospital_version_1\\wwwroot\\app.css",
+              "RelativeDocumentMoniker": "wwwroot\\app.css",
+              "ToolTip": "C:\\Users\\guerr\\Documents\\Proyecto_hospital_v1\\proyecto_hospital_version_1\\wwwroot\\app.css",
+              "RelativeToolTip": "wwwroot\\app.css",
+              "ViewState": "AQIAACQAAAAAAAAAAAAAAAAAAAAAAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003000|",
+              "WhenOpened": "2025-09-15T04:46:04.949Z",
               "EditorCaption": ""
             }
           ]

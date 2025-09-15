@@ -1,6 +1,6 @@
 {
   "Version": 1,
-  "Hash": "mlcErl0AMypSGkq9OYc+KDXdFXFThTN+Wffn/Sw4gAs=",
+  "Hash": "2Yb7aCZ+kWPMqGToqHGfPoUUR/d84kpZBpQK1IG+/PQ=",
   "Source": "proyecto_hospital_version_1",
   "BasePath": "_content/proyecto_hospital_version_1",
   "Mode": "Default",
@@ -112,6 +112,25 @@
       "OriginalItemSpec": "wwwroot\\bootstrap\\bootstrap.min.css.map"
     },
     {
+      "Identity": "C:\\Users\\guerr\\Documents\\Proyecto_hospital_v1\\proyecto_hospital_version_1\\wwwroot\\css\\custom.css",
+      "SourceId": "proyecto_hospital_version_1",
+      "SourceType": "Discovered",
+      "ContentRoot": "C:\\Users\\guerr\\Documents\\Proyecto_hospital_v1\\proyecto_hospital_version_1\\wwwroot\\",
+      "BasePath": "_content/proyecto_hospital_version_1",
+      "RelativePath": "css/custom.css",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "AssetRole": "Primary",
+      "AssetMergeBehavior": "PreferTarget",
+      "AssetMergeSource": "",
+      "RelatedAsset": "",
+      "AssetTraitName": "",
+      "AssetTraitValue": "",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "wwwroot\\css\\custom.css"
+    },
+    {
       "Identity": "C:\\Users\\guerr\\Documents\\Proyecto_hospital_v1\\proyecto_hospital_version_1\\wwwroot\\favicon.png",
       "SourceId": "proyecto_hospital_version_1",
       "SourceType": "Discovered",
@@ -129,6 +148,44 @@
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
       "OriginalItemSpec": "wwwroot\\favicon.png"
+    },
+    {
+      "Identity": "C:\\Users\\guerr\\Documents\\Proyecto_hospital_v1\\proyecto_hospital_version_1\\wwwroot\\img\\fondo_login.jpeg",
+      "SourceId": "proyecto_hospital_version_1",
+      "SourceType": "Discovered",
+      "ContentRoot": "C:\\Users\\guerr\\Documents\\Proyecto_hospital_v1\\proyecto_hospital_version_1\\wwwroot\\",
+      "BasePath": "_content/proyecto_hospital_version_1",
+      "RelativePath": "img/fondo_login.jpeg",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "AssetRole": "Primary",
+      "AssetMergeBehavior": "PreferTarget",
+      "AssetMergeSource": "",
+      "RelatedAsset": "",
+      "AssetTraitName": "",
+      "AssetTraitValue": "",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "wwwroot\\img\\fondo_login.jpeg"
+    },
+    {
+      "Identity": "C:\\Users\\guerr\\Documents\\Proyecto_hospital_v1\\proyecto_hospital_version_1\\wwwroot\\img\\logo_login.png",
+      "SourceId": "proyecto_hospital_version_1",
+      "SourceType": "Discovered",
+      "ContentRoot": "C:\\Users\\guerr\\Documents\\Proyecto_hospital_v1\\proyecto_hospital_version_1\\wwwroot\\",
+      "BasePath": "_content/proyecto_hospital_version_1",
+      "RelativePath": "img/logo_login.png",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "AssetRole": "Primary",
+      "AssetMergeBehavior": "PreferTarget",
+      "AssetMergeSource": "",
+      "RelatedAsset": "",
+      "AssetTraitName": "",
+      "AssetTraitValue": "",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "wwwroot\\img\\logo_login.png"
     }
   ]
 }

@@ -17,8 +17,20 @@
       "PackagePath": "staticwebassets\\bootstrap\\bootstrap.min.css.map"
     },
     {
+      "Id": "C:\\Users\\guerr\\Documents\\Proyecto_hospital_v1\\proyecto_hospital_version_1\\wwwroot\\css\\custom.css",
+      "PackagePath": "staticwebassets\\css\\custom.css"
+    },
+    {
       "Id": "C:\\Users\\guerr\\Documents\\Proyecto_hospital_v1\\proyecto_hospital_version_1\\wwwroot\\favicon.png",
       "PackagePath": "staticwebassets\\favicon.png"
+    },
+    {
+      "Id": "C:\\Users\\guerr\\Documents\\Proyecto_hospital_v1\\proyecto_hospital_version_1\\wwwroot\\img\\fondo_login.jpeg",
+      "PackagePath": "staticwebassets\\img\\fondo_login.jpeg"
+    },
+    {
+      "Id": "C:\\Users\\guerr\\Documents\\Proyecto_hospital_v1\\proyecto_hospital_version_1\\wwwroot\\img\\logo_login.png",
+      "PackagePath": "staticwebassets\\img\\logo_login.png"
     },
     {
       "Id": "obj\\Debug\\net8.0\\staticwebassets\\msbuild.build.proyecto_hospital_version_1.props",
