@@ -42,6 +42,10 @@ build_metadata.AdditionalFiles.CssScope =
 build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xQYWdlc1xEYXNoYm9hcmQucmF6b3I=
 build_metadata.AdditionalFiles.CssScope = 
 
+[C:/Users/guerr/Documents/Proyecto_hospital_v1/proyecto_hospital_version_1/Components/Pages/Dashboard_verdadero.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xQYWdlc1xEYXNoYm9hcmRfdmVyZGFkZXJvLnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
 [C:/Users/guerr/Documents/Proyecto_hospital_v1/proyecto_hospital_version_1/Components/Pages/Error.razor]
 build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xQYWdlc1xFcnJvci5yYXpvcg==
 build_metadata.AdditionalFiles.CssScope = 
