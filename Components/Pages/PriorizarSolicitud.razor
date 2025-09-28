@@ -1,0 +1,430 @@
+﻿@page "/priorizar-solicitudes"
+@layout Components.Layout.MainLayoutMedico
+
+<PageTitle>Priorizar Solicitud Quirúrgica</PageTitle>
+
+<div class="container-fluid">
+    <!-- Tarjeta del Paciente -->
+    <div class="card mb-4">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0">
+                <i class="bi bi-person-fill me-2"></i>
+                Información del Paciente
+            </h5>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-8">
+                    <div class="row">
+                        <div class="col-sm-6">
+                            <strong>Paciente:</strong> María González Pérez<br>
+                            <strong>RUT:</strong> 12.345.678-9<br>
+                            <strong>Edad:</strong> 68 años
+                        </div>
+                        <div class="col-sm-6">
+                            <strong>Diagnóstico:</strong> Fractura de cadera<br>
+                            <strong>Procedencia:</strong> <span class="badge bg-info">Ambulatorio/CRS</span><br>
+                            <strong>Especialidad:</strong> Traumatología
+                        </div>
+                    </div>
+
+                    <!-- Estado GES -->
+                    <div class="mt-3">
+                        <div class="d-flex align-items-center">
+                            <strong class="me-2">Estado:</strong>
+                            <span class="badge bg-danger fs-6">
+                                <i class="bi bi-shield-fill-exclamation me-1"></i>
+                                PACIENTE GES
+                            </span>
+                            <small class="text-muted ms-2">(Detectado automáticamente por el sistema)</small>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Línea de tiempo -->
+                <div class="col-md-4">
+                    <div class="timeline-container">
+                        <h6 class="mb-2">Línea de Tiempo</h6>
+                        <div class="timeline-progress">
+                            <div class="timeline-bar bg-warning" style="width: 75%;"></div>
+                        </div>
+                        <div class="d-flex justify-content-between small text-muted mt-1">
+                            <span>Solicitud<br>20/09/2025</span>
+                            <span class="text-warning"><strong>8 días transcurridos</strong></span>
+                            <span>Hoy<br>28/09/2025</span>
+                        </div>
+                        <div class="mt-2">
+                            <span class="badge bg-warning">
+                                <i class="bi bi-clock me-1"></i>
+                                Atención requerida pronto
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sugerencia Automática del Sistema -->
+    @if (showSystemSuggestion)
+    {
+        <div class="card mb-4 border-success">
+            <div class="card-header bg-success text-white">
+                <h6 class="mb-0">
+                    <i class="bi bi-lightbulb me-2"></i>
+                    Sugerencia Automática del Sistema
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <strong>Criterio Sugerido:</strong> Paciente con patología GES<br>
+                        <strong>Prioridad Resultante:</strong> <span class="badge bg-danger">Prioridad 1 (P1)</span><br>
+                        <small class="text-muted">Motivo: Sistema detectó automáticamente que es paciente GES</small>
+                    </div>
+                    <div>
+                        <button class="btn btn-success me-2" @onclick="AceptarSugerencia">
+                            <i class="bi bi-check-lg me-1"></i> Aceptar
+                        </button>
+                        <button class="btn btn-outline-danger" @onclick="RechazarSugerencia">
+                            <i class="bi bi-x-lg me-1"></i> Rechazar
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+
+    <!-- Campo de rechazo (aparece si rechaza sugerencia) -->
+    @if (showRejectionReason)
+    {
+        <div class="card mb-4 border-warning">
+            <div class="card-header bg-warning text-dark">
+                <h6 class="mb-0">Motivo del Rechazo de Sugerencia</h6>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <label class="form-label"><strong>Seleccione el motivo del rechazo:</strong></label>
+                    <select @bind="motivoRechazo" class="form-select" required>
+                        <option value="">Seleccionar motivo...</option>
+                        <option value="cambio_clinico">Cambió condición clínica del paciente</option>
+                        <option value="error_deteccion">Error en detección automática</option>
+                        <option value="criterio_medico">Criterio médico prevalece</option>
+                        <option value="otro">Otro</option>
+                    </select>
+                </div>
+                @if (motivoRechazo == "otro")
+                {
+                    <div class="mb-3">
+                        <label class="form-label">Especifique el motivo:</label>
+                        <textarea @bind="otroMotivo" class="form-control" rows="3" required placeholder="Describa el motivo específico..."></textarea>
+                    </div>
+                }
+            </div>
+        </div>
+    }
+
+    <!-- Selección Manual de Criterios -->
+    @if (!showSystemSuggestion || showRejectionReason)
+    {
+        <div class="card mb-4">
+            <div class="card-header bg-light">
+                <h5 class="mb-0">
+                    <i class="bi bi-list-check me-2"></i>
+                    Seleccionar Criterio de Priorización
+                </h5>
+            </div>
+            <div class="card-body">
+                <!-- Grupo 1: Prioridad Legal/Social -->
+                <div class="criterion-group mb-4">
+                    <div class="criterion-header" @onclick="() => ToggleGroup(1)">
+                        <h6 class="mb-0 d-flex justify-content-between align-items-center">
+                            <span><i class="bi bi-shield-check me-2 text-primary"></i>Prioridad Legal/Social</span>
+                            <i class="bi @(expandedGroups.Contains(1) ? "bi-chevron-up" : "bi-chevron-down")"></i>
+                        </h6>
+                    </div>
+                    @if (expandedGroups.Contains(1))
+                    {
+                        <div class="criterion-content mt-3">
+                            <div class="form-check mb-2">
+                                <input class="form-check-input" type="radio" name="criterio" value="sename" @onchange="@((e) => criterioSeleccionado = e.Value.ToString())">
+                                <label class="form-check-label">
+                                    <strong>SENAME</strong><br>
+                                    <small class="text-muted">Relacionado con el criterio de protección social</small>
+                                </label>
+                            </div>
+                            <div class="form-check mb-2">
+                                <input class="form-check-input" type="radio" name="criterio" value="prais" @onchange="@((e) => criterioSeleccionado = e.Value.ToString())">
+                                <label class="form-check-label">
+                                    <strong>PRAIS</strong><br>
+                                    <small class="text-muted">Programa de Reparación y Atención Integral de Salud</small>
+                                </label>
+                            </div>
+                            <div class="form-check mb-2">
+                                <input class="form-check-input" type="radio" name="criterio" value="comges" @onchange="@((e) => criterioSeleccionado = e.Value.ToString())">
+                                <label class="form-check-label">
+                                    <strong>Paciente COMGES</strong><br>
+                                    <small class="text-muted">Comisión de Medicina General</small>
+                                </label>
+                            </div>
+                        </div>
+                    }
+                </div>
+
+                <!-- Grupo 2: Prioridad Médica -->
+                <div class="criterion-group mb-4">
+                    <div class="criterion-header" @onclick="() => ToggleGroup(2)">
+                        <h6 class="mb-0 d-flex justify-content-between align-items-center">
+                            <span><i class="bi bi-heart-pulse me-2 text-danger"></i>Prioridad Médica</span>
+                            <i class="bi @(expandedGroups.Contains(2) ? "bi-chevron-up" : "bi-chevron-down")"></i>
+                        </h6>
+                    </div>
+                    @if (expandedGroups.Contains(2))
+                    {
+                        <div class="criterion-content mt-3">
+                            <div class="form-check mb-2">
+                                <input class="form-check-input" type="radio" name="criterio" value="sanitaria" @onchange="@((e) => criterioSeleccionado = e.Value.ToString())">
+                                <label class="form-check-label">
+                                    <strong>Prioridad Sanitaria</strong><br>
+                                    <small class="text-muted">Ej. paciente oncológico</small>
+                                </label>
+                            </div>
+                            <div class="form-check mb-2">
+                                <input class="form-check-input" type="radio" name="criterio" value="ges" @onchange="@((e) => criterioSeleccionado = e.Value.ToString())">
+                                <label class="form-check-label">
+                                    <strong>Paciente con patología GES</strong><br>
+                                    <small class="text-muted">Garantías Explícitas de Salud</small>
+                                </label>
+                            </div>
+                        </div>
+                    }
+                </div>
+
+                <!-- Grupo 3: Prioridad Temporal -->
+                <div class="criterion-group mb-4">
+                    <div class="criterion-header" @onclick="() => ToggleGroup(3)">
+                        <h6 class="mb-0 d-flex justify-content-between align-items-center">
+                            <span><i class="bi bi-clock me-2 text-warning"></i>Prioridad Temporal</span>
+                            <i class="bi @(expandedGroups.Contains(3) ? "bi-chevron-up" : "bi-chevron-down")"></i>
+                        </h6>
+                    </div>
+                    @if (expandedGroups.Contains(3))
+                    {
+                        <div class="criterion-content mt-3">
+                            <div class="form-check mb-2">
+                                <input class="form-check-input" type="radio" name="criterio" value="percentil50" @onchange="@((e) => criterioSeleccionado = e.Value.ToString())">
+                                <label class="form-check-label">
+                                    <strong>Paciente del percentil 50 más antiguo</strong><br>
+                                    <small class="text-muted">De la lista de espera por subespecialidad o patología</small>
+                                </label>
+                            </div>
+                            <div class="form-check mb-2">
+                                <input class="form-check-input" type="radio" name="criterio" value="licencia" @onchange="@((e) => criterioSeleccionado = e.Value.ToString())">
+                                <label class="form-check-label">
+                                    <strong>Licencia médica prolongada</strong><br>
+                                    <small class="text-muted">Mayor a 60 días asociada a la patología</small>
+                                </label>
+                            </div>
+                        </div>
+                    }
+                </div>
+
+                <!-- Grupo 4: Prioridad Logística -->
+                <div class="criterion-group mb-4">
+                    <div class="criterion-header" @onclick="() => ToggleGroup(4)">
+                        <h6 class="mb-0 d-flex justify-content-between align-items-center">
+                            <span><i class="bi bi-gear me-2 text-success"></i>Prioridad Logística</span>
+                            <i class="bi @(expandedGroups.Contains(4) ? "bi-chevron-up" : "bi-chevron-down")"></i>
+                        </h6>
+                    </div>
+                    @if (expandedGroups.Contains(4))
+                    {
+                        <div class="criterion-content mt-3">
+                            <div class="form-check mb-2">
+                                <input class="form-check-input" type="radio" name="criterio" value="logistica" @onchange="@((e) => criterioSeleccionado = e.Value.ToString())">
+                                <label class="form-check-label">
+                                    <strong>Oportunidad Logística Clínica</strong><br>
+                                    <small class="text-muted">Optimización de recursos y timing quirúrgico</small>
+                                </label>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    }
+
+    <!-- Historial de Priorizaciones -->
+    <div class="card mb-4">
+        <div class="card-header bg-light d-flex justify-content-between align-items-center">
+            <h6 class="mb-0">
+                <i class="bi bi-clock-history me-2"></i>
+                Historial de Priorizaciones
+            </h6>
+            <button class="btn btn-sm btn-outline-secondary" @onclick="ToggleHistorial">
+                <i class="bi @(showHistorial ? "bi-chevron-up" : "bi-chevron-down") me-1"></i>
+                @(showHistorial ? "Ocultar" : "Ver") Historial
+            </button>
+        </div>
+        @if (showHistorial)
+        {
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-sm mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Fecha</th>
+                                <th>Médico</th>
+                                <th>Criterio Aplicado</th>
+                                <th>Prioridad</th>
+                                <th>Estado</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>25/09/2025</td>
+                                <td>Dr. Juan Pérez</td>
+                                <td>Paciente con patología GES</td>
+                                <td><span class="badge bg-danger">P1</span></td>
+                                <td><span class="badge bg-success">Activa</span></td>
+                            </tr>
+                            <tr>
+                                <td>20/09/2025</td>
+                                <td>Dr. Ana López</td>
+                                <td>Prioridad sanitaria</td>
+                                <td><span class="badge bg-warning">P2</span></td>
+                                <td><span class="badge bg-secondary">Modificada</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        }
+    </div>
+
+    <!-- Botones de Acción -->
+    <div class="d-flex justify-content-between">
+        <button class="btn btn-secondary" @onclick="Volver">
+            <i class="bi bi-arrow-left me-1"></i> Volver
+        </button>
+        <div>
+            <button class="btn btn-success" @onclick="GuardarPriorizacion" disabled="@(!PuedeGuardar())">
+                <i class="bi bi-check-lg me-1"></i> Guardar Priorización
+            </button>
+        </div>
+    </div>
+</div>
+
+@code {
+    private bool showSystemSuggestion = true;
+    private bool showRejectionReason = false;
+    private bool showHistorial = false;
+    private string criterioSeleccionado = "";
+    private string motivoRechazo = "";
+    private string otroMotivo = "";
+    private HashSet<int> expandedGroups = new HashSet<int>();
+
+    [Inject] private NavigationManager Navigation { get; set; } = default!;
+
+    private void AceptarSugerencia()
+    {
+        criterioSeleccionado = "ges";
+        showSystemSuggestion = false;
+    }
+
+    private void RechazarSugerencia()
+    {
+        showRejectionReason = true;
+    }
+
+    private void ToggleGroup(int groupNumber)
+    {
+        if (expandedGroups.Contains(groupNumber))
+            expandedGroups.Remove(groupNumber);
+        else
+            expandedGroups.Add(groupNumber);
+    }
+
+    private void ToggleHistorial()
+    {
+        showHistorial = !showHistorial;
+    }
+
+    private bool PuedeGuardar()
+    {
+        if (!string.IsNullOrEmpty(criterioSeleccionado))
+        {
+            if (showRejectionReason)
+            {
+                return !string.IsNullOrEmpty(motivoRechazo) &&
+                       (motivoRechazo != "otro" || !string.IsNullOrEmpty(otroMotivo));
+            }
+            return true;
+        }
+        return false;
+    }
+
+    private void GuardarPriorizacion()
+    {
+        // Aquí iría la lógica para guardar
+        Navigation.NavigateTo("/home-medico");
+    }
+
+    private void Volver()
+    {
+        Navigation.NavigateTo("/home-medico");
+    }
+}
+
+<style>
+    .timeline-container {
+        padding: 1rem;
+        background-color: #f8f9fa;
+        border-radius: 0.375rem;
+    }
+
+    .timeline-progress {
+        height: 8px;
+        background-color: #e9ecef;
+        border-radius: 4px;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .timeline-bar {
+        height: 100%;
+        border-radius: 4px;
+        transition: width 0.3s ease;
+    }
+
+    .criterion-group {
+        border: 1px solid #dee2e6;
+        border-radius: 0.375rem;
+        overflow: hidden;
+    }
+
+    .criterion-header {
+        background-color: #f8f9fa;
+        padding: 1rem;
+        cursor: pointer;
+        transition: background-color 0.2s;
+    }
+
+        .criterion-header:hover {
+            background-color: #e9ecef;
+        }
+
+    .criterion-content {
+        padding: 0 1rem 1rem;
+        background-color: white;
+    }
+
+    .form-check-label {
+        cursor: pointer;
+        width: 100%;
+    }
+
+    .card {
+        box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    }
+</style>
