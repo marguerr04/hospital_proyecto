@@ -1,22 +1,28 @@
 ﻿@layout Components.Layout.RazorVacio
-
 @page "/login"
 
-@*<h3>Login</h3> *@
 <div class="login-container">
     <div class="login-card">
         <div class="login-header">
             <img src="/img/logo_login.png" alt="Logo Hospital" />
         </div>
-
         <div class="mb-3">
             <label for="username" class="form-label">Usuario</label>
             <input @bind="Username" id="username" class="form-control" />
         </div>
-
         <div class="mb-3">
             <label for="password" class="form-label">Contraseña</label>
             <input @bind="Password" id="password" type="password" class="form-control" />
+        </div>
+
+        @* NUEVO: Selector de roles *@
+        <div class="mb-3">
+            <label for="role" class="form-label">Rol</label>
+            <select @bind="SelectedRole" id="role" class="form-select">
+                <option value="">Seleccionar perfil</option>
+                <option value="Medico">Médico</option>
+                <option value="Administrador">Administrador</option>
+            </select>
         </div>
 
         <button class="btn btn-primary w-100" @onclick="DoLogin">Ingresar</button>
@@ -31,9 +37,11 @@
         </div>
     </div>
 </div>
+
 @code {
     private string Username = "";
     private string Password = "";
+    private string SelectedRole = ""; // NUEVA VARIABLE para el rol seleccionado
     private string ErrorMessage = "";
 
     [Inject] private NavigationManager Navigation { get; set; } = default!;
@@ -43,21 +51,41 @@
         // Limpiamos el mensaje de error anterior
         ErrorMessage = "";
 
-        // Si es Admin, va al Dashboard
-        if (Username == "admin" && Password == "1234")
+        // VALIDACIÓN MEJORADA: Verificamos que todos los campos estén llenos
+        if (string.IsNullOrEmpty(Username) || string.IsNullOrEmpty(Password) || string.IsNullOrEmpty(SelectedRole))
         {
-            Navigation.NavigateTo("/dashboard");
+            ErrorMessage = "Por favor, complete todos los campos";
+            StateHasChanged();
+            return;
         }
-        // Si es Médico, va al Formulario de Solicitud
-        else if (Username == "medico" && Password == "1234")
+
+        // LÓGICA MODIFICADA: Ahora verificamos usuario, contraseña Y rol
+        bool isValidCredentials = false;
+        string redirectUrl = "";
+
+        // Validación para Administrador
+        if (Username == "admin" && Password == "1234" && SelectedRole == "Administrador")
         {
-            Navigation.NavigateTo("/solicitudform");
+            isValidCredentials = true;
+            redirectUrl = "/dashboard";
         }
-        // Si no es ninguno de los dos, muestra un error
+        // Validación para Médico
+        else if (Username == "medico" && Password == "1234" && SelectedRole == "Medico")
+        {
+            isValidCredentials = true;
+            redirectUrl = "/solicitudform";
+        }
+
+        // Si las credenciales son válidas, navegamos
+        if (isValidCredentials)
+        {
+            Navigation.NavigateTo(redirectUrl);
+        }
         else
         {
-            ErrorMessage = "Usuario o contraseña incorrectos";
-            StateHasChanged(); // refresca UI para mostrar el error
+            // MENSAJE DE ERROR MEJORADO
+            ErrorMessage = "Usuario, contraseña o rol incorrectos";
+            StateHasChanged();
         }
     }
 }
