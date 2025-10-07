@@ -1,0 +1,39 @@
+.page[b-1r12l08qqd] {
+	position: relative;
+	display: flex;
+	flex-direction: column;
+	min-height: 100vh;
+}
+
+.sidebar[b-1r12l08qqd] {
+	background: #2c3e50;
+	color: white;
+	width: 260px;
+	position: fixed;
+	top: 0;
+	left: 0;
+	bottom: 0;
+	overflow-y: auto;
+	z-index: 1000;
+	display: flex;
+	flex-direction: column;
+}
+
+main[b-1r12l08qqd] {
+	flex: 1;
+	margin-left: 260px;
+}
+
+.content[b-1r12l08qqd] {
+	padding: 1.5rem;
+}
+
+@media (max-width: 767.98px) {
+	.sidebar[b-1r12l08qqd] {
+		transform: translateX(-100%);
+	}
+
+	main[b-1r12l08qqd] {
+		margin-left: 0;
+	}
+}

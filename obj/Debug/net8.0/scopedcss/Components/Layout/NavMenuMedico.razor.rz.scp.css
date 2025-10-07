@@ -1,0 +1,71 @@
+/* Contenedor principal del sidebar 
+.sidebar {
+	background: #2c3e50; 
+	color: white;
+	display: flex;
+	flex-direction: column;
+
+	position: sticky;
+	top: 0;
+	height: 100vh; 
+	overflow-y: auto;
+}
+*/
+/* Sección del perfil de usuario */
+.user-profile[b-248lzv5cc0] {
+	border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+	.user-profile i[b-248lzv5cc0] {
+		font-size: 2rem;
+		color: white;
+	}
+
+	.user-profile small[b-248lzv5cc0] {
+		color: rgba(255, 255, 255, 0.6);
+	}
+
+/* Estilos para los enlaces de navegación */
+.nav-item[b-248lzv5cc0]  a {
+	color: rgba(255, 255, 255, 0.7);
+	font-size: 0.95rem;
+	padding-top: 0.75rem;
+	padding-bottom: 0.75rem;
+	display: flex;
+	align-items: center;
+}
+
+	.nav-item[b-248lzv5cc0]  a:hover {
+		color: white;
+		background-color: rgba(255, 255, 255, 0.05);
+	}
+
+	.nav-item[b-248lzv5cc0]  a.active {
+		color: white;
+		font-weight: bold;
+		background-color: rgba(0, 123, 255, 0.2); /* Un azul sutil para el activo */
+	}
+
+	.nav-item[b-248lzv5cc0]  a i {
+		font-size: 1.1rem;
+	}
+
+/* Sección para el botón de cerrar sesión */
+.logout-section[b-248lzv5cc0] {
+	margin-top: auto; /* Empuja esta sección hacia abajo */
+	padding-top: 1rem;
+	padding-bottom: 1.5rem;
+	border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+	.logout-section a[b-248lzv5cc0] {
+		color: rgba(255, 255, 255, 0.7);
+		text-decoration: none;
+		display: flex;
+		align-items: center;
+		padding-left: 1.5rem; /* Ajusta según el padding de los otros nav-items */
+	}
+
+		.logout-section a:hover[b-248lzv5cc0] {
+			color: white;
+		}
