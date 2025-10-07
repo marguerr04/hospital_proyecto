@@ -27,9 +27,11 @@
                 <div class="widget-card">
                     <div class="d-flex justify-content-between align-items-center mb-3">
                         <h5 class="card-title mb-0">2. Solicitudes Activas del Paciente</h5>
+                        @* Se esta evaluando si se incluye lo de que admin pueda generar solicitud desde 0 
                         <button class="btn btn-success" @onclick="CrearNuevaSolicitud">
                             <i class="bi bi-file-earmark-plus-fill me-2"></i> Nueva Solicitud Quirúrgica
                         </button>
+                        *@
                     </div>
 
                     @if (solicitudesActivas.Any())
