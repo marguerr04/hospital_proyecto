@@ -1,0 +1,186 @@
+﻿body {
+}
+
+/* Estilos para el contenedor del Login */
+.login-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    background-image: url('/img/fondo_login.jpeg'); 
+    background-size: cover;
+    background-position: center;
+    position: relative;
+}
+
+    /* Capa oscura sobre el fondo */
+    .login-container::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: rgba(0, 0, 0, 0.5);
+        z-index: 1;
+    }
+
+/* Tarjeta de Login */
+.login-card {
+    background-color: white;
+    padding: 2.5rem;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    width: 100%;
+    max-width: 420px;
+    z-index: 2; /* Para que esté por encima de la capa oscura */
+    text-align: center;
+}
+
+.login-header img {
+    max-width: 150px;
+    margin-bottom: 1.5rem;
+}
+
+.login-footer {
+    margin-top: 1rem;
+    font-size: 0.9rem;
+}
+
+
+
+
+
+/* Estilos para las tarjetas del panel de trabajo */
+.widget-card {
+    background-color: #ffffff;
+    border-radius: 8px;
+    padding: 1.5rem;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    height: 100%;
+}
+
+    .widget-card .card-title {
+        color: #2c3e50; /* Azul oscuro del sidebar */
+        font-weight: 600;
+    }
+
+/* Estilos para la tarjeta de alertas */
+.alert-widget {
+    background-color: #fff9e6; /* Un amarillo pálido para destacar */
+    border-left: 5px solid #ffc107; /* Borde de advertencia amarillo */
+}
+
+    .alert-widget p {
+        font-weight: 500;
+    }
+
+/* Estilos para las insignias de estado */
+.badge {
+    font-size: 0.8rem;
+    padding: 0.4em 0.7em;
+    .solicitud-container
+
+{
+    background-color: #f8f9fa; 
+    padding: 2rem;
+    min-height: 100vh;
+}
+
+/*  barra de progreso */
+.nav-pills .nav-link {
+    color: #6c757d;
+    background-color: #e9ecef;
+}
+
+    .nav-pills .nav-link.active {
+        color: white;
+        background-color: #0d6efd; 
+    }
+
+.info-paciente {
+    background-color: #eef2f7;
+    padding: 0.75rem 1rem;
+    border-radius: 6px;
+    font-weight: 500;
+}
+
+/* Tarjeta para alertas */
+.alert-widget-sticky {
+    position: sticky;
+    top: 2rem; 
+    background-color: #fff9e6;
+    border-left: 5px solid #ffc107;
+}
+
+    .alert-widget-sticky .card-title {
+        color: #664d03;
+    }
+
+    .alert-widget-sticky .alert-item {
+        font-weight: 500;
+        padding: 0.5rem 0;
+    }
+
+
+.dashboard-container {
+    background-color: #f8f9fa; 
+    padding: 2rem;
+    min-height: 100vh;
+}
+
+.dashboard-widget-card {
+    background-color: #ffffff;
+    border-radius: 8px;
+    padding: 1.5rem;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.dashboard-widget-card .widget-label {
+    color: #6c757d; 
+    font-size: 0.9rem;
+    margin-bottom: 0.5rem;
+}
+
+.dashboard-widget-card .widget-value {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: #2c3e50; 
+}
+
+.dashboard-widget-card .widget-icon {
+    font-size: 2.5rem;
+    color: #0d6efd; 
+}
+
+/* Filtros */
+.filters-section .form-label {
+    font-weight: 500;
+    color: #343a40;
+}
+
+.filters-section .form-select {
+    border-radius: 5px;
+    height: calc(2.25rem + 2px); 
+}
+
+/* Estilos para los gráficos  */
+.charts-section img {
+    border: 1px solid #dee2e6; 
+    border-radius: 5px;
+}
+
+.chart-buttons .btn {
+    font-size: 0.85rem;
+    padding: 0.5rem 1rem;
+}
+
+/* Botones de acción general del dashboard */
+.action-buttons .btn {
+    font-size: 0.9rem;
+    padding: 0.6rem 1.2rem;
+}

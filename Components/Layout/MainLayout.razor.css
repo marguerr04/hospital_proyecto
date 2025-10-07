@@ -2,10 +2,12 @@
     position: relative;
     display: flex;
     flex-direction: column;
+    height: 100vh; /* Obliga al contenedor a ocupar el 100% de la altura de la pantalla */
 }
 
 main {
     flex: 1;
+    overflow-y: auto;
 }
 
 .sidebar {
