@@ -13,6 +13,29 @@
                 <a class="nav-link active" href="#">1) Contexto y Consentimiento</a>
             </nav>
 
+
+
+
+
+
+            <div class="mb-4">
+                <label for="numeroBusqueda" class="form-label">Número de Solicitud</label>
+                <InputNumber @bind-Value="NumeroBusqueda" id="numeroBusqueda" class="form-control" placeholder="Ej: 12345" />
+            </div>
+
+            <div class="mb-4">
+                <label for="textoBusqueda" class="form-label">Texto de Búsqueda</label>
+                <InputText @bind-Value="TextoBusqueda" id="textoBusqueda" class="form-control" placeholder="Ej: Nombre, código, etc." />
+            </div>
+
+            <button class="btn btn-primary" @onclick="Buscar">Buscar</button>
+
+
+
+
+
+
+
             <div class="card shadow-sm">
                 <div class="card-body p-4">
                     <div class="info-paciente mb-4">
@@ -71,4 +94,22 @@
 </div>
 
 @code {
+
+    @code {
+        private int? NumeroBusqueda { get; set; }
+        private string TextoBusqueda { get; set; } = string.Empty;
+
+        private void Buscar()
+        {
+            // Aquí decides qué hacer con los valores ingresados
+            Console.WriteLine($"Número ingresado: {NumeroBusqueda}");
+            Console.WriteLine($"Texto ingresado: {TextoBusqueda}");
+
+            // 👇 Ejemplo: Llamar a tu base de datos, API o filtrar lista en memoria
+            // var resultados = _context.Solicitudes
+            //     .Where(s => s.Numero == NumeroBusqueda || s.Nombre.Contains(TextoBusqueda))
+            //     .ToList();
+        }
+    }
+
 }

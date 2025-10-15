@@ -1,5 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
-
+using System.ComponentModel.DataAnnotations.Schema;
 namespace proyecto_hospital_version_1.Data
 {
     public class ApplicationDbContext : DbContext
