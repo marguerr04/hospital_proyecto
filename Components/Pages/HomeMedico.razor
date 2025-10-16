@@ -27,13 +27,14 @@
     <!-- Botones de acceso rápido principales -->
     <div class="row g-3 mb-4">
         <div class="col-md-4 col-lg-4">
-            <a href="/generar_solicitud_medico" class="btn btn-primary w-100 p-3 text-decoration-none">
+            <a href="/generar_solicitud_medico" class="btn btn-primary w-100 p-3 text-decoration-none text-white">
                 <i class="bi bi-file-earmark-plus-fill d-block mb-2" style="font-size: 2rem;"></i>
                 <strong>Nueva Solicitud</strong>
                 <div class="small mt-1">Quirúrgica</div>
             </a>
         </div>
         <div class="col-md-4 col-lg-4">
+            <!-- CAMBIO: Se usa 'text-dark' para garantizar el contraste sobre fondo amarillo -->
             <a href="/priorizar-solicitudes" class="btn btn-warning w-100 p-3 text-decoration-none text-white">
                 <i class="bi bi-list-ol d-block mb-2" style="font-size: 2rem;"></i>
                 <strong>Priorizar</strong>
@@ -41,6 +42,7 @@
             </a>
         </div>
         <div class="col-md-4 col-lg-4">
+            <!-- CAMBIO: Se mantiene 'text-white' para el contraste sobre fondo verde -->
             <a href="/mis-solicitudes-medico" class="btn btn-success w-100 p-3 text-decoration-none text-white">
                 <i class="bi bi-calendar-check d-block mb-2" style="font-size: 2rem;"></i>
                 <strong>Solicitudes fechas </strong>
@@ -95,8 +97,8 @@
                                     </td>
                                     <td>98.765.432-1</td>
                                     <td>Menisco rodilla izq.</td>
-                                    <td><span class="badge bg-info">Priorizada</span></td>
-                                    <td class="text-info">Evaluar CI</td>
+                                    <td><span class="badge bg-primary">Priorizada</span></td>
+                                    <td class="text-primary">Evaluar CI</td>
                                     <td>22/09/2025</td>
                                     <td>
                                         <button class="btn btn-sm btn-outline-primary">Ver</button>
@@ -110,7 +112,7 @@
                                     <td>11.222.333-4</td>
                                     <td>Escoliosis</td>
                                     <td><span class="badge bg-danger">GES por vencer</span></td>
-                                    <td class="text-danger"><strong>URGENTE: Revisar</strong></td>
+                                    <td class="text-danger"><strong>Urgente revisión</strong></td>
                                     <td>20/09/2025</td>
                                     <td>
                                         <button class="btn btn-sm btn-outline-danger">Ver</button>
@@ -198,4 +200,11 @@
         box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
         border: 1px solid rgba(0, 0, 0, 0.125);
     }
+
+    /* === ESTILO REFORZADO PARA ACCESIBILIDAD DE TEXTO === */
+    /* Se aplica una sombra más fuerte al texto blanco para mejorar la legibilidad */
+    .g-3 .btn.text-white > * {
+        text-shadow: 0px 1px 2px rgba(0, 0, 0, 0.7);
+    }
 </style>
+

@@ -1,4 +1,15 @@
-﻿body {
+﻿/* ========= INICIO NUEVA PALETA DE COLORES ========= */
+:root {
+    --color-primario: #005A87; /* Azul corporativo y profesional */
+    --color-exito: #2E8540; /* Verde clínico, más sobrio */
+    --color-advertencia: #FFB600; /* Ámbar para alertas, alta visibilidad */
+    --color-peligro: #dc3545; /* Rojo estándar para urgencia */
+    --texto-advertencia: #212529; /* Texto oscuro para fondos ámbar/amarillo */
+}
+/* ========= FIN NUEVA PALETA DE COLORES ========= */
+
+
+body {
 }
 
 /* Estilos para el contenedor del Login */
@@ -7,7 +18,7 @@
     justify-content: center;
     align-items: center;
     min-height: 100vh;
-    background-image: url('/img/fondo_login.jpeg'); 
+    background-image: url('/img/fondo_login.jpeg');
     background-size: cover;
     background-position: center;
     position: relative;
@@ -47,9 +58,44 @@
     font-size: 0.9rem;
 }
 
+/* === NUEVOS ESTILOS APLICADOS === */
 
+/* Sobrescribir colores de botones de Bootstrap */
+.btn-primary {
+    background-color: var(--color-primario);
+    border-color: var(--color-primario);
+}
 
+    .btn-primary:hover {
+        background-color: #004a70; /* Un poco más oscuro para el hover */
+        border-color: #004a70;
+    }
 
+.btn-success {
+    background-color: var(--color-exito);
+    border-color: var(--color-exito);
+}
+
+.btn-warning {
+    background-color: var(--color-advertencia);
+    border-color: var(--color-advertencia);
+    color: var(--texto-advertencia); /* Corrección de contraste */
+}
+
+/* Clases de texto y badges */
+.text-primary {
+    color: var(--color-primario) !important;
+}
+
+.badge.bg-warning {
+    background-color: var(--color-advertencia) !important;
+    color: var(--texto-advertencia) !important;
+}
+
+/* Estilos de la tabla */
+.table-hover tbody tr:hover {
+    background-color: rgba(0, 90, 135, 0.05); /* Hover con el nuevo color primario */
+}
 
 /* Estilos para las tarjetas del panel de trabajo */
 .widget-card {
@@ -61,126 +107,18 @@
 }
 
     .widget-card .card-title {
-        color: #2c3e50; /* Azul oscuro del sidebar */
+        color: #2c3e50;
         font-weight: 600;
     }
 
-/* Estilos para la tarjeta de alertas */
-.alert-widget {
-    background-color: #fff9e6; /* Un amarillo pálido para destacar */
-    border-left: 5px solid #ffc107; /* Borde de advertencia amarillo */
-}
-
-    .alert-widget p {
-        font-weight: 500;
-    }
-
-/* Estilos para las insignias de estado */
-.badge {
-    font-size: 0.8rem;
-    padding: 0.4em 0.7em;
-    .solicitud-container
-
-{
-    background-color: #f8f9fa; 
+.solicitud-container {
+    background-color: #f8f9fa;
     padding: 2rem;
     min-height: 100vh;
 }
 
-/*  barra de progreso */
-.nav-pills .nav-link {
-    color: #6c757d;
-    background-color: #e9ecef;
-}
-
-    .nav-pills .nav-link.active {
-        color: white;
-        background-color: #0d6efd; 
-    }
-
-.info-paciente {
-    background-color: #eef2f7;
-    padding: 0.75rem 1rem;
-    border-radius: 6px;
-    font-weight: 500;
-}
-
-/* Tarjeta para alertas */
-.alert-widget-sticky {
-    position: sticky;
-    top: 2rem; 
-    background-color: #fff9e6;
-    border-left: 5px solid #ffc107;
-}
-
-    .alert-widget-sticky .card-title {
-        color: #664d03;
-    }
-
-    .alert-widget-sticky .alert-item {
-        font-weight: 500;
-        padding: 0.5rem 0;
-    }
-
-
-.dashboard-container {
-    background-color: #f8f9fa; 
-    padding: 2rem;
-    min-height: 100vh;
-}
-
-.dashboard-widget-card {
-    background-color: #ffffff;
-    border-radius: 8px;
-    padding: 1.5rem;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-}
-
-.dashboard-widget-card .widget-label {
-    color: #6c757d; 
-    font-size: 0.9rem;
-    margin-bottom: 0.5rem;
-}
-
-.dashboard-widget-card .widget-value {
-    font-size: 2.5rem;
-    font-weight: 700;
-    color: #2c3e50; 
-}
-
-.dashboard-widget-card .widget-icon {
-    font-size: 2.5rem;
-    color: #0d6efd; 
-}
-
-/* Filtros */
-.filters-section .form-label {
-    font-weight: 500;
-    color: #343a40;
-}
-
-.filters-section .form-select {
-    border-radius: 5px;
-    height: calc(2.25rem + 2px); 
-}
-
-/* Estilos para los gráficos  */
-.charts-section img {
-    border: 1px solid #dee2e6; 
-    border-radius: 5px;
-}
-
-.chart-buttons .btn {
-    font-size: 0.85rem;
-    padding: 0.5rem 1rem;
-}
-
-/* Botones de acción general del dashboard */
-.action-buttons .btn {
-    font-size: 0.9rem;
-    padding: 0.6rem 1.2rem;
+/* Barra de progreso */
+.nav-pills .nav-link.active {
+    color: white;
+    background-color: var(--color-primario);
 }
