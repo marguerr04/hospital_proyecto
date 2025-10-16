@@ -11,6 +11,54 @@
     <button class="btn btn-primary mt-2" @onclick="CargarPacientes">Cargar</button>
 </div>
 
+<!-- BUSCADORES HORIZONTALES -->
+<div class="row mb-3">
+    <div class="col-md-8">
+        <div class="input-group">
+            <span class="input-group-text">🔍 Buscar</span>
+            <input type="text"
+                   class="form-control"
+                   placeholder="Buscar por nombre, apellido o RUT..."
+                   @bind="_busquedaTexto"
+                   @bind:event="oninput"
+                   @onkeypress="@(async (e) => { if (e.Key == "Enter") await BuscarPacientes(); })" />
+        </div>
+    </div>
+    <div class="col-md-2">
+        <div class="input-group">
+            <span class="input-group-text">DV</span>
+            <input type="text"
+                   class="form-control text-center"
+                   placeholder="K"
+                   maxlength="1"
+                   @bind="_busquedaDv"
+                   @bind:event="oninput"
+                   style="text-transform: uppercase;" />
+        </div>
+    </div>
+    <div class="col-md-2">
+        <button class="btn btn-success w-100" @onclick="BuscarPacientes">
+            Buscar
+        </button>
+    </div>
+</div>
+
+@if (!string.IsNullOrWhiteSpace(_busquedaTexto) || !string.IsNullOrWhiteSpace(_busquedaDv))
+{
+    <div class="alert alert-info">
+        Filtros activos:
+        @if (!string.IsNullOrWhiteSpace(_busquedaTexto))
+        {
+            <span>Texto: "@_busquedaTexto"</span>
+        }
+        @if (!string.IsNullOrWhiteSpace(_busquedaDv))
+        {
+            <span>DV: "@_busquedaDv"</span>
+        }
+        <button class="btn btn-sm btn-outline-secondary ms-2" @onclick="LimpiarBusqueda">Limpiar</button>
+    </div>
+}
+
 @if (_estado == "cargando")
 {
     <p>Cargando...</p>
@@ -43,7 +91,7 @@ else if (_estado == "ok")
 }
 else
 {
-    <p style="color:red">❌ @_error</p>
+    <p style="color:red">x @_error</p>
 }
 
 @code {
@@ -52,6 +100,10 @@ else
     private string? _error;
     private int _cantidadMostrar = 10;
     private int _totalPacientes = 0;
+
+    // Variables para los buscadores
+    private string _busquedaTexto = "";
+    private string _busquedaDv = "";
 
     protected override async Task OnInitializedAsync()
     {
@@ -63,11 +115,33 @@ else
         _estado = "cargando";
         try
         {
-            // Obtener el total de pacientes
-            _totalPacientes = await HospitalDb.Pacientes.CountAsync();
+            // Crear query base
+            var query = HospitalDb.Pacientes.AsQueryable();
+
+            // Aplicar filtros si existen
+            if (!string.IsNullOrWhiteSpace(_busquedaTexto))
+            {
+                var busqueda = _busquedaTexto.ToLower();
+                query = query.Where(p =>
+                    p.primerNombre.ToLower().Contains(busqueda) ||
+                    p.segundoNombre.ToLower().Contains(busqueda) ||
+                    p.apellidoPaterno.ToLower().Contains(busqueda) ||
+                    p.apellidoMaterno.ToLower().Contains(busqueda) ||
+                    p.rut.ToString().Contains(busqueda)
+                );
+            }
+
+            if (!string.IsNullOrWhiteSpace(_busquedaDv))
+            {
+                var dvUpper = _busquedaDv.ToUpper();
+                query = query.Where(p => p.dv.ToUpper() == dvUpper);
+            }
+
+            // Obtener el total de pacientes con filtros
+            _totalPacientes = await query.CountAsync();
 
             // Obtener la cantidad solicitada
-            _pacientes = await HospitalDb.Pacientes
+            _pacientes = await query
                 .Take(_cantidadMostrar)
                 .ToListAsync();
 
@@ -78,5 +152,17 @@ else
             _estado = "error";
             _error = ex.Message;
         }
+    }
+
+    private async Task BuscarPacientes()
+    {
+        await CargarPacientes();
+    }
+
+    private async Task LimpiarBusqueda()
+    {
+        _busquedaTexto = "";
+        _busquedaDv = "";
+        await CargarPacientes();
     }
 }

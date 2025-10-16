@@ -1,46 +1,73 @@
 ﻿@page "/generar_solicitud_medico"
 @layout Components.Layout.MainLayoutMedico
-
+@using proyecto_hospital_version_1.Data.Hospital
+@inject HospitalDbContext HospitalDb
+@using Microsoft.EntityFrameworkCore
 
 <PageTitle>Nueva Solicitud Quirúrgica</PageTitle>
 
 <div class="solicitud-container">
     <div class="row">
+        <!-- Columna Izquierda Principal (Contiene todo el flujo) -->
         <div class="col-lg-8">
             <h1 class="h3 mb-4">Nueva Solicitud Quirúrgica</h1>
 
+            <!-- Navegación por pasos -->
             <nav class="nav nav-pills nav-fill mb-4">
                 <a class="nav-link active" href="#">1) Contexto y Consentimiento</a>
             </nav>
 
+            <!-- SECCIÓN DE BÚSQUEDA DE PACIENTES (Ahora dentro de su propia tarjeta) -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-body">
+                    <!-- Controles de búsqueda -->
+                    <div class="row">
+                        <div class="col-md-6">
+                            <label>Buscar por rut sin puntos ni digito veríficador:</label>
+                            <input type="text"
+                                   class="form-control"
+                                   placeholder="Buscar..."
+                                   @bind="_busquedaTexto"
+                                   @bind:event="oninput"
+                                   @onkeypress="@(async (e) => { if (e.Key == "Enter") await CargarPacientes(); })" />
+                        </div>
+                        <div class="col-md-3">
+                            <label>DV:</label>
+                            <input type="text"
+                                   class="form-control text-center"
+                                   placeholder="K"
+                                   maxlength="1"
+                                   @bind="_busquedaDv"
+                                   @bind:event="oninput"
+                                   style="text-transform: uppercase;" />
+                        </div>
+                        <div class="col-md-3">
+                            <label>&nbsp;</label>
+                            <div>
+                                <button class="btn btn-success w-100" @onclick="CargarPacientes">
+                                    Buscar
+                                </button>
+                            </div>
+                        </div>
+                    </div>
 
-
-
-
-
-            <div class="mb-4">
-                <label for="numeroBusqueda" class="form-label">Número de Solicitud</label>
-                <InputNumber @bind-Value="NumeroBusqueda" id="numeroBusqueda" class="form-control" placeholder="Ej: 12345" />
+                    @if (!string.IsNullOrWhiteSpace(_busquedaTexto) || !string.IsNullOrWhiteSpace(_busquedaDv))
+                    {
+                        <div class="alert alert-info mt-3">
+                            <button class="btn btn-sm btn-outline-secondary ms-2" @onclick="LimpiarBusqueda">Limpiar</button>
+                        </div>
+                    }
+                </div>
             </div>
 
-            <div class="mb-4">
-                <label for="textoBusqueda" class="form-label">Texto de Búsqueda</label>
-                <InputText @bind-Value="TextoBusqueda" id="textoBusqueda" class="form-control" placeholder="Ej: Nombre, código, etc." />
-            </div>
-
-            <button class="btn btn-primary" @onclick="Buscar">Buscar</button>
-
-
-
-
-
-
-
+            <!-- Tarjeta Principal de Contenido (Diagnóstico y Consentimiento) -->
             <div class="card shadow-sm">
                 <div class="card-body p-4">
+                    <!-- ===== INICIO DEL CAMBIO IMPORTANTE ===== -->
                     <div class="info-paciente mb-4">
-                        <strong>Paciente:</strong> Gabriel Picand - <strong>RUT:</strong> 9.487.570-6
+                        <strong>Paciente:</strong> @_nombrePacienteParaMostrar - <strong>RUT:</strong> @_rutPacienteParaMostrar
                     </div>
+                    <!-- ===== FIN DEL CAMBIO IMPORTANTE ===== -->
 
                     <h5 class="mb-3 border-bottom pb-2">1. Procedencia y Diagnóstico</h5>
 
@@ -75,12 +102,14 @@
                 </div>
             </div>
 
+            <!-- Botones de Navegación -->
             <div class="d-flex justify-content-end mt-4">
                 <button class="btn btn-secondary me-2" disabled>← Anterior</button>
                 <button class="btn btn-primary">Siguiente →</button>
             </div>
         </div>
 
+        <!-- Columna Derecha (Alertas) - No se modifica -->
         <div class="col-lg-4">
             <div class="card alert-widget-sticky">
                 <div class="card-body">
@@ -93,23 +122,134 @@
     </div>
 </div>
 
-@code {
-
-    @code {
-        private int? NumeroBusqueda { get; set; }
-        private string TextoBusqueda { get; set; } = string.Empty;
-
-        private void Buscar()
-        {
-            // Aquí decides qué hacer con los valores ingresados
-            Console.WriteLine($"Número ingresado: {NumeroBusqueda}");
-            Console.WriteLine($"Texto ingresado: {TextoBusqueda}");
-
-            // 👇 Ejemplo: Llamar a tu base de datos, API o filtrar lista en memoria
-            // var resultados = _context.Solicitudes
-            //     .Where(s => s.Numero == NumeroBusqueda || s.Nombre.Contains(TextoBusqueda))
-            //     .ToList();
-        }
+<style>
+    .alert-widget-sticky {
+        position: sticky;
+        top: 20px;
     }
 
+    .info-paciente {
+        font-size: 0.95rem;
+    }
+
+    .solicitud-container {
+        padding: 20px;
+    }
+</style>
+
+@code {
+    // Variables existentes
+    private int? NumeroBusqueda { get; set; }
+    private string TextoBusqueda { get; set; } = string.Empty;
+
+    // Variables para búsqueda de pacientes
+    private List<PacienteHospital> _pacientes = new();
+    private string _estado = "inicial";
+    private string? _error;
+    private int _cantidadMostrar = 10;
+    private int _totalPacientes = 0;
+    private string _busquedaTexto = "";
+    private string _busquedaDv = "";
+
+
+    private string _nombrePacienteParaMostrar = "";
+    private string _rutPacienteParaMostrar = "";
+
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        await Task.CompletedTask;
+    }
+
+    private async Task CargarPacientes()
+    {
+        if (string.IsNullOrWhiteSpace(_busquedaTexto) && string.IsNullOrWhiteSpace(_busquedaDv))
+        {
+            return;
+        }
+        _estado = "cargando";
+        StateHasChanged();
+
+        try
+        {
+            var query = HospitalDb.Pacientes.AsQueryable();
+
+            if (!string.IsNullOrWhiteSpace(_busquedaTexto))
+            {
+                var busqueda = _busquedaTexto.ToLower();
+                query = query.Where(p =>
+                    p.primerNombre.ToLower().Contains(busqueda) ||
+                    (p.segundoNombre != null && p.segundoNombre.ToLower().Contains(busqueda)) ||
+                    p.apellidoPaterno.ToLower().Contains(busqueda) ||
+                    (p.apellidoMaterno != null && p.apellidoMaterno.ToLower().Contains(busqueda)) ||
+                    p.rut.Contains(busqueda)
+                );
+            }
+
+            if (!string.IsNullOrWhiteSpace(_busquedaDv))
+            {
+                var dvUpper = _busquedaDv.ToUpper();
+                query = query.Where(p => p.dv.ToUpper() == dvUpper);
+            }
+
+
+            var pacienteEncontrado = await query.FirstOrDefaultAsync();
+
+            if (pacienteEncontrado != null)
+            {
+
+                _nombrePacienteParaMostrar = $"{pacienteEncontrado.primerNombre} {pacienteEncontrado.apellidoPaterno}";
+                _rutPacienteParaMostrar = $"{pacienteEncontrado.rut}-{pacienteEncontrado.dv}";
+            }
+            else
+            {
+                // Si no se encuentra, mostramos un mensaje indicándolo.
+                _nombrePacienteParaMostrar = "Paciente no encontrado";
+                _rutPacienteParaMostrar = "";
+            }
+            // ===== FIN DEL CAMBIO IMPORTANTE =====
+
+            _estado = "ok";
+        }
+        catch (Exception ex)
+        {
+            _estado = "error";
+            _error = ex.Message;
+            Console.WriteLine($"Error al buscar pacientes: {ex}");
+        }
+
+        StateHasChanged();
+    }
+
+    private async Task BuscarPacientes()
+    {
+        await CargarPacientes();
+    }
+
+    private async Task LimpiarBusqueda()
+    {
+        _busquedaTexto = "";
+        _busquedaDv = "";
+        _pacientes.Clear();
+        _estado = "inicial";
+
+
+        _nombrePacienteParaMostrar = "";
+        _rutPacienteParaMostrar = "";
+
+
+        StateHasChanged();
+    }
+
+    private void SeleccionarPaciente(PacienteHospital paciente)
+    {
+        Console.WriteLine($"Paciente seleccionado: {paciente.primerNombre} {paciente.apellidoPaterno}");
+    }
+
+    private void Buscar()
+    {
+        Console.WriteLine($"Número ingresado: {NumeroBusqueda}");
+        Console.WriteLine($"Texto ingresado: {TextoBusqueda}");
+    }
 }
