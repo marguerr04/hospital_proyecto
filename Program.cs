@@ -1,7 +1,9 @@
 using proyecto_hospital_version_1.Components;
+using proyecto_hospital_version_1.Services;
 using Microsoft.EntityFrameworkCore;
 using proyecto_hospital_version_1.Data;
 using proyecto_hospital_version_1.Data.Hospital;  // ?? este es el namespace donde pusiste HospitalDbContext
+using proyecto_hospital_version_1.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -14,6 +16,10 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 // Base de datos paralela
 builder.Services.AddDbContext<HospitalDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("HospitalV4")));
+
+builder.Services.AddScoped<IPacienteService, PacienteService>();
+
+
 
 
 var app = builder.Build();
