@@ -134,7 +134,10 @@
                     <div class="row mb-4">
                         <div class="col-md-6">
                             <label for="procedimiento" class="form-label">Procedimiento</label>
-                            <select class="form-select" id="procedimiento" @bind="_procedimientoSeleccionado">
+                            <select class="form-select" id="procedimiento" 
+                            @bind="_procedimientoSeleccionado">
+
+
                                 <option value="">Seleccione un procedimiento</option>
                                 <option value="Apendicectomía">Apendicectomía</option>
                                 <option value="Colecistectomía">Colecistectomía</option>
@@ -195,6 +198,7 @@
                                            Procedimiento="_procedimientoSeleccionado"
                                            Lateralidad="_lateralidadSeleccionada"
                                            Extremidad="_extremidadSeleccionada" />
+
 
                                             </div>
                                         </div>
@@ -299,6 +303,7 @@
 
     public async Task GenerarPDF()
     {
+        await ActualizarDatosPDF();
         if (_consentimientoPdfRef != null && PuedeGenerarPDF)
         {
             await _consentimientoPdfRef.GenerarPdf(); // <- Método correcto: GenerarPdf (con P minúscula)
@@ -449,6 +454,24 @@
         if (_pasoActual > 1)
         {
             _pasoActual--;
+            StateHasChanged();
+        }
+    }
+
+
+
+
+    private async Task ActualizarDatosPDF()
+    {
+        if (_consentimientoPdfRef != null)
+        {
+            // Forzar la actualización de los parámetros
+            _consentimientoPdfRef.Paciente = _pacienteSeleccionado;
+            _consentimientoPdfRef.Procedimiento = _procedimientoSeleccionado;
+            _consentimientoPdfRef.Lateralidad = _lateralidadSeleccionada;
+            _consentimientoPdfRef.Extremidad = _extremidadSeleccionada;
+
+            // Forzar re-renderizado del componente
             StateHasChanged();
         }
     }

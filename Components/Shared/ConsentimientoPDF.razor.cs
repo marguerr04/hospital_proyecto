@@ -4,31 +4,27 @@ using QuestPDF.Fluent;
 using QuestPDF.Helpers;
 using QuestPDF.Infrastructure;
 using System.IO;
-using proyecto_hospital_version_1.Models; // ¡Importante! Necesitamos el modelo
-using System; // Para DateTime
-
+using proyecto_hospital_version_1.Models; 
+using System; 
 namespace proyecto_hospital_version_1.Components.Shared
 {
-    // ¡¡LA CLAVE!! Debe ser 'public partial' y coincidir con el nombre del archivo
     public partial class ConsentimientoPDF
     {
         [Inject]
         private IJSRuntime JSRuntime { get; set; } = default!;
 
-        // --- PARÁMETROS ACTUALIZADOS ---
         [Parameter]
         public PacienteHospital? Paciente { get; set; }
 
         [Parameter]
-        public string Procedimiento { get; set; } = "";
+        public string Procedimiento { get; set; }  
 
         [Parameter]
-        public string Lateralidad { get; set; } = "";
+        public string Lateralidad { get; set; }  
 
         [Parameter]
-        public string Extremidad { get; set; } = "";
+        public string Extremidad { get; set; } 
 
-        // El método que la vista SÍ puede encontrar ahora
         public async Task GenerarPdf()
         {
             if (Paciente == null)
@@ -52,7 +48,7 @@ namespace proyecto_hospital_version_1.Components.Shared
                     page.Header()
                         .AlignCenter()
                         .Text("Resumen de Solicitud y Consentimiento") // Título actualizado
-                        .SemiBold().FontSize(18).FontColor(Colors.Blue.Darken3);
+                        .SemiBold().FontSize(18).FontColor(Colors.Black);
 
                     page.Content()
                         .PaddingVertical(1, Unit.Centimetre)
@@ -60,11 +56,10 @@ namespace proyecto_hospital_version_1.Components.Shared
                         {
                             column.Spacing(20); // Más espacio entre elementos
 
-                            // --- SECCIÓN DE DATOS DEL PACIENTE ---
-                            column.Item().Background(Colors.Grey.Lighten4).Padding(12).Column(infoColumn =>
+                            
+                            column.Item().Column(infoColumn =>
                             {
-                                // --- CORRECCIÓN 1 ---
-                                // .PaddingBottom(5) movido ANTES de .Text()
+
                                 infoColumn.Item().PaddingBottom(5).Text("1. Datos del Paciente").FontSize(14).SemiBold();
                                 infoColumn.Item().Grid(grid =>
                                 {
@@ -86,20 +81,32 @@ namespace proyecto_hospital_version_1.Components.Shared
                             // --- SECCIÓN DEL PROCEDIMIENTO ---
                             column.Item().Column(procColumn =>
                             {
-                                // --- CORRECCIÓN 2 ---
-                                // .PaddingBottom(5) movido ANTES de .Text()
-                                procColumn.Item().PaddingBottom(5).Text("2. Detalles del Procedimiento").FontSize(14).SemiBold();
-                                procColumn.Item().Text($"Procedimiento Principal:").Bold();
-                                procColumn.Item().Text($"{Procedimiento}");
+                                procColumn.Item().PaddingBottom(8).Text("2. Detalles del Procedimiento").FontSize(14).SemiBold();
 
-                                if (!string.IsNullOrEmpty(Lateralidad))
-                                    procColumn.Item().Text($"Lateralidad: {Lateralidad}");
+                                procColumn.Item().Grid(grid =>
+                                {
+                                    grid.Columns(2);
+                                    grid.VerticalSpacing(8);
+                                    grid.HorizontalSpacing(10);
 
-                                if (!string.IsNullOrEmpty(Extremidad))
-                                    procColumn.Item().Text($"Extremidad: {Extremidad}");
+                                    grid.Item().Text("Procedimiento Principal:").Bold();
+                                    grid.Item().Text($"{Procedimiento}");
+
+                                    if (!string.IsNullOrEmpty(Lateralidad))
+                                    {
+                                        grid.Item().Text("Lateralidad:").Bold();
+                                        grid.Item().Text(Lateralidad);
+                                    }
+
+                                    if (!string.IsNullOrEmpty(Extremidad))
+                                    {
+                                        grid.Item().Text("Extremidad:").Bold();
+                                        grid.Item().Text(Extremidad);
+                                    }
+                                });
                             });
 
-                            // --- SECCIÓN DE CONSENTIMIENTO (CON EL TEXTO QUE PEDISTE) ---
+
                             column.Item().Column(consentColumn =>
                             {
                                 // --- CORRECCIÓN 3 ---
@@ -145,7 +152,7 @@ namespace proyecto_hospital_version_1.Components.Shared
                         .AlignCenter()
                         .Text(x =>
                         {
-                            x.Span("Documento confidencial - Hospital Ejemplo - Página ");
+                            x.Span("Documento confidencial - Hospital Padre Hurtado");
                             x.CurrentPageNumber();
                         });
                 });
