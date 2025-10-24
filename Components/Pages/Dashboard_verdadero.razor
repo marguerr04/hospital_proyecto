@@ -1,114 +1,94 @@
 ﻿@page "/dashboard_verdadero"
+@inject proyecto_hospital_version_1.Data.DashboardService dashboard
+@using MudBlazor
+@using proyecto_hospital_version_1.Data
 
-<PageTitle>Dashboard Quirúrgico</PageTitle>
+<PageTitle>Panel de Control - Gestión Clínica</PageTitle>
 
-<div class="dashboard-container">
-    <div class="row header-widgets mb-4">
-        <div class="col-md-4">
-            <div class="dashboard-widget-card total-cases">
-                <h5 class="widget-label">Casos totales</h5>
-                <div class="d-flex justify-content-between align-items-center">
-                    <span class="widget-value">5.458</span>
-                    <i class="bi bi-person-fill widget-icon"></i>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-4">
-            <div class="dashboard-widget-card reduced-cases">
-                <h5 class="widget-label">Reducción Casos egresados</h5>
-                <div class="d-flex justify-content-between align-items-center">
-                    <span class="widget-value">2.352</span>
-                    <i class="bi bi-arrow-down-circle-fill widget-icon"></i>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-4">
-            <div class="dashboard-widget-card pending-cases">
-                <h5 class="widget-label">Pendientes Casos por resolver</h5>
-                <div class="d-flex justify-content-between align-items-center">
-                    <span class="widget-value">3.106</span>
-                    <i class="bi bi-bell-fill widget-icon"></i>
-                </div>
-            </div>
-        </div>
-    </div>
+<MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="mt-6">
+    <MudText Typo="Typo.h4" Align="Align.Center" GutterBottom="true">
+        🏥 Seguimiento Percentil 75 LE IQ NO GES
+    </MudText>
+    <MudText Typo="Typo.subtitle1" Align="Align.Center" Class="mb-4 text-secondary">
+        Unidad de Control de Gestión · @DateTime.Now.ToString("dd.MM.yyyy")
+    </MudText>
 
-    <div class="row filters-section mb-4 align-items-end">
-        <div class="col-md-2">
-            <label for="cgeFilter" class="form-label">CGE</label>
-            <select id="cgeFilter" class="form-select">
-                <option selected>188</option>
-                <option>...</option>
-            </select>
-        </div>
-        <div class="col-md-2">
-            <label for="p90Filter" class="form-label">P90</label>
-            <select id="p90Filter" class="form-select">
-                <option selected>...</option>
-            </select>
-        </div>
-        <div class="col-md-3">
-            <label for="cirugiaFilter" class="form-label">Cirugía</label>
-            <select id="cirugiaFilter" class="form-select">
-                <option selected>...</option>
-            </select>
-        </div>
-        <div class="col-md-2">
-            <label for="sexoFilter" class="form-label">Sexo</label>
-            <select id="sexoFilter" class="form-select">
-                <option selected>...</option>
-            </select>
-        </div>
-        <div class="col-md-2">
-            <label for="mesEgresoFilter" class="form-label">Mes egreso</label>
-            <select id="mesEgresoFilter" class="form-select">
-                <option selected>...</option>
-            </select>
-        </div>
-        <div class="col-md-1 d-flex justify-content-end">
-            <button class="btn btn-dark" @onclick="ApplyFilters">
-                <i class="bi bi-funnel-fill"></i>
-            </button>
-        </div>
-    </div>
+    <!-- Tarjetas de Resumen -->
+    <MudGrid>
+        <MudItem xs="12" sm="4">
+            <MudPaper Class="pa-4 text-center" Elevation="3">
+                <MudText Typo="Typo.h6" Class="text-primary">Percentil 75</MudText>
+                <MudText Typo="Typo.h3">@Percentil75</MudText>
+            </MudPaper>
+        </MudItem>
 
-    <div class="row charts-section">
-        <div class="col-lg-6 mb-4">
-            <div class="dashboard-widget-card">
-                <h5 class="widget-label mb-3">Estado del caso</h5>
-                @* Placeholder para gráfico de estado. Aquí se insertaría la imagen o un componente de gráfico real. *@
-                <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAwIiBoZWlnaHQ9IjQwMCIgdmlld0JveD0iMCAwIDYwMCA0MDAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CiAgPHJlY3QgeD0iMCIgeT0iMCIgd2lkdGg9IjYwMCIgaGVpZ2h0PSI0MDAiIGZpbGw9IiNlMGQwZDgiLz4KICA8dGV4dCB4PSIzMDAiIHk9IjIwMCIgZm9udC1mYW1pbHk9InNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMjVweCIgZmlsbD0iIzY2NjY2NiIgYW5jaG9yPSJtaWRkbGUiIHRleHQtYWxpZ249ImNlbnRlciI+CiAgICBJbnNlcnRhciBncmFmaWNvIGRlIEVzdGFkbyBkZWwgY2FzbyBhcXXtCiAgPC90ZXh0Pgo8L3N2Z24+" alt="Gráfico de Estado del Caso" class="img-fluid" />
-                <div class="chart-buttons mt-3 d-flex justify-content-end">
-                    <button class="btn btn-outline-secondary me-2"><i class="bi bi-file-earmark-arrow-down"></i> Exportar CSV</button>
-                    <button class="btn btn-outline-secondary"><i class="bi bi-printer"></i> Imprimir</button>
-                </div>
-            </div>
-        </div>
-        <div class="col-lg-6 mb-4">
-            <div class="dashboard-widget-card">
-                <h5 class="widget-label mb-3">Causal de egreso</h5>
-                @* Placeholder para gráfico de causal. Aquí se insertaría la imagen o un componente de gráfico real. *@
-                <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAwIiBoZWlnaHQ9IjQwMCIgdmlld0JveD0iMCAwIDYwMCA0MDAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CiAgPHJlY3QgeD0iMCIgeT0iMCIgd2lkdGg9IjYwMCIgaGVpZ2h0PSI0MDAiIGZpbGw9IiNlMGQwZDgiLz4KICA8dGV4dCB4PSIzMDAiIHk9IjIwMCIgZm9udC1mYW1pbHk9InNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMjVweCIgZmlsbD0iIzY2NjY2NiIgYW5jaG9yPSJtaWRkbGUiIHRleHQtYWxpZ249ImNlbnRlciI+CiAgICBJbnNlcnRhciBncmFmaWNvIGRlIENhdXNhbCBkZSBlZ3Jlc28gYXF17QogIDwvdGV4dD4KPC9zdmc+" alt="Gráfico de Causal de Egreso" class="img-fluid" />
-                <div class="chart-buttons mt-3 d-flex justify-content-end">
-                    <button class="btn btn-outline-secondary me-2"><i class="bi bi-file-earmark-arrow-down"></i> Exportar CSV</button>
-                    <button class="btn btn-outline-secondary"><i class="bi bi-printer"></i> Imprimir</button>
-                </div>
-            </div>
-        </div>
-    </div>
+        <MudItem xs="12" sm="4">
+            <MudPaper Class="pa-4 text-center" Elevation="3">
+                <MudText Typo="Typo.h6" Class="text-error">Reducción</MudText>
+                <MudProgressCircular Value="46.2" Size="Size.Large" Color="Color.Error" />
+                <MudText Typo="Typo.h5">@Reduccion</MudText>
+            </MudPaper>
+        </MudItem>
 
-    <div class="row action-buttons mt-4">
-        <div class="col-12 d-flex justify-content-end">
-            <button class="btn btn-primary me-2"><i class="bi bi-pencil-square"></i> Editar Dashboard</button>
-            <button class="btn btn-info text-white"><i class="bi bi-arrow-clockwise"></i> Actualizar Datos</button>
-        </div>
-    </div>
-</div>
+        <MudItem xs="12" sm="4">
+            <MudPaper Class="pa-4 text-center" Elevation="3">
+                <MudText Typo="Typo.h6" Class="text-info">Pendientes</MudText>
+                <MudIcon Icon="@Icons.Material.Filled.PendingActions" Size="Size.Large" Color="Color.Info" />
+                <MudText Typo="Typo.h4">@Pendientes</MudText>
+            </MudPaper>
+        </MudItem>
+    </MudGrid>
+
+    <MudDivider Class="my-6" />
+
+    <!-- Ejemplo de gráfico -->
+    <MudGrid>
+        <MudItem xs="12" md="6">
+            <MudPaper Class="pa-4">
+                <MudText Typo="Typo.h6">Estado del caso</MudText>
+                <MudChart ChartType="ChartType.Bar" Labels="@EstadoLabels" Datasets="@EstadoDatos" />
+            </MudPaper>
+        </MudItem>
+
+        <MudItem xs="12" md="6">
+            <MudPaper Class="pa-4">
+                <MudText Typo="Typo.h6">Contactabilidad</MudText>
+                <MudChart ChartType="ChartType.Donut" Labels="@ContactoLabels" Datasets="@ContactoDatos" />
+            </MudPaper>
+        </MudItem>
+    </MudGrid>
+</MudContainer>
 
 @code {
-    private void ApplyFilters()
+    private int Percentil75;
+    private int Reduccion;
+    private int Pendientes;
+
+    private string[] EstadoLabels = { "Programado", "En espera", "Finalizado" };
+    private List<ChartSeries> EstadoDatos = new()
     {
-        // Lógica para aplicar los filtros y recargar los datos del dashboard
-        Console.WriteLine("Filtros aplicados!");
+        new ChartSeries() { Name = "Casos", Data = new double[] { 12, 8, 20 } }
+    };
+
+    private string[] ContactoLabels = { "Contactado", "En proceso", "No contactado" };
+    private List<ChartSeries> ContactoDatos = new()
+    {
+        new ChartSeries() { Name = "Porcentaje", Data = new double[] { 66.4, 20.0, 13.6 } }
+    };
+
+    protected override async Task OnInitializedAsync()
+    {
+        Percentil75 = await dashboard.ObtenerPercentil75Async();
+        Reduccion = await dashboard.ObtenerReduccionAsync();
+        Pendientes = await dashboard.ObtenerPendientesAsync();
+
+        // Refresca cada 10 segundos
+        var timer = new System.Threading.Timer(async _ =>
+        {
+            Percentil75 = await dashboard.ObtenerPercentil75Async();
+            Reduccion = await dashboard.ObtenerReduccionAsync();
+            Pendientes = await dashboard.ObtenerPendientesAsync();
+            await InvokeAsync(StateHasChanged);
+        }, null, 0, 10000);
     }
 }

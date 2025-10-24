@@ -1,0 +1,23 @@
+﻿@using MudBlazor
+@using MudBlazor.Services
+@using Microsoft.AspNetCore.Components.Routing
+@using proyecto_hospital_version_1.Components.Layout
+@namespace proyecto_hospital_version_1
+
+<CascadingAuthenticationState>
+    <MudThemeProvider /> <!-- solo aplicar el tema -->
+    <MudDialogProvider /> <!-- solo registrar el proveedor de diálogo -->
+    <MudSnackbarProvider /> <!-- solo registrar el proveedor de snackbar -->
+
+    <Router AppAssembly="@typeof(App).Assembly">
+        <Found Context="routeData">
+            <RouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)" />
+            <FocusOnNavigate RouteData="@routeData" Selector="h1" />
+        </Found>
+        <NotFound>
+            <LayoutView Layout="@typeof(MainLayout)">
+                <p>Sorry, there's nothing at this address.</p>
+            </LayoutView>
+        </NotFound>
+    </Router>
+</CascadingAuthenticationState>

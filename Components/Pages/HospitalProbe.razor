@@ -1,0 +1,82 @@
+﻿@page "/prueba-hospital"
+@using proyecto_hospital_version_1.Data
+@inject HospitalDbContext HospitalDb
+@using Microsoft.EntityFrameworkCore
+
+<h3>Prueba HospitalV4 → PACIENTE</h3>
+
+<div class="mb-3">
+    <label>Cantidad de registros:</label>
+    <input type="number" @bind="_cantidadMostrar" min="1" max="100" class="form-control" style="width:150px" />
+    <button class="btn btn-primary mt-2" @onclick="CargarPaciente">Cargar</button>
+</div>
+
+@if (_estado == "cargando")
+{
+    <p>Cargando...</p>
+}
+else if (_estado == "ok")
+{
+    <p>✅ Mostrando @_paciente.Count de @_totalPaciente paciente(s):</p>
+
+    <table class="table table-striped table-hover">
+        <thead class="table-dark">
+            <tr>
+                <th>Id</th>
+                <th>Rut</th>
+                <th>Nombre Completo</th>
+                <th>Telefonoo fijo</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var paciente in _paciente)
+            {
+                <tr>
+                    <td>@paciente.Id</td>
+                    <td>@paciente.Rut-@paciente.Dv</td>
+                    <td>@paciente.PrimerNombre @paciente.SegundoNombre @paciente.ApellidoPaterno @paciente.ApellidoMaterno</td>
+                    <td>@(paciente.TelefonoFijo ?? "Sin telefono")</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+else
+{
+    <p style="color:red">❌ @_error</p>
+}
+
+@code {
+    private List<Paciente> _paciente = new();
+    private string _estado = "cargando";
+    private string? _error;
+    private int _cantidadMostrar = 10;
+    private int _totalPaciente = 0;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await CargarPaciente();
+    }
+
+    private async Task CargarPaciente()
+    {
+        _estado = "cargando";
+        try
+        {
+            // Obtener el total de paciente
+            _totalPaciente = await HospitalDb.PACIENTE.CountAsync();
+
+            // Obtener la cantidad solicitada
+            _paciente = await HospitalDb.PACIENTE
+                .Take(_cantidadMostrar)
+                .ToListAsync();
+
+            _estado = "ok";
+        }
+        catch (Exception ex)
+        {
+            _estado = "error";
+            _error = ex.Message;
+        }
+    }
+}

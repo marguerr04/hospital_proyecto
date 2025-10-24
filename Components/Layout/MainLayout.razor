@@ -1,21 +1,16 @@
 ﻿@inherits LayoutComponentBase
+@namespace proyecto_hospital_version_1.Components.Layout
 
-<div class="page">
-    <NavMenu />
+<MudLayout>
+    <MudAppBar Color="Color.Primary" Elevation="1">
+        <MudText Typo="Typo.h6" Class="ml-2">Hospital Dashboard</MudText>
+    </MudAppBar>
 
-    <main>
-        <div class="top-row px-4">
-            <a href="https://learn.microsoft.com/aspnet/core/" target="_blank">About</a>
-        </div>
+    <MudDrawer Variant="DrawerVariant.Temporary" Open="true">
+        <NavMenu />
+    </MudDrawer>
 
-        <article class="content px-4">
-            @Body
-        </article>
-    </main>
-</div>
-
-<div id="blazor-error-ui">
-    An unhandled error has occurred.
-    <a href="" class="reload">Reload</a>
-    <a class="dismiss">🗙</a>
-</div>
+    <MudMainContent>
+        @Body
+    </MudMainContent>
+</MudLayout>
