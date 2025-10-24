@@ -178,13 +178,28 @@
                                     Se confirma que el consentimiento informado fue discutido y aceptado por el paciente.
                                 </label>
                         </div>
-                        <button class="btn btn-success">
+
+
+                     <!-- BOTÓN CORREGIDO - Con referencia al componente PDF -->
+                        <button class="btn btn-success" 
+                                @onclick="GenerarPDF"
+                                disabled="@(!PuedeGenerarPDF)"
+                                title="@(PuedeGenerarPDF ? "Generar PDF de consentimiento" : "Debe seleccionar paciente, procedimiento y aceptar el consentimiento")">
                             <i class="bi bi-file-earmark-pdf-fill me-2"></i> Generar PDF
                         </button>
-                    </div>
-                </div>
+                        </div>
 
-            </div>
+                        <!-- Componente PDF con referencia -->
+                        <ConsentimientoPDF @ref="_consentimientoPdfRef"
+                                           Paciente="_pacienteSeleccionado"
+                                           Procedimiento="_procedimientoSeleccionado"
+                                           Lateralidad="_lateralidadSeleccionada"
+                                           Extremidad="_extremidadSeleccionada" />
+
+                                            </div>
+                                        </div>
+
+           
                                         
             }
 
@@ -266,6 +281,34 @@
 
     private int _pasoActual = 1;
     private bool _consentimientoAceptado = false;
+
+
+
+
+
+    // variables para la generación del consentimiento informado pdf
+
+
+    private bool _mostrarPDF = false;
+    private ConsentimientoPDF? _consentimientoPdfRef; // <- NUEVA VARIABLE
+
+    private bool PuedeGenerarPDF =>
+        _pacienteSeleccionado != null &&
+        _consentimientoAceptado &&
+        !string.IsNullOrEmpty(_procedimientoSeleccionado);
+
+    public async Task GenerarPDF()
+    {
+        if (_consentimientoPdfRef != null && PuedeGenerarPDF)
+        {
+            await _consentimientoPdfRef.GenerarPdf(); // <- Método correcto: GenerarPdf (con P minúscula)
+        }
+        else
+        {
+            await JsRuntime.InvokeVoidAsync("alert", "No se puede generar el PDF. Verifique los datos.");
+        }
+    }
+
 
 
     protected override async Task OnInitializedAsync()

@@ -2,7 +2,7 @@
 <html lang="en">
 
 <head>
-    <meta charset="utf-f" />
+    <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>proyecto_hospital_version_1</title>
     <base href="/" />
@@ -17,6 +17,30 @@
 <body>
     <Routes @rendermode="InteractiveServer" />
     <script src="_framework/blazor.web.js"></script>
+
+    @*
+    Componente para generar el pdf
+    *@
+
+    <!--
+      Función JavaScript para recibir la llamada de C# y crear el enlace de descarga.
+      Se eliminó el duplicado.
+    -->
+    <script>
+        window.descargarArchivo = function (fileName, contentType, contentBase64) {
+            // Crear un enlace temporal 'a'
+            const link = document.createElement('a');
+            link.href = `data:${contentType};base64,${contentBase64}`;
+            link.download = fileName;
+
+            // Agregar el enlace al DOM, hacer clic y luego removerlo
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+    </script>
+
 </body>
 
 </html>
+

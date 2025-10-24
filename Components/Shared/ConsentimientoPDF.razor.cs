@@ -1,23 +1,23 @@
-﻿// Components/Shared/ConsentimientoPDF.razor.cs
-using Microsoft.AspNetCore.Components;
+﻿using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
 using QuestPDF.Fluent;
 using QuestPDF.Helpers;
 using QuestPDF.Infrastructure;
 using System.IO;
+using proyecto_hospital_version_1.Models; // ¡Importante! Necesitamos el modelo
+using System; // Para DateTime
 
 namespace proyecto_hospital_version_1.Components.Shared
 {
-    public partial class ConsentimientoPdf
+    // ¡¡LA CLAVE!! Debe ser 'public partial' y coincidir con el nombre del archivo
+    public partial class ConsentimientoPDF
     {
         [Inject]
         private IJSRuntime JSRuntime { get; set; } = default!;
 
+        // --- PARÁMETROS ACTUALIZADOS ---
         [Parameter]
-        public string NombrePaciente { get; set; } = "";
-
-        [Parameter]
-        public string RutPaciente { get; set; } = "";
+        public PacienteHospital? Paciente { get; set; }
 
         [Parameter]
         public string Procedimiento { get; set; } = "";
@@ -28,11 +28,15 @@ namespace proyecto_hospital_version_1.Components.Shared
         [Parameter]
         public string Extremidad { get; set; } = "";
 
-        [Parameter]
-        public string Procedencia { get; set; } = "";
-
-        private async Task GenerarPdf()
+        // El método que la vista SÍ puede encontrar ahora
+        public async Task GenerarPdf()
         {
+            if (Paciente == null)
+            {
+                await JSRuntime.InvokeVoidAsync("alert", "Error: No hay datos del paciente para generar el PDF.");
+                return;
+            }
+
             // Configurar QuestPDF
             QuestPDF.Settings.License = LicenseType.Community;
 
@@ -43,80 +47,122 @@ namespace proyecto_hospital_version_1.Components.Shared
                     page.Size(PageSizes.A4);
                     page.Margin(2, Unit.Centimetre);
                     page.PageColor(Colors.White);
-                    page.DefaultTextStyle(x => x.FontSize(11));
+                    page.DefaultTextStyle(x => x.FontSize(12)); // Tamaño de fuente base
 
                     page.Header()
                         .AlignCenter()
-                        .Text("CONSENTIMIENTO INFORMADO")
-                        .SemiBold().FontSize(16).FontColor(Colors.Blue.Darken3);
+                        .Text("Resumen de Solicitud y Consentimiento") // Título actualizado
+                        .SemiBold().FontSize(18).FontColor(Colors.Blue.Darken3);
 
                     page.Content()
                         .PaddingVertical(1, Unit.Centimetre)
                         .Column(column =>
                         {
-                            column.Spacing(10);
+                            column.Spacing(20); // Más espacio entre elementos
 
-                            // Información del paciente
-                            column.Item().Background(Colors.Grey.Lighten3).Padding(10).Column(infoColumn =>
+                            // --- SECCIÓN DE DATOS DEL PACIENTE ---
+                            column.Item().Background(Colors.Grey.Lighten4).Padding(12).Column(infoColumn =>
                             {
-                                infoColumn.Item().Text($"PACIENTE: {NombrePaciente}").SemiBold();
-                                infoColumn.Item().Text($"RUT: {RutPaciente}");
-                                infoColumn.Item().Text($"PROCEDENCIA: {Procedencia}");
+                                // --- CORRECCIÓN 1 ---
+                                // .PaddingBottom(5) movido ANTES de .Text()
+                                infoColumn.Item().PaddingBottom(5).Text("1. Datos del Paciente").FontSize(14).SemiBold();
+                                infoColumn.Item().Grid(grid =>
+                                {
+                                    grid.Columns(2); // Dos columnas
+                                    grid.Item().Text($"Nombre:").Bold();
+                                    grid.Item().Text($"{Paciente.NombreCompleto}");
+
+                                    grid.Item().Text($"RUT:").Bold();
+                                    grid.Item().Text($"{Paciente.rut}-{Paciente.dv}");
+
+                                    grid.Item().Text($"Edad:").Bold();
+                                    grid.Item().Text($"{Paciente.EdadCompleta}");
+
+                                    grid.Item().Text($"Sexo:").Bold();
+                                    grid.Item().Text($"{Paciente.sexo}");
+                                });
                             });
 
-                            // Detalles del procedimiento
-                            column.Item().Text($"PROCEDIMIENTO QUIRÚRGICO: {Procedimiento}").SemiBold();
-
-                            if (!string.IsNullOrEmpty(Lateralidad))
-                                column.Item().Text($"LATERALIDAD: {Lateralidad}");
-
-                            if (!string.IsNullOrEmpty(Extremidad))
-                                column.Item().Text($"EXTREMIDAD: {Extremidad}");
-
-                            // Contenido del consentimiento
-                            column.Item().Text("DECLARO QUE:").SemiBold().FontSize(12);
-                            column.Item().Text("1. He sido informado(a) sobre la naturaleza del procedimiento quirúrgico, sus beneficios, riesgos y alternativas.");
-                            column.Item().Text("2. Comprendo los posibles riesgos y complicaciones asociadas al procedimiento.");
-                            column.Item().Text("3. He tenido la oportunidad de hacer todas las preguntas necesarias.");
-                            column.Item().Text("4. Doy mi consentimiento voluntario para la realización del procedimiento.");
-
-                            // Espacio para firmas
-                            column.Item().PaddingTop(2, Unit.Centimetre).Column(firmaColumn =>
+                            // --- SECCIÓN DEL PROCEDIMIENTO ---
+                            column.Item().Column(procColumn =>
                             {
-                                firmaColumn.Item().Text("_________________________________________");
-                                firmaColumn.Item().Text("Firma del Paciente o Representante Legal");
+                                // --- CORRECCIÓN 2 ---
+                                // .PaddingBottom(5) movido ANTES de .Text()
+                                procColumn.Item().PaddingBottom(5).Text("2. Detalles del Procedimiento").FontSize(14).SemiBold();
+                                procColumn.Item().Text($"Procedimiento Principal:").Bold();
+                                procColumn.Item().Text($"{Procedimiento}");
 
-                                firmaColumn.Item().PaddingTop(1, Unit.Centimetre).Text("_________________________________________");
-                                firmaColumn.Item().Text("Firma del Médico Tratante");
+                                if (!string.IsNullOrEmpty(Lateralidad))
+                                    procColumn.Item().Text($"Lateralidad: {Lateralidad}");
 
-                                firmaColumn.Item().PaddingTop(1, Unit.Centimetre).Text($"Fecha: {DateTime.Now:dd/MM/yyyy HH:mm}");
+                                if (!string.IsNullOrEmpty(Extremidad))
+                                    procColumn.Item().Text($"Extremidad: {Extremidad}");
                             });
+
+                            // --- SECCIÓN DE CONSENTIMIENTO (CON EL TEXTO QUE PEDISTE) ---
+                            column.Item().Column(consentColumn =>
+                            {
+                                // --- CORRECCIÓN 3 ---
+                                // .PaddingBottom(5) movido ANTES de .Text()
+                                consentColumn.Item().PaddingBottom(5).Text("3. Consentimiento").FontSize(14).SemiBold();
+
+                                // Tu texto personalizado
+                                consentColumn.Item().Text(txt =>
+                                {
+                                    txt.Span("Yo, ");
+                                    txt.Span($"{Paciente.NombreCompleto}").Bold();
+                                    txt.Span(", RUT ");
+                                    txt.Span($"{Paciente.rut}-{Paciente.dv}").Bold();
+                                    txt.Span(", en pleno uso de mis facultades, declaro que he sido informado(a) y doy mi consentimiento para la realización del procedimiento: ");
+                                    txt.Span($"'{Procedimiento}'").Bold();
+                                    txt.Span(".");
+                                });
+
+                                consentColumn.Item().PaddingTop(10).Text("Comprendo los riesgos, beneficios y alternativas, y he tenido la oportunidad de aclarar todas mis dudas con el equipo médico.");
+                            });
+
+
+                            // --- Espacio para firmas ---
+                            column.Item().PaddingTop(3, Unit.Centimetre).Grid(grid =>
+                            {
+                                grid.Columns(2); // Dos columnas para las firmas
+                                grid.Item().AlignCenter().Column(col =>
+                                {
+                                    col.Item().Text("_________________________________________");
+                                    col.Item().Text("Firma del Paciente o Representante Legal");
+                                });
+                                grid.Item().AlignCenter().Column(col =>
+                                {
+                                    col.Item().Text("_________________________________________");
+                                    col.Item().Text("Firma del Médico Tratante");
+                                });
+                            });
+
+                            column.Item().PaddingTop(1, Unit.Centimetre).AlignCenter().Text($"Fecha de Emisión: {DateTime.Now:dd/MM/yyyy HH:mm}");
                         });
 
                     page.Footer()
                         .AlignCenter()
                         .Text(x =>
                         {
-                            x.Span("Hospital - ");
-                            x.Span(DateTime.Now.ToString("dd/MM/yyyy"));
+                            x.Span("Documento confidencial - Hospital Ejemplo - Página ");
+                            x.CurrentPageNumber();
                         });
                 });
             });
 
-            // Generar PDF como stream - FORMA CORREGIDA
+            // Generar PDF como stream
             using var stream = new MemoryStream();
             document.GeneratePdf(stream);
             var fileContent = stream.ToArray();
 
             // Descargar el PDF
-            await DescargarArchivo(fileContent, $"Consentimiento_{NombrePaciente}_{DateTime.Now:yyyyMMddHHmm}.pdf");
+            await DescargarArchivo(fileContent, $"Consentimiento_{Paciente.rut}_{DateTime.Now:yyyyMMdd}.pdf");
         }
 
         private async Task DescargarArchivo(byte[] fileContent, string fileName)
         {
             var contentType = "application/pdf";
-
-            // Usar IJSRuntime para descargar
             await JSRuntime.InvokeVoidAsync("descargarArchivo",
                 fileName,
                 contentType,
@@ -124,3 +170,4 @@ namespace proyecto_hospital_version_1.Components.Shared
         }
     }
 }
+
