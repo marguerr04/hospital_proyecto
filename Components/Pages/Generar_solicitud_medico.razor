@@ -23,10 +23,12 @@
             @if (_pasoActual == 1){
 
 
-            <!-- Navegación por pasos -->
-            <nav class="nav nav-pills nav-fill mb-4">
-                <a class="nav-link active" href="#">1) Contexto y Consentimiento</a>
-            </nav>
+                <!-- Navegación por pasos -->
+                <div class="alert alert-primary p-3 mb-4 d-flex align-items-center" style="--bs-alert-bg: #e0f2f7; --bs-alert-color: #0c5460; border-color: #bee5eb;">
+                    <i class="bi  me-3 h4 mb-0"></i>
+                    <h5 class="mb-0">1) Contexto y Consentimiento</h5>
+                </div>
+
             
             
             <!-- SECCIÓN DE BÚSQUEDA DE PACIENTES (Ahora dentro de su propia tarjeta) -->
@@ -178,7 +180,7 @@
                                        @bind="_consentimientoAceptado"
                                        id="consentimientoCheck">
                                 <label class="form-check-label" for="consentimientoCheck">
-                                    Se confirma que el consentimiento informado fue discutido y aceptado por el paciente.
+                                    Se confirma que el consentimiento será informado y acordado por el paciente.
                                 </label>
                         </div>
 

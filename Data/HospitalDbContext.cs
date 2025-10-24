@@ -8,7 +8,13 @@ namespace proyecto_hospital_version_1.Data.Hospital // Namespace de tu DbContext
         public HospitalDbContext(DbContextOptions<HospitalDbContext> options) : base(options) { }
 
         public DbSet<PacienteHospital> Pacientes { get; set; }
-        public DbSet<Ubicacion> Ubicaciones { get; set; } 
+        public DbSet<Ubicacion> Ubicaciones { get; set; }
+
+        public DbSet<Diagnostico> Diagnosticos { get; set; } = default!;
+        public DbSet<Procedimiento> Procedimientos { get; set; } = default!;
+        public DbSet<TipoProcedimiento> TiposProcedimiento { get; set; } = default!;
+        public DbSet<EspecialidadHospital> ESPECIALIDAD { get; set; } = default!;
+
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

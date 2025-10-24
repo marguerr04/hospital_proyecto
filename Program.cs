@@ -19,6 +19,9 @@ builder.Services.AddDbContext<HospitalDbContext>(options =>
 
 builder.Services.AddScoped<IPacienteService, PacienteService>();
 
+builder.Services.AddScoped<IEspecialidadHospital, EspecialidadHospitalService>();
+
+builder.Services.AddScoped<IDiagnosticoService, DiagnosticoService>();
 
 
 

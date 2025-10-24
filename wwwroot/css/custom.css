@@ -122,3 +122,16 @@ body {
     color: white;
     background-color: var(--color-primario);
 }
+
+
+/* Fix para los select dropdowns que se abren hacia arriba */
+.form-select:focus {
+    box-shadow: none; /* Opcional: Para evitar doble sombra si ya tienes una */
+}
+
+/* Fuerza a los select a intentar abrirse hacia abajo */
+select.form-select {
+
+     z-index: 1050; 
+    direction: ltr;
+}

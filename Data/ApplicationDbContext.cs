@@ -11,6 +11,7 @@ namespace proyecto_hospital_version_1.Data
 
         public DbSet<Paciente> Pacientes => Set<Paciente>();
         public DbSet<Solicitud> Solicitudes => Set<Solicitud>();
+
     }
 
 }

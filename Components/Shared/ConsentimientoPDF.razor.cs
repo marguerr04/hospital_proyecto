@@ -152,7 +152,7 @@ namespace proyecto_hospital_version_1.Components.Shared
                         .AlignCenter()
                         .Text(x =>
                         {
-                            x.Span("Documento confidencial - Hospital Padre Hurtado");
+                            x.Span("Documento confidencial - Hospital Padre Hurtado        ");
                             x.CurrentPageNumber();
                         });
                 });
