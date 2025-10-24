@@ -18,6 +18,7 @@ namespace proyecto_hospital_version_1.Services
             var cleanRut = rut.Trim();
             var cleanDv = dv.Trim().ToUpper();
             return await _context.Pacientes
+                                .Include(p => p.Ubicaciones)
                                  // .Include(p => p.DireccionPaciente) // Si usas DireccionPaciente, descomenta y asegura que también esté en Models
                                  // .ThenInclude(d => d.Comuna) // Si usas Comuna, descomenta y asegura que también esté en Models
                                  .FirstOrDefaultAsync(p => p.rut == cleanRut && p.dv.ToUpper() == cleanDv);

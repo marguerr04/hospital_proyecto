@@ -2,9 +2,17 @@
 @layout Components.Layout.MainLayoutMedico
 @using proyecto_hospital_version_1.Data.Hospital
 @inject HospitalDbContext HospitalDb
+@using proyecto_hospital_version_1.Components.Shared
 @using Microsoft.EntityFrameworkCore
 
+
+@inject IJSRuntime JsRuntime // Para posibles alertas o interacciones JS
+
 <PageTitle>Nueva Solicitud Quirúrgica</PageTitle>
+
+
+
+
 
 <div class="solicitud-container">
     <div class="row">
@@ -12,11 +20,15 @@
         <div class="col-lg-8">
             <h1 class="h3 mb-4">Nueva Solicitud Quirúrgica</h1>
 
+            @if (_pasoActual == 1){
+
+
             <!-- Navegación por pasos -->
             <nav class="nav nav-pills nav-fill mb-4">
                 <a class="nav-link active" href="#">1) Contexto y Consentimiento</a>
             </nav>
-
+            
+            
             <!-- SECCIÓN DE BÚSQUEDA DE PACIENTES (Ahora dentro de su propia tarjeta) -->
             <div class="card shadow-sm mb-4">
                 <div class="card-body">
@@ -56,56 +68,136 @@
                         <div class="alert alert-info mt-3">
                             <button class="btn btn-sm btn-outline-secondary ms-2" @onclick="LimpiarBusqueda">Limpiar</button>
                         </div>
+
+                        @if (_pacienteSeleccionado != null)
+                        {
+                            <div class="mt-3">
+                                <h3>Información del Paciente Seleccionado</h3>
+                                <InfoPacienteCard Paciente="_pacienteSeleccionado" />
+                            </div>
+                        }
                     }
+
                 </div>
             </div>
 
+
+
+            
             <!-- Tarjeta Principal de Contenido (Diagnóstico y Consentimiento) -->
             <div class="card shadow-sm">
                 <div class="card-body p-4">
-                    <!-- ===== INICIO DEL CAMBIO IMPORTANTE ===== -->
                     <div class="info-paciente mb-4">
                         <strong>Paciente:</strong> @_nombrePacienteParaMostrar - <strong>RUT:</strong> @_rutPacienteParaMostrar
                     </div>
-                    <!-- ===== FIN DEL CAMBIO IMPORTANTE ===== -->
 
                     <h5 class="mb-3 border-bottom pb-2">1. Procedencia y Diagnóstico</h5>
-
                     <div class="btn-group w-100 mb-3" role="group">
-                        <input type="radio" class="btn-check" name="procedencia" id="btn-ambulatorio" autocomplete="off" checked>
+                        <!-- Ambulatorio -->
+                        <input type="radio"
+                               class="btn-check"
+                               name="procedencia"
+                               id="btn-ambulatorio"
+                               autocomplete="off"
+                               value="Ambulatorio/CRS"
+                               checked="@(_procedenciaSeleccionada == "Ambulatorio")"
+                               @onchange="@(() => _procedenciaSeleccionada = "Ambulatorio")" />
                         <label class="btn btn-outline-primary" for="btn-ambulatorio">Ambulatorio/CRS</label>
 
-                        <input type="radio" class="btn-check" name="procedencia" id="btn-hospitalizado" autocomplete="off">
+                        <!-- Hospitalizado -->
+                        <input type="radio"
+                               class="btn-check"
+                               name="procedencia"
+                               id="btn-hospitalizado"
+                               autocomplete="off"
+                               value="Hospitalizado"
+                               checked="@(_procedenciaSeleccionada == "Hospitalizado")"
+                               @onchange="@(() => _procedenciaSeleccionada = "Hospitalizado")" />
                         <label class="btn btn-outline-primary" for="btn-hospitalizado">Hospitalizado</label>
 
-                        <input type="radio" class="btn-check" name="procedencia" id="btn-urgencia" autocomplete="off">
+                        <!-- Urgencia -->
+                        <input type="radio"
+                               class="btn-check"
+                               name="procedencia"
+                               id="btn-urgencia"
+                               autocomplete="off"
+                               value="Urgencia"
+                               checked="@(_procedenciaSeleccionada == "Urgencia")"
+                               @onchange="@(() => _procedenciaSeleccionada = "Urgencia")" />
                         <label class="btn btn-outline-primary" for="btn-urgencia">Urgencia</label>
                     </div>
 
-                    <div class="mb-4">
-                        <label for="diagnostico" class="form-label">Diagnóstico Principal (CIE-10)</label>
-                        <input type="text" class="form-control" id="diagnostico" placeholder="Ej: Colelitiasis">
+
+
+
+
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <label for="procedimiento" class="form-label">Procedimiento</label>
+                            <select class="form-select" id="procedimiento" @bind="_procedimientoSeleccionado">
+                                <option value="">Seleccione un procedimiento</option>
+                                <option value="Apendicectomía">Apendicectomía</option>
+                                <option value="Colecistectomía">Colecistectomía</option>
+                                <option value="Hernioplastia">Hernioplastia</option>
+                                <option value="Amigdalectomía">Amigdalectomía</option>
+                                <option value="Catarata">Catarata</option>
+                                <option value="Laparoscopia">Laparoscopia</option>
+                                <option value="Otro">Otro procedimiento</option>
+                            </select>
+
+
+
+                        </div>
+                        <div class="col-md-3">
+                            <label for="lateralidad" class="form-label">Lateralidad</label>
+                            <select class="form-select" id="lateralidad" @bind="_lateralidadSeleccionada">
+                                <option value="">-</option>
+                                <option value="Derecha">Derecha</option>
+                                <option value="Izquierda">Izquierda</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="extremidad" class="form-label">Extremidad</label>
+                            <select class="form-select" id="extremidad" @bind="_extremidadSeleccionada">
+                                <option value="">-</option>
+                                <option value="Superior">Superior</option>
+                                <option value="Inferior">Inferior</option>
+                            </select>
+                        </div>
                     </div>
 
                     <h5 class="mb-3 border-bottom pb-2">2. Consentimiento Informado</h5>
+                    @* Agregar un binding para que este asociado a la variable de consentimeitno informado*@
                     <div class="d-flex justify-content-between align-items-center">
                         <div class="form-check">
-                            <input class="form-check-input" type="checkbox" value="" id="consentimientoCheck" checked>
-                            <label class="form-check-label" for="consentimientoCheck">
-                                Se confirma que el consentimiento informado fue discutido y aceptado por el paciente.
-                            </label>
+                                <input class="form-check-input"
+                                       type="checkbox"
+                                       @bind="_consentimientoAceptado"
+                                       id="consentimientoCheck">
+                                <label class="form-check-label" for="consentimientoCheck">
+                                    Se confirma que el consentimiento informado fue discutido y aceptado por el paciente.
+                                </label>
                         </div>
                         <button class="btn btn-success">
                             <i class="bi bi-file-earmark-pdf-fill me-2"></i> Generar PDF
                         </button>
                     </div>
                 </div>
+
             </div>
+                                        
+            }
+
+            @if (_pasoActual == 2)
+                {
+                <Paso2RequerimientosCard Paciente="_pacienteSeleccionado" />
+                }
+
 
             <!-- Botones de Navegación -->
             <div class="d-flex justify-content-end mt-4">
-                <button class="btn btn-secondary me-2" disabled>← Anterior</button>
-                <button class="btn btn-primary">Siguiente →</button>
+                <button class="btn btn-secondary me-2" @onclick="GoPreviousStep" disabled="@(_pasoActual == 1)">← Anterior</button>
+                <button class="btn btn-primary" @onclick="GoNextStep" disabled="@(_pasoActual == 2)">Siguiente →</button>
             </div>
         </div>
 
@@ -114,13 +206,16 @@
             <div class="card alert-widget-sticky">
                 <div class="card-body">
                     <h5 class="card-title mb-3"><i class="bi bi-exclamation-triangle-fill me-2"></i> Alertas Clínicas Clave</h5>
-                    <p class="alert-item ges">⚠️ Paciente GES</p>
                     <p class="alert-item alergia">❗ Alergia a Penicilina</p>
+                    
                 </div>
             </div>
         </div>
     </div>
+
 </div>
+
+
 
 <style>
     .alert-widget-sticky {
@@ -139,8 +234,20 @@
 
 @code {
     // Variables existentes
+    private PacienteHospital? _pacienteSeleccionado = null;
+    private string _procedenciaSeleccionada = "Ambulatorio"; 
     private int? NumeroBusqueda { get; set; }
     private string TextoBusqueda { get; set; } = string.Empty;
+
+
+
+
+
+    private string _procedimientoSeleccionado = "";
+    private string _lateralidadSeleccionada = "";
+    private string _extremidadSeleccionada = "";
+
+
 
     // Variables para búsqueda de pacientes
     private List<PacienteHospital> _pacientes = new();
@@ -154,7 +261,11 @@
 
     private string _nombrePacienteParaMostrar = "";
     private string _rutPacienteParaMostrar = "";
+    
+    // variables para cambiar de rutas
 
+    private int _pasoActual = 1;
+    private bool _consentimientoAceptado = false;
 
 
     protected override async Task OnInitializedAsync()
@@ -173,8 +284,9 @@
 
         try
         {
-            var query = HospitalDb.Pacientes.AsQueryable();
-
+            var query = HospitalDb.Pacientes
+            .Include(p => p.Ubicaciones)  // ¡ESTO ES CLAVE!
+        .    AsQueryable();
             if (!string.IsNullOrWhiteSpace(_busquedaTexto))
             {
                 var busqueda = _busquedaTexto.ToLower();
@@ -198,6 +310,7 @@
 
             if (pacienteEncontrado != null)
             {
+                _pacienteSeleccionado = pacienteEncontrado;
 
                 _nombrePacienteParaMostrar = $"{pacienteEncontrado.primerNombre} {pacienteEncontrado.apellidoPaterno}";
                 _rutPacienteParaMostrar = $"{pacienteEncontrado.rut}-{pacienteEncontrado.dv}";
@@ -205,6 +318,7 @@
             else
             {
                 // Si no se encuentra, mostramos un mensaje indicándolo.
+                _pacienteSeleccionado = null;
                 _nombrePacienteParaMostrar = "Paciente no encontrado";
                 _rutPacienteParaMostrar = "";
             }
@@ -233,7 +347,7 @@
         _busquedaDv = "";
         _pacientes.Clear();
         _estado = "inicial";
-
+        _pacienteSeleccionado = null;
 
         _nombrePacienteParaMostrar = "";
         _rutPacienteParaMostrar = "";
@@ -252,4 +366,48 @@
         Console.WriteLine($"Número ingresado: {NumeroBusqueda}");
         Console.WriteLine($"Texto ingresado: {TextoBusqueda}");
     }
+
+
+    private void GoNextStep()
+    {
+        if (_pasoActual == 1)
+        {
+            if (_pacienteSeleccionado == null)
+            {
+                JsRuntime.InvokeVoidAsync("alert", "Debe seleccionar un paciente para continuar.");
+                return;
+            }
+            if (string.IsNullOrEmpty(_procedimientoSeleccionado))
+            {
+                JsRuntime.InvokeVoidAsync("alert", "Debe seleccionar un Procedimiento Principal.");
+                return;
+            }
+            if (!_consentimientoAceptado)
+            {
+                JsRuntime.InvokeVoidAsync("alert", "Debe aceptar el consentimiento informado para continuar.");
+                return;
+            }
+        }
+
+        if (_pasoActual < 2) // Asumiendo 2 pasos por ahora
+        {
+            _pasoActual++;
+            StateHasChanged();
+        }
+    }
+
+
+
+
+
+
+    private void GoPreviousStep()
+    {
+        if (_pasoActual > 1)
+        {
+            _pasoActual--;
+            StateHasChanged();
+        }
+    }
+
 }

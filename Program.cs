@@ -22,7 +22,10 @@ builder.Services.AddScoped<IPacienteService, PacienteService>();
 
 
 
+
 var app = builder.Build();
+
+
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())

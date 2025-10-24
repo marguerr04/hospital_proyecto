@@ -1,0 +1,283 @@
+﻿<div class="card shadow-sm mb-4">
+
+    <div class="card-body p-4">
+
+        <h5 class="card-title mb-3 border-bottom pb-2">3. Requerimientos y generación de solicitud</h5>
+
+
+
+        @if (Paciente != null)
+
+        {
+
+            <div class="info-paciente mb-4">
+
+                <strong>Paciente:</strong> @Paciente.NombreCompleto - <strong>RUT:</strong> @(Paciente.rut)-@(Paciente.dv)
+
+            </div>
+
+
+
+            <div class="row mb-4 align-items-end">
+
+                <div class="col-md-3">
+
+                    <label for="peso" class="form-label">Peso (Kg)</label>
+
+                    <input type="number" class="form-control" id="peso" @bind-value="_peso" @bind-value:event="oninput" placeholder="0" min="0" step="0.1">
+
+                </div>
+
+                <div class="col-md-3">
+
+                    <label for="talla" class="form-label">Talla (M)</label>
+
+                    <input type="number" class="form-control" id="talla" @bind-value="_talla" @bind-value:event="oninput" placeholder="0" min="0" step="0.01">
+
+                </div>
+
+                <div class="col-md-6">
+
+                    <label class="form-label d-block">IMC</label>
+
+                    <p class="form-control-plaintext h5"><strong>@_imc.ToString("F2")</strong></p>
+
+                </div>
+
+            </div>
+
+
+
+            <div class="row mb-4">
+
+                <div class="col-md-6">
+
+                    <div class="mb-3">
+
+                        <h6 class="border-bottom pb-2"><i class="bi bi-file-text me-2"></i> Diagnóstico y Procedimientos</h6>
+
+                        <label for="diagnosticoPrincipal" class="form-label">Diagnóstico principal</label>
+
+                        <input type="text" class="form-control" id="diagnosticoPrincipal" @bind="_diagnosticoPrincipal" placeholder="Diagnóstico principal">
+
+                        <div class="form-check mt-2">
+
+                            <input class="form-check-input" type="checkbox" id="esGesCheck" @bind="_esGes">
+
+                            <label class="form-check-label" for="esGesCheck">
+
+                                EsGes
+
+                            </label>
+
+                        </div>
+
+                        @if (_esGes)
+
+                        {
+
+                            <div class="alert alert-info mt-2 p-2 small">
+
+                                Aquí se mostrarían las enfermedades consideradas GES (próxima iteración).
+
+                            </div>
+
+                        }
+
+                    </div>
+
+                </div>
+
+                <div class="col-md-6">
+
+                    <div class="mb-3">
+
+                        <h6 class="border-bottom pb-2"><i class="bi bi-people me-2"></i> Especialidades Involucradas</h6>
+
+                        <label for="especialidadOrigen" class="form-label">Especialidad Origen</label>
+
+                        <select class="form-select mb-3" id="especialidadOrigen" @bind="_especialidadOrigen">
+
+                            <option value="">Seleccionar especialidad que deriva...</option>
+
+                            @foreach (var especialidad in _especialidadesDisponibles)
+
+                            {
+
+                                <option value="@especialidad">@especialidad</option>
+
+                            }
+
+                        </select>
+
+                        <label for="especialidadDestino" class="form-label">Especialidad Destino</label>
+
+                        <select class="form-select" id="especialidadDestino" @bind="_especialidadDestino">
+
+                            <option value="">Seleccionar especialidad que recibe...</option>
+
+                            @foreach (var especialidad in _especialidadesDisponibles)
+
+                            {
+
+                                <option value="@especialidad">@especialidad</option>
+
+                            }
+
+                        </select>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+
+            <div class="mb-4">
+
+                <h6 class="border-bottom pb-2"><i class="bi bi-list-check me-2"></i> Procedimientos a Realizar</h6>
+
+                @if (!_procedimientosAnadidos.Any())
+
+                {
+
+                    <div class="alert alert-info text-center">
+
+                        No hay procedimientos añadidos.
+
+                    </div>
+
+                }
+
+                else
+
+                {
+
+                    <ul class="list-group">
+
+                        @foreach (var proc in _procedimientosAnadidos)
+
+                        {
+
+                            <li class="list-group-item">@proc</li>
+
+                        }
+
+                    </ul>
+
+                }
+
+                <button class="btn btn-outline-primary mt-3 w-100" @onclick="AgregarProcedimientoDummy">
+
+                    <i class="bi bi-plus-circle me-2"></i> Agregar Procedimiento
+
+                </button>
+
+            </div>
+
+
+
+        }
+
+        else
+
+        {
+
+            <div class="alert alert-warning">
+
+                No hay paciente seleccionado para este paso. Por favor, regrese al paso anterior.
+
+            </div>
+
+        }
+
+    </div>
+
+</div>
+
+
+
+@code {
+
+    [Parameter]
+
+    public PacienteHospital? Paciente { get; set; }
+
+
+
+    // Propiedades para los campos de entrada
+
+    private decimal _peso = 0; // Kg
+
+    private decimal _talla = 0; // Metros
+
+    private decimal _imc => (_talla > 0) ? _peso / (_talla * _talla) : 0; // Calculado y a 2 decimales
+
+
+
+    private string _diagnosticoPrincipal = string.Empty;
+
+    private bool _esGes = false; // Estado del checkbox EsGes
+
+
+
+    private string _especialidadOrigen = string.Empty;
+
+    private string _especialidadDestino = string.Empty;
+
+
+
+    // Lista de especialidades fijas (como lo solicitaste)
+
+    private List<string> _especialidadesDisponibles = new List<string>
+
+    {
+
+        "Ortopedia", "Otorrinolaringología", "Urología", "Cirugía Cardiovascular",
+
+        "Cirugía Plástica y Reconstructiva", "Anestesiología", "Medicina General", "Pediatría" // Añadí algunos más para ejemplo
+
+    };
+
+
+
+    // Para simular procedimientos añadidos (no persistentes)
+
+    private List<string> _procedimientosAnadidos = new List<string>();
+
+
+
+    protected override void OnParametersSet()
+
+    {
+
+        // Puedes inicializar valores aquí si el paciente cambia
+
+        if (Paciente != null)
+
+        {
+
+            // Por ejemplo, si el paciente es PRAIS, marcamos EsGes por defecto si queremos
+
+            // _esGes = Paciente.PRAIS.GetValueOrDefault();
+
+        }
+
+    }
+
+
+
+    private void AgregarProcedimientoDummy()
+
+    {
+
+        // Solo para simular. En una implementación real, esto abriría un modal, etc.
+
+        // await JsRuntime.InvokeVoidAsync("alert", "Se abriría un formulario para agregar procedimiento.");
+
+        _procedimientosAnadidos.Add($"Procedimiento {(_procedimientosAnadidos.Count + 1)} (dummy)");
+
+    }
+
+}

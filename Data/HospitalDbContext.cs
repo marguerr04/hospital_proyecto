@@ -8,11 +8,19 @@ namespace proyecto_hospital_version_1.Data.Hospital // Namespace de tu DbContext
         public HospitalDbContext(DbContextOptions<HospitalDbContext> options) : base(options) { }
 
         public DbSet<PacienteHospital> Pacientes { get; set; }
+        public DbSet<Ubicacion> Ubicaciones { get; set; } 
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
             modelBuilder.Entity<PacienteHospital>().ToTable("PACIENTE");
+
+            modelBuilder.Entity<PacienteHospital>()
+                .HasMany(p => p.Ubicaciones)         // Un PacienteHospital tiene muchas Ubicaciones
+                .WithOne(u => u.Paciente)            // Una Ubicacion pertenece a un PacienteHospital
+                .HasForeignKey(u => u.PACIENTE_id);  // La clave foránea en Ubicacion es PACIENTE_id
+
+            modelBuilder.Entity<Ubicacion>().ToTable("UBICACION"); // Asegura mapeo de Ubicacion
         }
     }
 }
