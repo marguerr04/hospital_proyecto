@@ -1,62 +1,86 @@
 ﻿@page "/dashboard_verdadero"
-@inject proyecto_hospital_version_1.Data.DashboardService dashboard
 @using MudBlazor
 @using proyecto_hospital_version_1.Data
+@inject DashboardService dashboard
 
-<PageTitle>Panel de Control - Gestión Clínica</PageTitle>
+<PageTitle>Panel de Control - Administración Hospitalaria</PageTitle>
 
-<MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="mt-6">
-    <MudText Typo="Typo.h4" Align="Align.Center" GutterBottom="true">
-        🏥 Seguimiento Percentil 75 LE IQ NO GES
+<MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="mt-6 mb-8">
+
+    <MudText Typo="Typo.h4" Align="Align.Center" GutterBottom="true" Class="mb-1 text-primary">
+        🏥 Panel de Gestión Clínica
     </MudText>
-    <MudText Typo="Typo.subtitle1" Align="Align.Center" Class="mb-4 text-secondary">
-        Unidad de Control de Gestión · @DateTime.Now.ToString("dd.MM.yyyy")
+    <MudText Typo="Typo.subtitle1" Align="Align.Center" Class="mb-6 text-secondary">
+        Unidad de Control de Gestión · @DateTime.Now.ToString("dd/MM/yyyy")
     </MudText>
 
-    <!-- Tarjetas de Resumen -->
-    <MudGrid>
-        <MudItem xs="12" sm="4">
-            <MudPaper Class="pa-4 text-center" Elevation="3">
-                <MudText Typo="Typo.h6" Class="text-primary">Percentil 75</MudText>
-                <MudText Typo="Typo.h3">@Percentil75</MudText>
+    <!-- Tarjetas superiores -->
+    <MudGrid Justify="Justify.Center" Spacing="3">
+        <MudItem xs="12" sm="6" md="4">
+            <MudPaper Elevation="3" Class="pa-4 text-center dashboard-card">
+                <MudIcon Icon="@Icons.Material.Filled.Timeline" Size="Size.Large" Color="Color.Primary" />
+                <MudText Typo="Typo.h6" Class="mt-2 text-primary">Percentil 75</MudText>
+                <MudText Typo="Typo.h4" Class="fw-bold mt-1">@Percentil75</MudText>
+                <MudText Typo="Typo.body2" Class="text-secondary mt-1">Casos analizados</MudText>
             </MudPaper>
         </MudItem>
 
-        <MudItem xs="12" sm="4">
-            <MudPaper Class="pa-4 text-center" Elevation="3">
-                <MudText Typo="Typo.h6" Class="text-error">Reducción</MudText>
-                <MudProgressCircular Value="46.2" Size="Size.Large" Color="Color.Error" />
-                <MudText Typo="Typo.h5">@Reduccion</MudText>
+        <MudItem xs="12" sm="6" md="4">
+            <MudPaper Elevation="3" Class="pa-4 text-center dashboard-card">
+                <MudIcon Icon="@Icons.Material.Filled.TrendingDown" Size="Size.Large" Color="Color.Error" />
+                <MudText Typo="Typo.h6" Class="mt-2 text-error">Reducción</MudText>
+                <MudText Typo="Typo.h4" Class="fw-bold mt-1">@Reduccion%</MudText>
+                <MudText Typo="Typo.body2" Class="text-secondary mt-1">Comparado al mes anterior</MudText>
             </MudPaper>
         </MudItem>
 
-        <MudItem xs="12" sm="4">
-            <MudPaper Class="pa-4 text-center" Elevation="3">
-                <MudText Typo="Typo.h6" Class="text-info">Pendientes</MudText>
+        <MudItem xs="12" sm="6" md="4">
+            <MudPaper Elevation="3" Class="pa-4 text-center dashboard-card">
                 <MudIcon Icon="@Icons.Material.Filled.PendingActions" Size="Size.Large" Color="Color.Info" />
-                <MudText Typo="Typo.h4">@Pendientes</MudText>
+                <MudText Typo="Typo.h6" Class="mt-2 text-info">Pendientes</MudText>
+                <MudText Typo="Typo.h4" Class="fw-bold mt-1">@Pendientes</MudText>
+                <MudText Typo="Typo.body2" Class="text-secondary mt-1">Casos por revisar</MudText>
             </MudPaper>
         </MudItem>
     </MudGrid>
 
     <MudDivider Class="my-6" />
 
-    <!-- Ejemplo de gráfico -->
-    <MudGrid>
-        <MudItem xs="12" md="6">
-            <MudPaper Class="pa-4">
-                <MudText Typo="Typo.h6">Estado del caso</MudText>
-                <MudChart ChartType="ChartType.Bar" Labels="@EstadoLabels" Datasets="@EstadoDatos" />
-            </MudPaper>
-        </MudItem>
+    <!-- Loader mientras se cargan los datos -->
+    @if (!_isLoaded)
+    {
+        <MudProgressCircular Indeterminate="true" Color="Color.Primary" Class="mx-auto mt-6" />
+    }
+    else
+    {
+        <!-- Gráficos -->
+        <MudGrid Justify="Justify.Center" Spacing="3">
+            <!-- Distribución por Estado -->
+            <MudItem xs="12" md="6">
+                <MudPaper Elevation="2" Class="pa-4 dashboard-chart">
+                    <MudText Typo="Typo.h6" Class="mb-3 text-primary">Distribución por Estado</MudText>
+                    <MudChart ChartType="ChartType.Bar"
+                              Labels="@EstadoLabels"
+                              Series="@EstadoSeries"
+                              Colors="@EstadoColors"
+                              Class="w-100" />
+                </MudPaper>
+            </MudItem>
 
-        <MudItem xs="12" md="6">
-            <MudPaper Class="pa-4">
-                <MudText Typo="Typo.h6">Contactabilidad</MudText>
-                <MudChart ChartType="ChartType.Donut" Labels="@ContactoLabels" Datasets="@ContactoDatos" />
-            </MudPaper>
-        </MudItem>
-    </MudGrid>
+            <!-- Contactabilidad -->
+            <MudItem xs="12" md="6">
+                <MudPaper Elevation="2" Class="pa-4 dashboard-chart">
+                    <MudText Typo="Typo.h6" Class="mb-3 text-primary">Contactabilidad</MudText>
+                    <MudChart ChartType="ChartType.Donut"
+                              Labels="@ContactoLabels"
+                              Series="@ContactoSeries"
+                              Colors="@ContactoColors"
+                              Class="w-100" />
+                </MudPaper>
+            </MudItem>
+        </MudGrid>
+    }
+
 </MudContainer>
 
 @code {
@@ -64,17 +88,15 @@
     private int Reduccion;
     private int Pendientes;
 
-    private string[] EstadoLabels = { "Programado", "En espera", "Finalizado" };
-    private List<ChartSeries> EstadoDatos = new()
-    {
-        new ChartSeries() { Name = "Casos", Data = new double[] { 12, 8, 20 } }
-    };
+    private string[] EstadoLabels = Array.Empty<string>();
+    private ChartSeries[] EstadoSeries = Array.Empty<ChartSeries>();
+    private string[] EstadoColors = Array.Empty<string>();
 
-    private string[] ContactoLabels = { "Contactado", "En proceso", "No contactado" };
-    private List<ChartSeries> ContactoDatos = new()
-    {
-        new ChartSeries() { Name = "Porcentaje", Data = new double[] { 66.4, 20.0, 13.6 } }
-    };
+    private string[] ContactoLabels = Array.Empty<string>();
+    private ChartSeries[] ContactoSeries = Array.Empty<ChartSeries>();
+    private string[] ContactoColors = Array.Empty<string>();
+
+    private bool _isLoaded = false;
 
     protected override async Task OnInitializedAsync()
     {
@@ -82,13 +104,33 @@
         Reduccion = await dashboard.ObtenerReduccionAsync();
         Pendientes = await dashboard.ObtenerPendientesAsync();
 
-        // Refresca cada 10 segundos
-        var timer = new System.Threading.Timer(async _ =>
+        // Distribución por estado
+        var estadoDic = await dashboard.ObtenerProcedimientosPorTipoAsync();
+        EstadoLabels = estadoDic.Keys.ToArray();
+        EstadoSeries = new ChartSeries[]
         {
-            Percentil75 = await dashboard.ObtenerPercentil75Async();
-            Reduccion = await dashboard.ObtenerReduccionAsync();
-            Pendientes = await dashboard.ObtenerPendientesAsync();
-            await InvokeAsync(StateHasChanged);
-        }, null, 0, 10000);
+            new ChartSeries
+            {
+                Name = "Casos",
+                Data = estadoDic.Values.Select(v => (double)v).ToArray()
+            }
+        };
+        EstadoColors = new string[] { "#1976d2", "#43a047", "#fbc02d" }; // colores distintos por barra
+
+        // Contactabilidad
+        var contactoDic = await dashboard.ObtenerPorcentajeContactoAsync();
+        ContactoLabels = contactoDic.Keys.ToArray();
+        ContactoSeries = new ChartSeries[]
+        {
+            new ChartSeries
+            {
+                Name = "Porcentaje",
+                Data = contactoDic.Values.ToArray()
+            }
+        };
+        ContactoColors = new string[] { "#1976d2", "#fbc02d", "#e53935" }; // colores distintos por porción
+
+        _isLoaded = true;
+        StateHasChanged();
     }
 }

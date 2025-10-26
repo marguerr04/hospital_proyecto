@@ -82,6 +82,14 @@ namespace proyecto_hospital_version_1.Data
                 .HasOne(es => es.CatalogoEstado)
                 .WithMany()
                 .HasForeignKey(es => es.CatalogoEstadosId);
+
+            modelBuilder.Entity<DetallePaciente>(entity =>
+            {
+                entity.Property(e => e.Altura).HasPrecision(5, 2);
+                entity.Property(e => e.Peso).HasPrecision(5, 2);
+                    entity.Property(e => e.IMC).HasPrecision(5, 2);
+            });
+
         }
     }
 

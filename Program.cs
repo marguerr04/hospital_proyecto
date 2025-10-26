@@ -1,53 +1,43 @@
+using proyecto_hospital_version_1.Data;
 using proyecto_hospital_version_1.Components;
 using Microsoft.EntityFrameworkCore;
-using proyecto_hospital_version_1.Data;
-<<<<<<< Updated upstream
-=======
 using MudBlazor.Services;
->>>>>>> Stashed changes
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-builder.Services.AddRazorComponents()
-    .AddInteractiveServerComponents();
-
-<<<<<<< Updated upstream
-builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("Default")));
-=======
-// Base de datos paralela
+// Servicios de base de datos
 builder.Services.AddDbContext<HospitalDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("HospitalV4")));
 
+// Servicios de MudBlazor
 builder.Services.AddMudServices();
 builder.Services.AddScoped<DashboardService>();
+
+// Razor Pages y Blazor Server
 builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();
->>>>>>> Stashed changes
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
+// Pipeline HTTP
 if (!app.Environment.IsDevelopment())
 {
-    app.UseExceptionHandler("/Error", createScopeForErrors: true);
-    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
+    app.UseExceptionHandler("/Error");
     app.UseHsts();
 }
 
 app.UseHttpsRedirection();
-
 app.UseStaticFiles();
-app.UseAntiforgery();
+app.UseRouting(); // <- MUY IMPORTANTE
+
 app.MapBlazorHub();
-app.MapFallbackToPage("/_Host");
+app.MapFallbackToPage("/_Host"); // <- Punto de entrada Blazor Server
 
-
+// Inicialización de la BD
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<HospitalDbContext>();
-    db.Database.EnsureCreated(); // asegura que la BD existe
+    db.Database.EnsureCreated();
 
     if (!db.PACIENTE.Any())
     {
@@ -69,8 +59,4 @@ using (var scope = app.Services.CreateScope())
     }
 }
 
-
 app.Run();
-
-
-

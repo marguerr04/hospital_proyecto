@@ -49,3 +49,77 @@ h1:focus {
 .darker-border-checkbox.form-check-input {
     border-color: #929292;
 }
+
+.mud-layout {
+    height: 100vh;
+    overflow: hidden;
+}
+
+.mud-main-content {
+    background-color: #f8f9fa;
+    min-height: 100vh;
+}
+
+.drawer-admin {
+    background-color: #2d3e50;
+    color: white;
+}
+
+.drawer-admin .nav-link {
+    color: white !important;
+    font-weight: 500;
+}
+
+.drawer-admin .nav-link.active {
+    background-color: rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+}
+
+.drawer-admin .logout-section {
+    position: absolute;
+    bottom: 20px;
+    width: 100%;
+}
+
+.mud-main-content {
+    background-color: #f8f9fa;
+    min-height: 100vh;
+}
+/* === DASHBOARD === */
+.dashboard-card {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.dashboard-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+}
+.dashboard-chart {
+    height: 400px;
+}
+
+/* === LOGIN === */
+body, html {
+    height: 100%;
+}
+
+.login-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+}
+
+.login-card {
+    background-color: white;
+    border-radius: 12px;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.3);
+    padding: 2rem;
+    width: 380px;
+}
+
+.login-card img {
+    display: block;
+    margin: 0 auto 1.5rem auto;
+    max-width: 150px;
+}
