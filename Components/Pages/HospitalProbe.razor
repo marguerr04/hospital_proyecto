@@ -10,7 +10,6 @@
     <h3>1. Buscador de Pacientes</h3>
     <p>Utiliza el componente <code>BuscadorPaciente</code> para encontrar un paciente por RUT.</p>
     <div class="mb-4">
-        {{-- ¡CORRECCIÓN AQUÍ! Cambiar a OnPacienteEncontrado --}}
         <BuscadorPaciente OnPacienteEncontrado="HandlePacienteSeleccionado" />
     </div>
 
@@ -21,7 +20,10 @@
             <InfoPacienteCard Paciente="_pacienteSeleccionado" />
         </div>
 
-        
+        <h3>3. Alertas Clínicas del Paciente</h3>
+        <div class="mb-4">
+            <AlertasClinicasCard Paciente="_pacienteSeleccionado" />
+        </div>
     }
     else
     {
@@ -29,14 +31,80 @@
             No se ha seleccionado ningún paciente. Use el buscador para iniciar la prueba.
         </div>
     }
+
+    <hr class="my-4">
+
+    <h3>4. Prueba de Componentes Refactorizados</h3>
+    <p>Prueba de los componentes de formulario de forma aislada.</p>
+
+    <div class="row">
+        @* Columna para los componentes de prueba *@
+        <div class="col-md-7">
+        
+            @* Prueba para SelectorEquipos *@
+            <div class="card shadow-sm mb-3">
+                <div class="card-header">
+                    <h5>Selector de Equipos</h5>
+                </div>
+                <div class="card-body">
+                    <SelectorEquipos @bind-EquiposSeleccionados="_equiposTest" 
+                                     OpcionesEquipos="_opcionesEquiposTest" />
+                    <div class="mt-2">
+                        <small class="text-muted">Equipos seleccionados: @string.Join(", ", _equiposTest)</small>
+                    </div>
+                </div>
+            </div>
+
+
+
+
+        </div>
+
+        @* Columna para mostrar datos *@
+        <div class="col-md-5">
+            <div class="card shadow-sm">
+                <div class="card-header">
+                    <h5>Datos de Prueba</h5>
+                </div>
+                <div class="card-body">
+                    <h6>Equipos:</h6>
+                    <pre>@System.Text.Json.JsonSerializer.Serialize(_equiposTest, new System.Text.Json.JsonSerializerOptions { WriteIndented = true })</pre>
+                    
+                    <h6>Comorbilidades:</h6>
+                    <pre>@System.Text.Json.JsonSerializer.Serialize(_comorbilidadesTest, new System.Text.Json.JsonSerializerOptions { WriteIndented = true })</pre>
+                    
+                    <h6>Tipo de Mesa:</h6>
+                    <pre>@_mesaTest</pre>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 
 @code {
     private PacienteHospital? _pacienteSeleccionado;
 
-    // Este método se ejecutará cuando el componente BuscadorPaciente emita su evento OnPacienteEncontrado
     private void HandlePacienteSeleccionado(PacienteHospital? paciente)
     {
         _pacienteSeleccionado = paciente;
     }
+
+    // 1. Datos para SelectorEquipos
+    private List<string> _equiposTest = new List<string>();
+    private List<string> _opcionesEquiposTest = new List<string>
+    {
+        "Arco C", "Torre Lap", "Sutura mecánica", "Microscopio", "Láser",
+        "Bombas de infusión", "Monitor de signos vitales"
+    };
+
+    // 2. Datos para SelectorComorbilidades
+    private List<string> _comorbilidadesTest = new List<string>();
+    private List<string> _opcionesComorbilidadesTest = new List<string>
+    {
+        "Diabetes Mellitus", "Hipertensión Arterial", "Asma", "Insuficiencia Renal Crónica",
+        "Cardiopatía Isquémica", "EPOC", "Obesidad Mórbida"
+    };
+
+    // 3. Datos para SelectorTipoMesa
+    private string _mesaTest = string.Empty;
 }

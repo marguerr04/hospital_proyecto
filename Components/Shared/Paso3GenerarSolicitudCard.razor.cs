@@ -40,15 +40,16 @@ namespace proyecto_hospital_version_1.Components.Shared
         public string ComentariosAdicionales { get; set; } = string.Empty;
 
         // Variables para controlar los modales
-        public bool MostrarModalEquipos { get; set; } = false;
+
+        // codigo a mover EQUIPOS public bool MostrarModalEquipos { get; set; } = false;
         public bool MostrarModalComorbilidades { get; set; } = false;
 
         // Lista de opciones disponibles para equipos
+        // codigo a mover EQUIPOS  public List<string> OpcionesEquipos { get; set; } = new List<string> 
         public List<string> OpcionesEquipos { get; set; } = new List<string>
-        {
-            "Arco C", "Torre Lap", "Sutura mecánica", "Microscopio", "Láser", "Bisturí armónico",
-            "Bombas de infusión", "Monitor de signos vitales" // Añadir más para tener opciones en el modal
-        };
+    {
+        "Arco C", "Torre Lap", "Sutura mecánica", "Microscopio", "Láser", "Bisturí armónico"
+    };
 
         // Lista de opciones disponibles para comorbilidades
         public List<string> OpcionesComorbilidades { get; set; } = new List<string>
@@ -87,53 +88,14 @@ namespace proyecto_hospital_version_1.Components.Shared
         }
 
         // --- Métodos para Modales de Equipos ---
-        public void AbrirModalEquipos()
-        {
-            MostrarModalEquipos = true;
-            StateHasChanged();
-        }
-
-        public void CerrarModalEquipos()
-        {
-            MostrarModalEquipos = false;
-            CheckCompletion();
-            StateHasChanged();
-        }
-
-        public void ToggleEquipoDesdeModal(string equipo, bool isChecked)
-        {
-            if (isChecked && !EquiposSeleccionados.Contains(equipo))
-            {
-                EquiposSeleccionados.Add(equipo);
-            }
-            else if (!isChecked && EquiposSeleccionados.Contains(equipo))
-            {
-                EquiposSeleccionados.Remove(equipo);
-            }
-            StateHasChanged(); // Forzar la actualización del UI en el modal
-        }
-
+        // codigo a mover EQUIPOS AbrirModalEquipos
+        // codigo a mover EQUIPOS CerrarModalEquipos
+        // codigo a mover EQUIPOS ToggleEquipoDesdeModal
         // Método para los botones (Arco C, Torre Lap, Sutura mecánica)
-        public void ToggleEquipoDirecto(string equipo)
-        {
-            if (EquiposSeleccionados.Contains(equipo))
-            {
-                EquiposSeleccionados.Remove(equipo);
-            }
-            else
-            {
-                EquiposSeleccionados.Add(equipo);
-            }
-            CheckCompletion(); // Validar después de cambiar
-            StateHasChanged();
-        }
+        // codigo a mover EQUIPOS ToggleEquipoDirecto
+        // codigo a mover EQUIPOS RemoverEquipo
 
-        public void RemoverEquipo(string equipo)
-        {
-            EquiposSeleccionados.Remove(equipo);
-            CheckCompletion();
-            StateHasChanged();
-        }
+
 
         // --- Métodos para Modales de Comorbilidades ---
         public void AbrirModalComorbilidades()
