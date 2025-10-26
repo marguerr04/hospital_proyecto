@@ -3,14 +3,14 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace proyecto_hospital_version_1.Models
 {
-    [Table("DIAGNOSTICO")] // Esto mapea a tu tabla exacta
+    [Table("DIAGNOSTICO")] 
     public class Diagnostico
     {
         [Key]
         [Column("id")]
         public int Id { get; set; }
 
-        [Column("Codificacion_id")]
+        [Column("codigo_cie")]
         public string CodigoCie { get; set; } = string.Empty;
 
         [Column("nombre")]

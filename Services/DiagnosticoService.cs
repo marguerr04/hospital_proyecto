@@ -1,8 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using proyecto_hospital_version_1.Models;
-using proyecto_hospital_version_1.Data.Hospital; // ¡IMPORTANTE: Usar HospitalDbContext!
-
-
+using proyecto_hospital_version_1.Data.Hospital;
 
 namespace proyecto_hospital_version_1.Services
 {

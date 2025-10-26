@@ -210,15 +210,23 @@
             }
 
             @if (_pasoActual == 2)
-                {
-                <Paso2RequerimientosCard Paciente="_pacienteSeleccionado" />
-                }
+            {
+                <Paso2RequerimientosCard Paciente="_pacienteSeleccionado"
+                                         @bind-DiagnosticoPrincipal="_diagnosticoPrincipal"
+                                         @bind-EsGes="_esGes" />
+            }
 
+            @if (_pasoActual == 3)
+{
+                    <Paso3GenerarSolicitudCard Paciente="_pacienteSeleccionado"
+                           ProcedimientoPrincipal="_procedimientoSeleccionado"
+                           DiagnosticoPrincipal="_diagnosticoPrincipal" />
+}
 
             <!-- Botones de Navegación -->
             <div class="d-flex justify-content-end mt-4">
                 <button class="btn btn-secondary me-2" @onclick="GoPreviousStep" disabled="@(_pasoActual == 1)">← Anterior</button>
-                <button class="btn btn-primary" @onclick="GoNextStep" disabled="@(_pasoActual == 2)">Siguiente →</button>
+                <button class="btn btn-primary" @onclick="GoNextStep" disabled="@(_pasoActual == 3)">Siguiente →</button>
             </div>
         </div>
 
@@ -289,7 +297,11 @@
     private bool _consentimientoAceptado = false;
 
 
+    // variables de la 2nda etapa
 
+
+    private string _diagnosticoPrincipal = "";
+    private bool _esGes = false;
 
 
     // variables para la generación del consentimiento informado pdf
@@ -335,7 +347,7 @@
         try
         {
             var query = HospitalDb.Pacientes
-            .Include(p => p.Ubicaciones)  // ¡ESTO ES CLAVE!
+            .Include(p => p.Ubicaciones)  // 
         .    AsQueryable();
             if (!string.IsNullOrWhiteSpace(_busquedaTexto))
             {
@@ -439,7 +451,17 @@
             }
         }
 
-        if (_pasoActual < 2) // Asumiendo 2 pasos por ahora
+
+        if (_pasoActual == 2)
+        {
+            if (string.IsNullOrEmpty(_diagnosticoPrincipal))
+            {
+                JsRuntime.InvokeVoidAsync("alert", "Debe ingresar un diagnóstico principal en el Paso 2.");
+                return;
+            }
+        }
+
+        if (_pasoActual < 3) // Cambiado de 2 a 3
         {
             _pasoActual++;
             StateHasChanged();

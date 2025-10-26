@@ -1,0 +1,325 @@
+﻿@using proyecto_hospital_version_1.Models
+<!-- Codigo a modificar, para que se ajuste a prototipo del figma -->
+<div class="card shadow-sm mb-4">
+    <div class="card-header bg-primary text-white p-3">
+        <h5 class="mb-0">3. Requerimientos y generación de solicitud</h5>
+    </div>
+    <div class="card-body p-4">
+
+        @if (Paciente != null)
+        {
+            <div class="info-resumen mb-4 p-3 border rounded bg-light">
+                <h6>Resumen</h6>
+                <div class="row small">
+                    <div class="col-md-6">
+                        <strong>Diagnóstico Principal:</strong> @DiagnosticoPrincipal
+                    </div>
+                    <div class="col-md-6">
+                        <strong>Origen:</strong> @ProcedenciaPrincipal
+                    </div>
+                    <div class="col-md-6">
+                        <strong>Procedimiento Solicitado:</strong> @ProcedimientoPrincipal
+                    </div>
+                    <div class="col-md-6">
+                        <strong>GES:</strong> @(EsGes ? "Sí" : "No")
+                    </div>
+                </div>
+            </div>
+
+            <h6 class="mb-3 border-bottom pb-2">Equipos requeridos</h6>
+            <div class="d-flex flex-wrap gap-2 mb-4">
+                @foreach (var equipo in _equiposSeleccionados)
+                {
+                    <span class="badge bg-secondary p-2">
+                        @equipo <button type="button" class="btn-close btn-close-white ms-1" aria-label="Cerrar" @onclick="() => RemoverEquipo(equipo)"></button>
+                    </span>
+                }
+                <button class="btn btn-outline-primary btn-sm" @onclick="MostrarModalEquipos">
+                    <i class="bi bi-plus-circle me-1"></i> Añadir equipamientos
+                </button>
+            </div>
+
+            <h6 class="mb-3 border-bottom pb-2">Tipo de mesa quirúrgica</h6>
+            <div class="btn-group w-100 mb-4" role="group">
+                <input type="radio" class="btn-check" name="tipoMesa" id="mesa-estandar" autocomplete="off"
+                                              @bind="_tipoMesaSeleccionado">
+                <label class="btn btn-outline-primary" for="mesa-estandar">Estándar General</label>
+
+                <input type="radio" class="btn-check" name="tipoMesa" id="mesa-especial" autocomplete="off"
+                       @bind="_tipoMesaSeleccionado">
+                <label class="btn btn-outline-primary" for="mesa-especial">Especial (Traumatología)</label>
+            </div>
+
+            <h6 class="mb-3 border-bottom pb-2">Planificación Quirúrgica</h6>
+            <div class="row mb-4">
+                <div class="col-md-6 mb-3 mb-md-0">
+                    <label for="salaOperaciones" class="form-label visually-hidden">Sala de operaciones</label>
+                    <select class="form-select" id="salaOperaciones" @bind="_salaOperaciones">
+                        <option value="">Sala de operaciones</option>
+                        <option value="Sala 1">Sala 1</option>
+                        <option value="Sala 2">Sala 2</option>
+                        <option value="Sala 3">Sala 3</option>
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <label for="tiempoEstimado" class="form-label visually-hidden">Tiempo estimado cirugías</label>
+                    <div class="input-group">
+                        <input type="number" class="form-control" id="tiempoEstimado" placeholder="Tiempo estimado cirugías"
+                               @bind="_tiempoEstimado" @bind:event="oninput" min="0">
+                        <span class="input-group-text">Minutos</span>
+                    </div>
+                </div>
+            </div>
+
+            <h6 class="mb-3 border-bottom pb-2">Evaluaciones pre-operatorias</h6>
+            <div class="mb-4">
+                <div class="form-check form-switch mb-2">
+                    <input class="form-check-input" type="checkbox" role="switch" id="evaluacionAnestesica" @bind="_evaluacionAnestesica">
+                    <label class="form-check-label" for="evaluacionAnestesica">Evaluación anestésica</label>
+                </div>
+                <div class="form-check form-switch">
+                    <input class="form-check-input" type="checkbox" role="switch" id="transfusiones" @bind="_transfusiones">
+                    <label class="form-check-label" for="transfusiones">Transfusiones</label>
+                </div>
+            </div>
+
+            <h6 class="mb-3 border-bottom pb-2">Comorbilidades y comentarios</h6>
+            <div class="d-flex flex-wrap gap-2 mb-3">
+                @foreach (var comorbilidad in _comorbilidadesSeleccionadas)
+                {
+                    <span class="badge bg-info text-dark p-2">
+                        @comorbilidad <button type="button" class="btn-close btn-close-white ms-1" aria-label="Cerrar" @onclick="() => RemoverComorbilidad(comorbilidad)"></button>
+                    </span>
+                }
+                <button class="btn btn-outline-info btn-sm" @onclick="MostrarModalComorbilidades">
+                    <i class="bi bi-plus-circle me-1"></i> Añadir Comorbilidades
+                </button>
+            </div>
+
+            <div class="mb-4">
+                <label for="comentariosAdicionales" class="form-label">Comentarios Adicionales</label>
+                <textarea class="form-control" id="comentariosAdicionales" rows="3" @bind="_comentariosAdicionales" @bind:event="oninput"></textarea>
+            </div>
+
+        }
+        else
+        {
+            <div class="alert alert-warning">
+                No hay paciente seleccionado para este paso. Por favor, regrese al paso anterior.
+            </div>
+        }
+    </div>
+</div>
+
+<!-- Modal Equipos -->
+<div class="modal @(_mostrarModalEquipos ? "show d-block" : "")" tabindex="-1" role="dialog" @onclick="CerrarModalEquipos">
+    <div class="modal-dialog" role="document" @onclick:stopPropagation="true">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Añadir Equipamiento</h5>
+                <button type="button" class="btn-close" @onclick="CerrarModalEquipos" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="equipoArcoC" 
+                           @onchange='@((e) => ToggleEquipo("Arco C", (bool)e.Value))' 
+                           checked='@_equiposSeleccionados.Contains("Arco C")'>
+                    <label class="form-check-label" for="equipoArcoC">Arco C</label>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="equipoTorreLap" 
+                           @onchange='@((e) => ToggleEquipo("Torre Lap", (bool)e.Value))' 
+                           checked='@_equiposSeleccionados.Contains("Torre Lap")'>
+                    <label class="form-check-label" for="equipoTorreLap">Torre Lap</label>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="equipoSuturaMecanica" 
+                           @onchange='@((e) => ToggleEquipo("Sutura mecánica", (bool)e.Value))' 
+                           checked='@_equiposSeleccionados.Contains("Sutura mecánica")'>
+                    <label class="form-check-label" for="equipoSuturaMecanica">Sutura mecánica</label>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="equipoMicroscopio" 
+                           @onchange='@((e) => ToggleEquipo("Microscopio", (bool)e.Value))' 
+                           checked='@_equiposSeleccionados.Contains("Microscopio")'>
+                    <label class="form-check-label" for="equipoMicroscopio">Microscopio</label>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="equipoLaser" 
+                           @onchange='@((e) => ToggleEquipo("Láser", (bool)e.Value))' 
+                           checked='@_equiposSeleccionados.Contains("Láser")'>
+                    <label class="form-check-label" for="equipoLaser">Láser</label>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" @onclick="CerrarModalEquipos">Listo</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Comorbilidades -->
+<div class="modal @(_mostrarModalComorbilidades ? "show d-block" : "")" tabindex="-1" role="dialog" @onclick="CerrarModalComorbilidades">
+    <div class="modal-dialog" role="document" @onclick:stopPropagation="true">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Añadir Comorbilidades</h5>
+                <button type="button" class="btn-close" @onclick="CerrarModalComorbilidades" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="comorbDiabetes" 
+                           @onchange='@((e) => ToggleComorbilidad("Diabetes", (bool)e.Value))' 
+                           checked='@_comorbilidadesSeleccionadas.Contains("Diabetes")'>
+                    <label class="form-check-label" for="comorbDiabetes">Diabetes Mellitus</label>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="comorbHipertension" 
+                           @onchange='@((e) => ToggleComorbilidad("Hipertensión", (bool)e.Value))' 
+                           checked='@_comorbilidadesSeleccionadas.Contains("Hipertensión")'>
+                    <label class="form-check-label" for="comorbHipertension">Hipertensión Arterial</label>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="comorbAsma" 
+                           @onchange='@((e) => ToggleComorbilidad("Asma", (bool)e.Value))' 
+                           checked='@_comorbilidadesSeleccionadas.Contains("Asma")'>
+                    <label class="form-check-label" for="comorbAsma">Asma</label>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="comorbInsuficienciaRenal" 
+                           @onchange='@((e) => ToggleComorbilidad("Insuficiencia Renal", (bool)e.Value))' 
+                           checked='@_comorbilidadesSeleccionadas.Contains("Insuficiencia Renal")'>
+                    <label class="form-check-label" for="comorbInsuficienciaRenal">Insuficiencia Renal Crónica</label>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" @onclick="CerrarModalComorbilidades">Listo</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public PacienteHospital? Paciente { get; set; }
+
+    [Parameter]
+    public string? ProcedimientoPrincipal { get; set; }
+
+    [Parameter]
+    public string? DiagnosticoPrincipal { get; set; }
+
+    [Parameter]
+    public string? ProcedenciaPrincipal { get; set; }
+
+    [Parameter]
+    public bool EsGes { get; set; }
+
+    // Para comunicar el estado de completitud al padre
+    [Parameter]
+    public bool IsReadyToProceed { get; set; }
+    [Parameter]
+    public EventCallback<bool> IsReadyToProceedChanged { get; set; }
+
+    // Variables internas del componente
+    private List<string> _equiposSeleccionados = new List<string>();
+    private string _tipoMesaSeleccionado = "";
+    private string _salaOperaciones = "";
+    private int _tiempoEstimado = 0;
+    private bool _evaluacionAnestesica = false;
+    private bool _transfusiones = false;
+    private List<string> _comorbilidadesSeleccionadas = new List<string>();
+    private string _comentariosAdicionales = "";
+
+    // Variables para controlar los modales
+    private bool _mostrarModalEquipos = false;
+    private bool _mostrarModalComorbilidades = false;
+
+    protected override void OnInitialized()
+    {
+        // Suscribirse a eventos de cambio
+    }
+
+    protected override void OnParametersSet()
+    {
+        CheckCompletion();
+    }
+
+    // Lógica de validación interna
+    private async Task CheckCompletion()
+    {
+        bool ready = Paciente != null &&
+                     _equiposSeleccionados.Any() &&
+                     !string.IsNullOrWhiteSpace(_tipoMesaSeleccionado) &&
+                     !string.IsNullOrWhiteSpace(_salaOperaciones) &&
+                     _tiempoEstimado > 0;
+
+        if (IsReadyToProceed != ready)
+        {
+            IsReadyToProceed = ready;
+            await IsReadyToProceedChanged.InvokeAsync(IsReadyToProceed);
+        }
+    }
+
+    // Métodos para Modales de Equipos
+    private void MostrarModalEquipos()
+    {
+        _mostrarModalEquipos = true;
+    }
+
+    private void CerrarModalEquipos()
+    {
+        _mostrarModalEquipos = false;
+        CheckCompletion();
+    }
+
+    private void ToggleEquipo(string equipo, bool isChecked)
+    {
+        if (isChecked && !_equiposSeleccionados.Contains(equipo))
+        {
+            _equiposSeleccionados.Add(equipo);
+        }
+        else if (!isChecked && _equiposSeleccionados.Contains(equipo))
+        {
+            _equiposSeleccionados.Remove(equipo);
+        }
+        CheckCompletion();
+    }
+
+    private void RemoverEquipo(string equipo)
+    {
+        _equiposSeleccionados.Remove(equipo);
+        CheckCompletion();
+    }
+
+    // Métodos para Modales de Comorbilidades
+    private void MostrarModalComorbilidades()
+    {
+        _mostrarModalComorbilidades = true;
+    }
+
+    private void CerrarModalComorbilidades()
+    {
+        _mostrarModalComorbilidades = false;
+        CheckCompletion();
+    }
+
+    private void ToggleComorbilidad(string comorbilidad, bool isChecked)
+    {
+        if (isChecked && !_comorbilidadesSeleccionadas.Contains(comorbilidad))
+        {
+            _comorbilidadesSeleccionadas.Add(comorbilidad);
+        }
+        else if (!isChecked && _comorbilidadesSeleccionadas.Contains(comorbilidad))
+        {
+            _comorbilidadesSeleccionadas.Remove(comorbilidad);
+        }
+        CheckCompletion();
+    }
+
+    private void RemoverComorbilidad(string comorbilidad)
+    {
+        _comorbilidadesSeleccionadas.Remove(comorbilidad);
+        CheckCompletion();
+    }
+}

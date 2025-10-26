@@ -44,15 +44,17 @@
                             <i class="bi bi-file-text me-2 text-primary"></i> Diagnóstico y Procedimientos
                         </h6>
 
-                        <!-- Contenedor para diagnóstico principal y código CIE -->
+                        <!-- Secciones para diagnóstico principal y código CIE -->
                         <div class="row g-2 align-items-end">
                             <div class="col-10">
                                 <label for="diagnosticoPrincipal" class="form-label">Diagnóstico principal</label>
                                 <input type="text" class="form-control" id="diagnosticoPrincipal"
                                        list="listaDiagnosticos"
-                                       @bind="_diagnosticoPrincipal"
-                                       @bind:event="oninput"
+                                       value="@DiagnosticoPrincipal"
+                                       @oninput="async (e) => await OnDiagnosticoPrincipalChanged(e.Value?.ToString())"
                                        placeholder="Escriba el diagnóstico...">
+
+
                                 <datalist id="listaDiagnosticos">
                                     @foreach (var diagnostico in _diagnosticosSugeridos)
                                     {
@@ -60,16 +62,29 @@
                                     }
                                 </datalist>
                             </div>
+
+                            <div class="col-2">
+                                <label for="codigoCie" class="form-label">Código CIE-10</label>
+                                <input type="text"
+                                       class="form-control"
+                                       id="codigoCie"
+                                       value="@_codigoAsociado"
+                                       readonly
+                                       placeholder="Código">
+                            </div>
                         </div>
 
+
+
+
                         <div class="form-check mt-2">
-                            <input class="form-check-input" type="checkbox" id="esGesCheck" @bind="_esGes">
+                            <input class="form-check-input" type="checkbox" id="esGesCheck" @bind="EsGes">
                             <label class="form-check-label" for="esGesCheck">
                                 EsGes
                             </label>
                         </div>
 
-                        @if (_esGes)
+                        @if (EsGes)
                         {
                             <div class="alert alert-info mt-2 p-2 small">
                                 Aquí se mostrarían las enfermedades consideradas GES (próxima iteración).
@@ -139,15 +154,31 @@
     public PacienteHospital? Paciente { get; set; }
 
     private List<EspecialidadHospital> _especialidadesDisponiblesBd = new List<EspecialidadHospital>();
+    private string _codigoAsociado = string.Empty;
+    private List<Diagnostico> _todosLosDiagnosticos = new List<Diagnostico>();
+
+
+    // para el diagnostico principal
+
+    [Parameter]
+    public string DiagnosticoPrincipal { get; set; } = "";
+    [Parameter]
+    public EventCallback<string> DiagnosticoPrincipalChanged { get; set; }
+
+    [Parameter]
+    public bool EsGes { get; set; }
+    [Parameter]
+    public EventCallback<bool> EsGesChanged { get; set; }
+
+
 
     protected override async Task OnInitializedAsync()
     {
         _especialidadesDisponiblesBd = await EspecialidadHospitalService.GetEspecialidadesAsync();
 
 
-        // Cargar diagnósticos desde la BD usando tu servicio
-        var diagnosticos = await DiagnosticoService.GetDiagnosticosAsync();
-        _diagnosticosSugeridos = diagnosticos.Select(d => d.Nombre).ToList();
+        _todosLosDiagnosticos = await DiagnosticoService.GetDiagnosticosAsync();
+        _diagnosticosSugeridos = _todosLosDiagnosticos.Select(d => d.Nombre).ToList();
     }
 
     private decimal _peso = 0;
@@ -169,7 +200,8 @@
     {
         if (Paciente != null)
         {
-            // Puedes inicializar valores aquí si el paciente cambia
+            _diagnosticoPrincipal = DiagnosticoPrincipal;
+            _esGes = EsGes;
         }
     }
 
@@ -177,4 +209,28 @@
     {
         _procedimientosAnadidos.Add($"Procedimiento {(_procedimientosAnadidos.Count + 1)}");
     }
+
+    private async Task OnDiagnosticoPrincipalChanged(string value)
+    {
+        DiagnosticoPrincipal = value ?? "";
+        _diagnosticoPrincipal = value ?? "";
+
+        var diagnosticoEncontrado = _todosLosDiagnosticos
+            .FirstOrDefault(d => d.Nombre.Equals(value, StringComparison.OrdinalIgnoreCase));
+
+        _codigoAsociado = diagnosticoEncontrado?.CodigoCie ?? "";
+
+        await DiagnosticoPrincipalChanged.InvokeAsync(DiagnosticoPrincipal);
+        StateHasChanged();
+    }
+    private void OnEsGesChanged(bool value)
+    {
+        _esGes = value;              // Variable interna
+        EsGes = value;               
+        EsGesChanged.InvokeAsync(value);
+    }
+
+
+
+
 }

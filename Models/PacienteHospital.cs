@@ -25,11 +25,6 @@ namespace proyecto_hospital_version_1.Models
 
 
 
-
-        // === NUEVAS PROPIEDADES PARA LA RELACIÓN CON UBICACION ===
-        // Un paciente puede tener varias ubicaciones, pero para fines de mostrar "la" dirección
-        // asumiremos que la primera es la principal o buscaremos la más relevante.
-        // Aquí, estableceremos una colección, y luego en el servicio cargaremos la que necesitemos.
         public ICollection<Ubicacion>? Ubicaciones { get; set; }
 
         // Propiedad calculada para el Nombre Completo
