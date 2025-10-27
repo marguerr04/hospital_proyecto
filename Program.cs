@@ -1,7 +1,14 @@
+using System.Globalization; // <-- 1. El using
 using proyecto_hospital_version_1.Data;
 using proyecto_hospital_version_1.Components;
 using Microsoft.EntityFrameworkCore;
 using MudBlazor.Services;
+
+// ▼▼ 2, 3 y 4. ESTAS LÍNEAS ARREGLAN LOS GRÁFICOS ▼▼
+var culture = new CultureInfo("en-US");
+CultureInfo.DefaultThreadCurrentCulture = culture;
+CultureInfo.DefaultThreadCurrentUICulture = culture;
+// --- Fin del arreglo ---
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -28,10 +35,10 @@ if (!app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();
-app.UseRouting(); // <- MUY IMPORTANTE
+app.UseRouting();
 
 app.MapBlazorHub();
-app.MapFallbackToPage("/_Host"); // <- Punto de entrada Blazor Server
+app.MapFallbackToPage("/_Host");
 
 // Inicialización de la BD
 using (var scope = app.Services.CreateScope())
@@ -60,3 +67,4 @@ using (var scope = app.Services.CreateScope())
 }
 
 app.Run();
+

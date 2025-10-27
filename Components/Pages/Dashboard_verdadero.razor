@@ -14,7 +14,7 @@
         Unidad de Control de Gestión · @DateTime.Now.ToString("dd/MM/yyyy")
     </MudText>
 
-    <!-- Tarjetas superiores -->
+    <!-- Tarjetas superiores (Estas ya funcionan) -->
     <MudGrid Justify="Justify.Center" Spacing="3">
         <MudItem xs="12" sm="6" md="4">
             <MudPaper Elevation="3" Class="pa-4 text-center dashboard-card">
@@ -63,6 +63,7 @@
                               Labels="@EstadoLabels"
                               Series="@EstadoSeries"
                               Colors="@EstadoColors"
+                              Height="300px"
                               Class="w-100" />
                 </MudPaper>
             </MudItem>
@@ -75,6 +76,7 @@
                               Labels="@ContactoLabels"
                               Series="@ContactoSeries"
                               Colors="@ContactoColors"
+                              Height="300px"
                               Class="w-100" />
                 </MudPaper>
             </MudItem>
