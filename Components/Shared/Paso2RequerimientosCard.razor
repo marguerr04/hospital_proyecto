@@ -1,11 +1,4 @@
-﻿@using proyecto_hospital_version_1.Data.Hospital
-@using proyecto_hospital_version_1.Models
-@using proyecto_hospital_version_1.Services
-@inject IEspecialidadHospital EspecialidadHospitalService
-@inject IJSRuntime JsRuntime
-@inject IDiagnosticoService DiagnosticoService
-
-<div class="card shadow-sm mb-4">
+﻿<div class="card shadow-sm mb-4">
     <div class="card-body p-4">
         <div class="alert alert-primary p-3 mb-4 d-flex align-items-center" style="--bs-alert-bg: #e0f2f7; --bs-alert-color: #0c5460; border-color: #bee5eb;">
             <i class="bi bi-card-checklist me-3 h4 mb-0"></i> <h5 class="mb-0">2. Requerimientos y generación de solicitud</h5>
@@ -33,18 +26,12 @@
             </div>
 
             <div class="row mb-4">
-
-
-
-
-
                 <div class="col-md-6">
                     <div class="mb-3 p-3 bg-light border rounded">
                         <h6 class="border-bottom pb-2 mb-3">
                             <i class="bi bi-file-text me-2 text-primary"></i> Diagnóstico y Procedimientos
                         </h6>
 
-                        <!-- Secciones para diagnóstico principal y código CIE -->
                         <div class="row g-2 align-items-end">
                             <div class="col-10">
                                 <label for="diagnosticoPrincipal" class="form-label">Diagnóstico principal</label>
@@ -75,9 +62,6 @@
                             </div>
                         </div>
 
-
-
-
                         <div class="form-check mt-2">
                             <input class="form-check-input"
                                    type="checkbox"
@@ -97,9 +81,6 @@
                         }
                     </div>
                 </div>
-
-
-
 
                 <div class="col-md-6">
                     <div class="mb-3 p-3 bg-light border rounded">
@@ -143,7 +124,6 @@
                     <i class="bi bi-plus-circle me-2"></i> Agregar Procedimiento
                 </button>
             </div>
-
         }
         else
         {
@@ -153,98 +133,3 @@
         }
     </div>
 </div>
-
-@code {
-    [Parameter]
-    public PacienteHospital? Paciente { get; set; }
-
-    private List<EspecialidadHospital> _especialidadesDisponiblesBd = new List<EspecialidadHospital>();
-    private string _codigoAsociado = string.Empty;
-    private List<Diagnostico> _todosLosDiagnosticos = new List<Diagnostico>();
-
-
-    // para el diagnostico principal
-
-    [Parameter]
-    public string DiagnosticoPrincipal { get; set; } = "";
-    [Parameter]
-    public EventCallback<string> DiagnosticoPrincipalChanged { get; set; }
-
-    [Parameter]
-    public bool EsGes { get; set; }
-    [Parameter]
-    public EventCallback<bool> EsGesChanged { get; set; }
-
-
-
-    protected override async Task OnInitializedAsync()
-    {
-        _especialidadesDisponiblesBd = await EspecialidadHospitalService.GetEspecialidadesAsync();
-
-
-        _todosLosDiagnosticos = await DiagnosticoService.GetDiagnosticosAsync();
-        _diagnosticosSugeridos = _todosLosDiagnosticos.Select(d => d.Nombre).ToList();
-    }
-
-    private decimal _peso = 0;
-    private decimal _talla = 0;
-    private decimal _imc => (_talla > 0) ? _peso / (_talla * _talla) : 0;
-    private string _codigoCie = string.Empty;
-
-
-    private List<string> _diagnosticosSugeridos = new List<string>();
-    private string _diagnosticoPrincipal = string.Empty;
-    private bool _esGes = false;
-
-    private string _especialidadOrigen = string.Empty;
-    private string _especialidadDestino = string.Empty;
-
-    private List<string> _procedimientosAnadidos = new List<string>();
-
-    protected override void OnParametersSet()
-    {
-        if (Paciente != null)
-        {
-            _diagnosticoPrincipal = DiagnosticoPrincipal;
-            _esGes = EsGes;
-        }
-    }
-
-    private void AgregarProcedimientoDummy()
-    {
-        _procedimientosAnadidos.Add($"Procedimiento {(_procedimientosAnadidos.Count + 1)}");
-    }
-
-    private async Task OnDiagnosticoPrincipalChanged(string value)
-    {
-        DiagnosticoPrincipal = value ?? "";
-        _diagnosticoPrincipal = value ?? "";
-
-        var diagnosticoEncontrado = _todosLosDiagnosticos
-            .FirstOrDefault(d => d.Nombre.Equals(value, StringComparison.OrdinalIgnoreCase));
-
-        _codigoAsociado = diagnosticoEncontrado?.CodigoCie ?? "";
-
-        await DiagnosticoPrincipalChanged.InvokeAsync(DiagnosticoPrincipal);
-        StateHasChanged();
-
-
-
-
-    }
-    private void OnEsGesChanged(bool value)
-    {
-        _esGes = value;              // Variable interna
-        EsGes = value;               
-        EsGesChanged.InvokeAsync(value);
-    }
-
-    private async void OnEsGesCheckboxChanged(ChangeEventArgs e)
-    {
-        EsGes = (bool)e.Value;
-        await EsGesChanged.InvokeAsync(EsGes);
-        StateHasChanged();
-    }
-
-
-}
