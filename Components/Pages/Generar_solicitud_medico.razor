@@ -104,7 +104,7 @@
                                value="Ambulatorio/CRS"
                                checked="@(_procedenciaSeleccionada == "Ambulatorio")"
                                @onchange="@(() => _procedenciaSeleccionada = "Ambulatorio")" />
-                        <label class="btn btn-outline-primary" for="btn-ambulatorio">Ambulatorio/CRS</label>
+                        <label class="btn btn-outline-primary" for="btn-ambulatorio">Ambulatorio</label>
 
                         <!-- Hospitalizado -->
                         <input type="radio"
@@ -202,8 +202,8 @@
                                            Extremidad="_extremidadSeleccionada" />
 
 
-                                            </div>
-                                        </div>
+                                </div>
+                           </div>
 
            
                                         
@@ -217,11 +217,14 @@
             }
 
             @if (_pasoActual == 3)
-{
+            {
+                                  
                     <Paso3GenerarSolicitudCard Paciente="_pacienteSeleccionado"
-                           ProcedimientoPrincipal="_procedimientoSeleccionado"
-                           DiagnosticoPrincipal="_diagnosticoPrincipal" />
-}
+                               ProcedimientoPrincipal="@_procedimientoSeleccionado"
+                               DiagnosticoPrincipal="@_diagnosticoPrincipal"
+                               ProcedenciaPrincipal="@_procedenciaSeleccionada"  
+                               EsGes="@_esGes" />
+            }
 
             <!-- Botones de Navegación -->
             <div class="d-flex justify-content-end mt-4">

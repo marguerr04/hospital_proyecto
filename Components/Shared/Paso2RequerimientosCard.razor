@@ -48,12 +48,13 @@
                         <div class="row g-2 align-items-end">
                             <div class="col-10">
                                 <label for="diagnosticoPrincipal" class="form-label">Diagnóstico principal</label>
-                                <input type="text" class="form-control" id="diagnosticoPrincipal"
+                                <input type="text"
+                                       class="form-control"
+                                       id="diagnosticoPrincipal"
                                        list="listaDiagnosticos"
                                        value="@DiagnosticoPrincipal"
                                        @oninput="async (e) => await OnDiagnosticoPrincipalChanged(e.Value?.ToString())"
-                                       placeholder="Escriba el diagnóstico...">
-
+                                       placeholder="Escriba el diagnóstico..." />
 
                                 <datalist id="listaDiagnosticos">
                                     @foreach (var diagnostico in _diagnosticosSugeridos)
@@ -78,7 +79,11 @@
 
 
                         <div class="form-check mt-2">
-                            <input class="form-check-input" type="checkbox" id="esGesCheck" @bind="EsGes">
+                            <input class="form-check-input"
+                                   type="checkbox"
+                                   id="esGesCheck"
+                                   checked="@EsGes"
+                                   @onchange="OnEsGesCheckboxChanged" />
                             <label class="form-check-label" for="esGesCheck">
                                 EsGes
                             </label>
@@ -222,6 +227,10 @@
 
         await DiagnosticoPrincipalChanged.InvokeAsync(DiagnosticoPrincipal);
         StateHasChanged();
+
+
+
+
     }
     private void OnEsGesChanged(bool value)
     {
@@ -230,7 +239,12 @@
         EsGesChanged.InvokeAsync(value);
     }
 
-
+    private async void OnEsGesCheckboxChanged(ChangeEventArgs e)
+    {
+        EsGes = (bool)e.Value;
+        await EsGesChanged.InvokeAsync(EsGes);
+        StateHasChanged();
+    }
 
 
 }

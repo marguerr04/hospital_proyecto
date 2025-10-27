@@ -61,6 +61,10 @@ namespace proyecto_hospital_version_1.Components.Shared
 
         protected override void OnParametersSet()
         {
+
+
+
+
             // Solo llamar a CheckCompletion si Paciente no es nulo, para evitar errores iniciales
             if (Paciente != null)
             {
@@ -152,5 +156,13 @@ namespace proyecto_hospital_version_1.Components.Shared
             Transfusiones = (bool)e.Value;
             CheckCompletion();
         }
+
+
+
+
+
     }
+
+
+
 }

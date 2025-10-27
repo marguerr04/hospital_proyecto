@@ -11,6 +11,21 @@
             <div class="info-resumen mb-4 p-3 border rounded bg-light">
                 <h6>Resumen</h6>
                 <div class="row small">
+
+                    <!-- AÑADE ESTAS LÍNEAS PARA DEBUG -->
+                    <div class="col-md-6">
+                        <strong>Paciente:</strong> @(Paciente?.primerNombre) @(Paciente?.apellidoPaterno)
+                    </div>
+                    <div class="col-md-6">
+                        <strong>RUT:</strong> @(Paciente?.rut)-@(Paciente?.dv)
+                    </div>
+
+
+
+
+
+
+
                     <div class="col-md-6">
                         <strong>Diagnóstico Principal:</strong> @DiagnosticoPrincipal
                     </div>
