@@ -9,42 +9,45 @@ namespace proyecto_hospital_version_1.Services
     {
         private readonly HospitalDbContext _context;
 
-        // Inyeccion del DbContext 
         public SolicitudQuirurgicaService(HospitalDbContext context)
         {
             _context = context;
         }
 
-
         public async Task<SolicitudQuirurgica> CrearSolicitudAsync(SolicitudQuirurgica nuevaSolicitud)
         {
             try
             {
-                // Vvalores por defecto al crear para que no sean nulos
                 nuevaSolicitud.FechaCreacion = DateTime.Now;
-                nuevaSolicitud.Estado = "Pendiente"; 
-                nuevaSolicitud.Prioridad = 0; 
-                nuevaSolicitud.CreadoPor = "medico_demo"; // El medico
+                nuevaSolicitud.Estado = "Pendiente";
+                nuevaSolicitud.Prioridad = 0;
+                nuevaSolicitud.CreadoPor = "medico_demo";
 
-                // Agregamos la solicitud al DbContext y se gardan en la bd
                 _context.SolicitudesQuirurgicas.Add(nuevaSolicitud);
                 await _context.SaveChangesAsync();
 
-                return nuevaSolicitud; 
+                return nuevaSolicitud;
             }
             catch (Exception ex)
             {
-                // Si  no se genera la soliocitud por alguna razon. 
                 Console.WriteLine($"Error al guardar solicitud: {ex.Message}");
                 throw;
             }
         }
 
-        // Método para el Dashboard (Paso 4-5)
+        // ✅ MÉTODO NUEVO/MODIFICADO - Para cargar solicitud con datos del paciente
+        public async Task<SolicitudQuirurgica> ObtenerSolicitudPorIdAsync(int id)
+        {
+            return await _context.SolicitudesQuirurgicas
+                             .Include(s => s.Paciente) // ✅ INCLUYE PACIENTE
+                             .FirstOrDefaultAsync(s => s.Id == id);
+        }
+
+        // Método para el Dashboard (Paso 4-5) - YA LO TIENES
         public async Task<List<SolicitudQuirurgica>> ObtenerTodasLasSolicitudesAsync()
         {
             return await _context.SolicitudesQuirurgicas
-                             .Include(s => s.Paciente) // Incluye los datos del Paciente
+                             .Include(s => s.Paciente)
                              .AsNoTracking()
                              .ToListAsync();
         }
