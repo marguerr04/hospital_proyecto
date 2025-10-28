@@ -9,7 +9,8 @@ namespace proyecto_hospital_version_1.Models
 
         // Relación con Paciente
         public int PacienteId { get; set; }
-        public Paciente Paciente { get; set; }
+
+        public PacienteHospital Paciente { get; set; }
 
         // Datos del formulario
         public string DiagnosticoPrincipal { get; set; }

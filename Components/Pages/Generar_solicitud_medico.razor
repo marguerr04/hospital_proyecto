@@ -246,11 +246,29 @@
                                            @bind-ComorbilidadesSeleccionadas="_comorbilidadesSeleccionadas"
                                            @bind-ComentariosAdicionales="_comentariosAdicionales" />
             }
+            @*
+                 Botones de Navegación 
+                <div class="d-flex justify-content-end mt-4">
+                <button class="btn btn-secondary me-2" @onclick="GoPreviousStep" disabled="@(_pasoActual == 1)">← Anterior</button>
+                <button class="btn btn-primary" @onclick="GoNextStep" disabled="@(_pasoActual == 3)">Siguiente →</button>
+            </div>
 
+
+            *@
             <!-- Botones de Navegación -->
             <div class="d-flex justify-content-end mt-4">
                 <button class="btn btn-secondary me-2" @onclick="GoPreviousStep" disabled="@(_pasoActual == 1)">← Anterior</button>
-                <button class="btn btn-primary" @onclick="GoNextStep" disabled="@(_pasoActual == 3)">Siguiente →</button>
+    
+                @if (_pasoActual == 3)
+                {
+                    <button class="btn btn-success" @onclick="GuardarSolicitud">
+                        <i class="bi bi-check-circle me-2"></i> Guardar Solicitud
+                    </button>
+                }
+                else
+                {
+                    <button class="btn btn-primary" @onclick="GoNextStep">Siguiente →</button>
+                }
             </div>
         </div>
 
@@ -422,7 +440,7 @@
 
 
     // variables para la generación del consentimiento informado pdf
-
+    private bool _isPaso3Ready; // Nueva variable para el estado del Paso 3
 
 
     // --- VARIABLES FALTANTES DE PASO 2 ---
@@ -578,6 +596,151 @@
     }
 
 
+    // metodo para la generación de soliocitudes
+
+
+    private async Task GuardarSolicitud()
+    {
+        if (_pasoActual != 3) return;
+
+        // VALIDACIONES MANUALES - Sin depender de _isPaso3Ready
+        var errores = new List<string>();
+
+        if (_pacienteSeleccionado == null)
+            errores.Add("• Paciente no seleccionado");
+
+        if (string.IsNullOrWhiteSpace(_diagnosticoPrincipal))
+            errores.Add("• Diagnóstico principal vacío");
+
+        if (string.IsNullOrWhiteSpace(_procedimientoSeleccionado))
+            errores.Add("• Procedimiento principal vacío");
+
+        if (string.IsNullOrWhiteSpace(_salaOperaciones))
+            errores.Add("• Sala de operaciones no especificada");
+
+        if (!_tiempoEstimado.HasValue || _tiempoEstimado <= 0)
+            errores.Add("• Tiempo estimado no válido (debe ser mayor a 0)");
+
+        if (_equiposSeleccionados.Count == 0)
+            errores.Add("• No se han seleccionado equipos requeridos");
+
+        // Mostrar errores específicos
+        if (errores.Any())
+        {
+            var mensajeError = "Faltan los siguientes datos esenciales:\n" + string.Join("\n", errores);
+            await JsRuntime.InvokeVoidAsync("alert", mensajeError);
+            return;
+        }
+
+        // Si llegamos aquí, todas las validaciones pasaron
+        try
+        {
+            var nuevaSolicitud = new SolicitudQuirurgica
+                {
+                    PacienteId = _pacienteSeleccionado.id,
+                    DiagnosticoPrincipal = _diagnosticoPrincipal,
+                    CodigoCie = _codigoAsociado,
+                    ProcedimientoPrincipal = _procedimientoSeleccionado,
+                    Procedencia = _procedenciaSeleccionada,
+                    EsGes = _esGes,
+                    EspecialidadOrigen = _especialidadOrigen,
+                    EspecialidadDestino = _especialidadDestino,
+                    Peso = _peso,
+                    Talla = _talla,
+                    IMC = _imc,
+                    EquiposRequeridos = string.Join(";", _equiposSeleccionados),
+                    TipoMesa = _tipoMesaSeleccionado,
+                    EvaluacionAnestesica = _evaluacionAnestesica,
+                    Transfusiones = _transfusiones,
+                    SalaOperaciones = _salaOperaciones,
+                    TiempoEstimado = _tiempoEstimado,
+                    Comorbilidades = string.Join(";", _comorbilidadesSeleccionadas),
+                    ComentariosAdicionales = _comentariosAdicionales,
+                    FechaCreacion = DateTime.Now,
+                    Estado = "Pendiente",
+                    Prioridad = 0,
+                };
+
+            HospitalDb.SolicitudesQuirurgicas.Add(nuevaSolicitud);
+            await HospitalDb.SaveChangesAsync();
+
+            await JsRuntime.InvokeVoidAsync("alert", "¡Solicitud guardada con éxito!");
+
+            ResetFormulario();
+            _pasoActual = 1;
+            StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error al guardar solicitud: {ex.Message}");
+            await JsRuntime.InvokeVoidAsync("alert", $"Error al guardar solicitud: {ex.Message}");
+        }
+    }
+
+    private void ResetFormulario()
+    {
+        // Resetea todas las variables a su estado inicial
+        _pacienteSeleccionado = null;
+        _busquedaTexto = "";
+        _busquedaDv = "";
+        _nombrePacienteParaMostrar = "";
+        _rutPacienteParaMostrar = "";
+
+        _procedenciaSeleccionada = "Ambulatorio";
+        _procedimientoSeleccionado = "";
+        _lateralidadSeleccionada = "";
+        _extremidadSeleccionada = "";
+        _consentimientoAceptado = false;
+
+        _diagnosticoPrincipal = "";
+        _esGes = false;
+        _codigoAsociado = "";
+        _peso = null;
+        _talla = null;
+        _especialidadOrigen = "";
+        _especialidadDestino = "";
+
+        _equiposSeleccionados = new List<string>();
+        _tipoMesaSeleccionado = "Estándar General"; // Asegúrate de que este valor coincida con el default en Paso3
+        _evaluacionAnestesica = false;
+        _transfusiones = false;
+        _salaOperaciones = "";
+        _tiempoEstimado = null;
+        _comorbilidadesSeleccionadas = new List<string>();
+        _comentariosAdicionales = "";
+
+        _isPaso3Ready = false; // Resetear el estado del paso 3
+    }
+
+    // Método para verificar si un paso está listo para avanzar
+    private bool IsPasoReady(int paso)
+    {
+        switch (paso)
+        {
+            case 1:
+                return _pacienteSeleccionado != null &&
+                       !string.IsNullOrEmpty(_procedimientoSeleccionado) &&
+                       _consentimientoAceptado;
+            case 2:
+                return !string.IsNullOrEmpty(_diagnosticoPrincipal) &&
+                       !string.IsNullOrEmpty(_codigoAsociado) && // Si CIE-10 es obligatorio
+                       _peso.HasValue && _talla.HasValue && _peso > 0 && _talla > 0;
+            case 3:
+                return _isPaso3Ready; // Depende de la validación interna del componente Paso3GenerarSolicitudCard
+            default:
+                return false;
+        }
+    }
+
+
+
+
+
+
+
+
+
+
     private void GoNextStep()
     {
         if (_pasoActual == 1)
@@ -599,7 +762,6 @@
             }
         }
 
-
         if (_pasoActual == 2)
         {
             if (string.IsNullOrEmpty(_diagnosticoPrincipal))
@@ -609,10 +771,16 @@
             }
         }
 
-        if (_pasoActual < 3) // Cambiado de 2 a 3
+        // CAMBIO IMPORTANTE: Permitir avanzar al Paso 3 sin validaciones estrictas
+        if (_pasoActual < 3)
         {
             _pasoActual++;
             StateHasChanged();
+        }
+        else if (_pasoActual == 3)
+        {
+            // Cuando esté en Paso 3 y haga clic en "Siguiente", guardar la solicitud
+            GuardarSolicitud();
         }
     }
 
@@ -647,6 +815,12 @@
             StateHasChanged();
         }
     }
+
+    // metodo para la generación de la solicitud
+
+
+
+
 
 
 
