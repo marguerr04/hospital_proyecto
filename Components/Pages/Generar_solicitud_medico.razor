@@ -287,62 +287,7 @@
     @* Codigo para comprobar *@
 
     <!-- PANEL DE VERIFICACIÓN VISUAL -->
-    <div class="card mt-4 border-success">
-        <div class="card-header bg-success text-white py-2">
-            <h6 class="mb-0">✅ Estado de Datos Guardados</h6>
-        </div>
-        <div class="card-body p-3">
-            <div class="row">
-                <!-- Paso 1 -->
-                <div class="col-md-4">
-                    <h6>Paso 1: Contexto</h6>
-                    <div class="small">
-                        <span class="@(_pacienteSeleccionado != null ? "text-success" : "text-danger")">
-                            • Paciente: @(_pacienteSeleccionado != null ? "✅" : "❌")
-                        </span><br>
-                        <span class="@(!string.IsNullOrEmpty(_procedimientoSeleccionado) ? "text-success" : "text-danger")">
-                            • Procedimiento: @(!string.IsNullOrEmpty(_procedimientoSeleccionado) ? "✅" : "❌")
-                        </span><br>
-                        <span class="@(_consentimientoAceptado ? "text-success" : "text-danger")">
-                            • Consentimiento: @(_consentimientoAceptado ? "✅" : "❌")
-                        </span>
-                    </div>
-                </div>
-
-                <!-- Paso 2 -->
-                <div class="col-md-4">
-                    <h6>Paso 2: Requerimientos</h6>
-                    <div class="small">
-                        <span class="@(!string.IsNullOrEmpty(_diagnosticoPrincipal) ? "text-success" : "text-danger")">
-                            • Diagnóstico: @(!string.IsNullOrEmpty(_diagnosticoPrincipal) ? "✅" : "❌")
-                        </span><br>
-                        <span class="@(!string.IsNullOrEmpty(_codigoAsociado) ? "text-success" : "text-danger")">
-                            • CIE-10: @(!string.IsNullOrEmpty(_codigoAsociado) ? "✅" : "❌")
-                        </span><br>
-                        <span class="@(_peso.HasValue && _talla.HasValue ? "text-success" : "text-danger")">
-                            • Peso/Talla: @(_peso.HasValue ? "✅" : "❌")/@(_talla.HasValue ? "✅" : "❌")
-                        </span>
-                    </div>
-                </div>
-
-                <!-- Paso 3 -->
-                <div class="col-md-4">
-                    <h6>Paso 3: Solicitud</h6>
-                    <div class="small">
-                        <span class="@(_equiposSeleccionados.Count > 0 ? "text-success" : "text-danger")">
-                            • Equipos: @(_equiposSeleccionados.Count > 0 ? "✅" : "❌") (@_equiposSeleccionados.Count)
-                        </span><br>
-                        <span class="@(!string.IsNullOrEmpty(_salaOperaciones) ? "text-success" : "text-danger")">
-                            • Sala: @(!string.IsNullOrEmpty(_salaOperaciones) ? "✅" : "❌")
-                        </span><br>
-                        <span class="@(_tiempoEstimado.HasValue ? "text-success" : "text-danger")">
-                            • Tiempo: @(_tiempoEstimado.HasValue ? "✅" : "❌")
-                        </span>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
+    
 
 
 

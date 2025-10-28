@@ -257,6 +257,71 @@
             No se encontró ninguna solicitud con ID: @_idSolicitudBuscar
         </div>
     }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <hr class="my-4">
+
+    <h3>🧪 Prueba de ProcedimientosCard</h3>
+    <p>Prueba el componente de lista de procedimientos.</p>
+
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card shadow-sm">
+                <div class="card-header">
+                    <h5>Componente ProcedimientosCard</h5>
+                </div>
+                <div class="card-body">
+                    <!-- Componente ProcedimientosCard -->
+                    <ProcedimientosCard ListaProcedimientos="_procedimientosTest"
+                                        OnAgregarPresionado="HandleAgregarProcedimiento" />
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card shadow-sm">
+                <div class="card-header">
+                    <h5>Datos de Prueba</h5>
+                </div>
+                <div class="card-body">
+                    <h6>Procedimientos en lista:</h6>
+                    <pre>@System.Text.Json.JsonSerializer.Serialize(_procedimientosTest, new System.Text.Json.JsonSerializerOptions { WriteIndented = true })</pre>
+
+                    <h6>Contador de clics:</h6>
+                    <p>Has hecho clic <strong>@_contadorClics</strong> veces en "Agregar Procedimiento"</p>
+
+                    <button class="btn btn-outline-warning btn-sm" @onclick="LimpiarProcedimientos">
+                        <i class="bi bi-trash me-1"></i> Limpiar Lista
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+
 </div>
 
 @code {
@@ -279,6 +344,10 @@
 
     private string _mesaTest = string.Empty;
 
+    // ✅ NUEVAS VARIABLES PARA PROCEDIMIENTOS CARD
+    private List<string> _procedimientosTest = new List<string>();
+    private int _contadorClics = 0;
+
     // Variables para verificación de solicitudes
     private List<SolicitudQuirurgica> _solicitudes = new();
     private int _totalSolicitudes = -1;
@@ -287,7 +356,7 @@
     private int _idSolicitudBuscar;
     private SolicitudQuirurgica _solicitudIndividual;
 
-    // ✅ NUEVAS VARIABLES PARA SISTEMA DE PRIORIZACIÓN
+    // Variables para sistema de priorización
     private SolicitudQuirurgica _solicitudSeleccionada;
     private int _prioridadSugerida = 3;
     private string _motivoSugerencia = "Prioridad base.";
@@ -295,6 +364,26 @@
     private void HandlePacienteSeleccionado(PacienteHospital? paciente)
     {
         _pacienteSeleccionado = paciente;
+    }
+
+    // ✅ NUEVO MÉTODO PARA PROCEDIMIENTOS CARD
+    private void HandleAgregarProcedimiento()
+    {
+        _contadorClics++;
+
+        // Agregar un procedimiento de ejemplo
+        var nuevoProcedimiento = $"Procedimiento {_contadorClics} - {DateTime.Now:HH:mm:ss}";
+        _procedimientosTest.Add(nuevoProcedimiento);
+
+        StateHasChanged();
+    }
+
+    // ✅ NUEVO MÉTODO PARA LIMPIAR PROCEDIMIENTOS
+    private void LimpiarProcedimientos()
+    {
+        _procedimientosTest.Clear();
+        _contadorClics = 0;
+        StateHasChanged();
     }
 
     // Método para cargar solicitudes

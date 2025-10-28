@@ -14,6 +14,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Remove="Components\Shared\ProcedimientosCard.razor.cs" />
     <Compile Remove="Models\Especialidad.cs" />
     <Compile Remove="Services\EspecialidadService.cs" />
     <Compile Remove="Services\IEspecialidadService.cs" />
@@ -27,6 +28,7 @@
   <ItemGroup>
     <Content Include="Components\Layout\MainLayoutMedico.razor.css" />
     <Content Include="Components\Layout\NavMenuMedico.razor.css" />
+    <Content Include="Components\Shared\ProcedimientosCard.razor.cs" />
     <Content Include="Models\Especialidad.cs" />
     <Content Include="Services\EspecialidadService.cs" />
     <Content Include="Services\IEspecialidadService.cs" />
