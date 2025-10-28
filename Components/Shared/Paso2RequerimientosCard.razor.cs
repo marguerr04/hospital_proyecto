@@ -106,15 +106,34 @@ namespace proyecto_hospital_version_1.Components.Shared
         {
             var nuevoDiagnostico = e.Value?.ToString() ?? "";
 
-            // Notificar cambio de diagnóstico
+            // Log para debug
+            Console.WriteLine($"Diagnóstico seleccionado: {nuevoDiagnostico}");
+            Console.WriteLine($"Total diagnósticos en memoria: {_todosLosDiagnosticos.Count}");
+
+            // 1. Actualizar el diagnóstico
             await DiagnosticoPrincipalChanged.InvokeAsync(nuevoDiagnostico);
 
-            // Buscar código CIE-10
-            var diagnosticoEncontrado = _todosLosDiagnosticos
-                .FirstOrDefault(d => d.Nombre.Equals(nuevoDiagnostico, StringComparison.OrdinalIgnoreCase));
+            // 2. Buscar y actualizar el código CIE
+            if (!string.IsNullOrWhiteSpace(nuevoDiagnostico))
+            {
+                var diagnostico = _todosLosDiagnosticos
+                    .FirstOrDefault(d => d.Nombre.Equals(nuevoDiagnostico, StringComparison.OrdinalIgnoreCase));
 
-            var nuevoCodigo = diagnosticoEncontrado?.CodigoCie ?? "";
-            await CodigoAsociadoChanged.InvokeAsync(nuevoCodigo);
+                if (diagnostico != null)
+                {
+                    Console.WriteLine($"Código CIE encontrado: {diagnostico.CodigoCie}");
+                    await CodigoAsociadoChanged.InvokeAsync(diagnostico.CodigoCie ?? "");
+                }
+                else
+                {
+                    Console.WriteLine("No se encontró el diagnóstico en la lista");
+                    await CodigoAsociadoChanged.InvokeAsync("");
+                }
+            }
+            else
+            {
+                await CodigoAsociadoChanged.InvokeAsync("");
+            }
         }
     }
 }

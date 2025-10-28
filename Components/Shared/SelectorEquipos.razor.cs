@@ -28,15 +28,14 @@ namespace proyecto_hospital_version_1.Components.Shared
             StateHasChanged();
         }
 
-        // ¡MODIFICADO!
+        //  Los await seran usados para actualizar los cambios al archivo principal (generar-solicitud-medico"
         public async Task CerrarModalEquipos()
         {
             MostrarModalEquipos = false;
-            // Notificamos al padre que la lista pudo cambiar
+           
             await EquiposSeleccionadosChanged.InvokeAsync(EquiposSeleccionados);
         }
 
-        // ¡MODIFICADO!
         public async Task ToggleEquipoDesdeModal(string equipo, bool isChecked)
         {
             if (isChecked && !EquiposSeleccionados.Contains(equipo))
@@ -47,11 +46,9 @@ namespace proyecto_hospital_version_1.Components.Shared
             {
                 EquiposSeleccionados.Remove(equipo);
             }
-            // No notificamos al padre aquí, solo al cerrar el modal
             StateHasChanged();
         }
 
-        // ¡MODIFICADO!
         public async Task ToggleEquipoDirecto(string equipo)
         {
             if (EquiposSeleccionados.Contains(equipo))
@@ -62,15 +59,12 @@ namespace proyecto_hospital_version_1.Components.Shared
             {
                 EquiposSeleccionados.Add(equipo);
             }
-            // Notificamos al padre inmediatamente
             await EquiposSeleccionadosChanged.InvokeAsync(EquiposSeleccionados);
         }
 
-        // ¡MODIFICADO!
         public async Task RemoverEquipo(string equipo)
         {
             EquiposSeleccionados.Remove(equipo);
-            // Notificamos al padre inmediatamente
             await EquiposSeleccionadosChanged.InvokeAsync(EquiposSeleccionados);
         }
     }
