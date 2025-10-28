@@ -23,7 +23,8 @@ builder.Services.AddScoped<IEspecialidadHospital, EspecialidadHospitalService>()
 
 builder.Services.AddScoped<IDiagnosticoService, DiagnosticoService>();
 
-
+// generación de la solicitud
+builder.Services.AddScoped<ISolicitudQuirurgicaService, SolicitudQuirurgicaService>();
 
 
 var app = builder.Build();

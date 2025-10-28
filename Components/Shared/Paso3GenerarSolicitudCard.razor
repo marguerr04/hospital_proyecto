@@ -47,8 +47,7 @@
                     @* Aqui ira el componente de selector de equipos *@
 
                     <SelectorEquipos @bind-EquiposSeleccionados="EquiposSeleccionados"
-                                     OpcionesEquipos="OpcionesEquipos"
-                                     @bind-EquiposSeleccionados:after="CheckCompletion" />
+                                     OpcionesEquipos="OpcionesEquipos" />
 
 
 
@@ -88,7 +87,9 @@
                     <div class="row mb-4 align-items-end">
                         <div class="col-sm-6 mb-3 mb-sm-0">
                             <label for="salaOperaciones" class="form-label visually-hidden">Sala de operaciones</label>
-                            <select class="form-select" id="salaOperaciones" @bind="SalaOperaciones" >
+                            <select class="form-select" id="salaOperaciones"
+                                    value="@SalaOperaciones"
+                                    @onchange="OnSalaOperacionesChanged">
                                 <option value="">Sala de operaciones</option>
                                 <option value="Sala 1">Sala 1</option>
                                 <option value="Sala 2">Sala 2</option>
@@ -98,8 +99,11 @@
                         <div class="col-sm-6">
                             <label for="tiempoEstimado" class="form-label visually-hidden">Tiempo estimado cirugías</label>
                             <div class="input-group">
-                                <input type="number" class="form-control" id="tiempoEstimado" placeholder="Tiempo estimado cirugías"
-                                       @bind="TiempoEstimado" @bind:event="oninput" @onchange="CheckCompletion" min="0">
+                                <input type="number" class="form-control" id="tiempoEstimado"
+                                       placeholder="Tiempo estimado cirugías"
+                                       value="@TiempoEstimado"
+                                       @onchange="OnTiempoEstimadoChanged"
+                                       min="0">
 
                                 <span class="input-group-text p-0 border-0"> @* Contenedor para el icono de filtro y el texto "Minutos" *@
 
@@ -132,7 +136,9 @@
 
             <div class="mb-4">
                 <label for="comentariosAdicionales" class="form-label">Comentarios Adicionales</label>
-                <textarea class="form-control" id="comentariosAdicionales" rows="3" @bind="ComentariosAdicionales" @bind:event="oninput"></textarea>
+                <textarea class="form-control" id="comentariosAdicionales" rows="3"
+                          value="@ComentariosAdicionales"
+                          @oninput="OnComentariosAdicionalesChanged"></textarea>
             </div>
 
         }

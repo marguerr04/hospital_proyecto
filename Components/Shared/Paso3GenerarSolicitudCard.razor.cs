@@ -23,99 +23,127 @@ namespace proyecto_hospital_version_1.Components.Shared
         [Parameter]
         public bool EsGes { get; set; }
 
-        // Para comunicar el estado de completitud al padre
+        // --- PARÁMETROS CON EVENT CALLBACKS ---
         [Parameter]
-        public bool IsReadyToProceed { get; set; }
-        [Parameter]
-        public EventCallback<bool> IsReadyToProceedChanged { get; set; }
-
-        // Variables internas del componente
         public List<string> EquiposSeleccionados { get; set; } = new List<string>();
-        public string TipoMesaSeleccionado { get; set; } = string.Empty;
-        public string SalaOperaciones { get; set; } = string.Empty;
-        public int TiempoEstimado { get; set; } = 0;
-        public bool EvaluacionAnestesica { get; set; } = false;
-        public bool Transfusiones { get; set; } = false;
+        [Parameter]
+        public EventCallback<List<string>> EquiposSeleccionadosChanged { get; set; }
+
+        [Parameter]
+        public string TipoMesaSeleccionado { get; set; } = "Estándar General";
+        [Parameter]
+        public EventCallback<string> TipoMesaSeleccionadoChanged { get; set; }
+
+        [Parameter]
+        public bool EvaluacionAnestesica { get; set; }
+        [Parameter]
+        public EventCallback<bool> EvaluacionAnestesicaChanged { get; set; }
+
+        [Parameter]
+        public bool Transfusiones { get; set; }
+        [Parameter]
+        public EventCallback<bool> TransfusionesChanged { get; set; }
+
+        [Parameter]
+        public string SalaOperaciones { get; set; } = "";
+        [Parameter]
+        public EventCallback<string> SalaOperacionesChanged { get; set; }
+
+        [Parameter]
+        public int? TiempoEstimado { get; set; }
+        [Parameter]
+        public EventCallback<int?> TiempoEstimadoChanged { get; set; }
+
+        [Parameter]
         public List<string> ComorbilidadesSeleccionadas { get; set; } = new List<string>();
-        public string ComentariosAdicionales { get; set; } = string.Empty;
+        [Parameter]
+        public EventCallback<List<string>> ComorbilidadesSeleccionadasChanged { get; set; }
 
-        // Variables para controlar los modales
+        [Parameter]
+        public string ComentariosAdicionales { get; set; } = "";
+        [Parameter]
+        public EventCallback<string> ComentariosAdicionalesChanged { get; set; }
 
-        // codigo a mover EQUIPOS public bool MostrarModalEquipos { get; set; } = false;
+        // Variables para controlar modales
         public bool MostrarModalComorbilidades { get; set; } = false;
 
         // Lista de opciones disponibles para equipos
-        // codigo a mover EQUIPOS  public List<string> OpcionesEquipos { get; set; } = new List<string> 
         public List<string> OpcionesEquipos { get; set; } = new List<string>
-    {
-        "Arco C", "Torre Lap", "Sutura mecánica", "Microscopio", "Láser", "Bisturí armónico"
-    };
+        {
+            "Arco C", "Torre Lap", "Sutura mecánica", "Microscopio", "Láser", "Bisturí armónico"
+        };
 
         // Lista de opciones disponibles para comorbilidades
         public List<string> OpcionesComorbilidades { get; set; } = new List<string>
         {
             "Diabetes Mellitus", "Hipertensión Arterial", "Asma", "Insuficiencia Renal Crónica",
-            "Cardiopatía Isquémica", "EPOC", "Obesidad Mórbida", "Dislipidemia", "Hipotiroidismo" // Añadir más
+            "Cardiopatía Isquémica", "EPOC", "Obesidad Mórbida", "Dislipidemia", "Hipotiroidismo"
         };
 
-
-        protected override void OnParametersSet()
+        // --- MÉTODOS PARA MANEJAR CAMBIOS ---
+        private async Task OnEquiposSeleccionadosChanged(List<string> nuevosEquipos)
         {
+            await EquiposSeleccionadosChanged.InvokeAsync(nuevosEquipos);
+        }
 
+        private async Task OnTipoMesaSeleccionadoChanged(string nuevoTipo)
+        {
+            await TipoMesaSeleccionadoChanged.InvokeAsync(nuevoTipo);
+        }
 
-
-
-            // Solo llamar a CheckCompletion si Paciente no es nulo, para evitar errores iniciales
-            if (Paciente != null)
+        private async Task OnEvaluacionAnestesicaChanged(ChangeEventArgs e)
+        {
+            if (e.Value is bool valor)
             {
-                CheckCompletion();
+                await EvaluacionAnestesicaChanged.InvokeAsync(valor);
             }
         }
 
-        // Lógica de validación interna
-        public async Task CheckCompletion()
+        private async Task OnTransfusionesChanged(ChangeEventArgs e)
         {
-            // La validación ahora debe considerar los equipos principales como seleccionados si están en la lista
-            // Y que al menos 1 equipo (ya sea de los principales o del modal) esté seleccionado.
-            bool ready = Paciente != null &&
-                         EquiposSeleccionados.Any() &&
-                         !string.IsNullOrWhiteSpace(TipoMesaSeleccionado) &&
-                         !string.IsNullOrWhiteSpace(SalaOperaciones) &&
-                         TiempoEstimado > 0;
-
-            if (IsReadyToProceed != ready)
+            if (e.Value is bool valor)
             {
-                IsReadyToProceed = ready;
-                await IsReadyToProceedChanged.InvokeAsync(IsReadyToProceed);
+                await TransfusionesChanged.InvokeAsync(valor);
             }
-            StateHasChanged(); // Asegurar que el UI se actualice con los cambios de estado.
         }
 
-        // --- Métodos para Modales de Equipos ---
-        // codigo a mover EQUIPOS AbrirModalEquipos
-        // codigo a mover EQUIPOS CerrarModalEquipos
-        // codigo a mover EQUIPOS ToggleEquipoDesdeModal
-        // Método para los botones (Arco C, Torre Lap, Sutura mecánica)
-        // codigo a mover EQUIPOS ToggleEquipoDirecto
-        // codigo a mover EQUIPOS RemoverEquipo
+        private async Task OnSalaOperacionesChanged(ChangeEventArgs e)
+        {
+            await SalaOperacionesChanged.InvokeAsync(e.Value?.ToString() ?? "");
+        }
 
+        private async Task OnTiempoEstimadoChanged(ChangeEventArgs e)
+        {
+            if (int.TryParse(e.Value?.ToString(), out int tiempo) && tiempo > 0)
+            {
+                await TiempoEstimadoChanged.InvokeAsync(tiempo);
+            }
+            else
+            {
+                await TiempoEstimadoChanged.InvokeAsync(null);
+            }
+        }
 
+        private async Task OnComentariosAdicionalesChanged(ChangeEventArgs e)
+        {
+            await ComentariosAdicionalesChanged.InvokeAsync(e.Value?.ToString() ?? "");
+        }
 
-        // --- Métodos para Modales de Comorbilidades ---
+        // --- MÉTODOS PARA MODALES ---
         public void AbrirModalComorbilidades()
         {
             MostrarModalComorbilidades = true;
             StateHasChanged();
         }
 
-        public void CerrarModalComorbilidades()
+        public async Task CerrarModalComorbilidades()
         {
             MostrarModalComorbilidades = false;
-            CheckCompletion();
+            await ComorbilidadesSeleccionadasChanged.InvokeAsync(ComorbilidadesSeleccionadas);
             StateHasChanged();
         }
 
-        public void ToggleComorbilidadDesdeModal(string comorbilidad, bool isChecked)
+        public async Task ToggleComorbilidadDesdeModal(string comorbilidad, bool isChecked)
         {
             if (isChecked && !ComorbilidadesSeleccionadas.Contains(comorbilidad))
             {
@@ -125,44 +153,22 @@ namespace proyecto_hospital_version_1.Components.Shared
             {
                 ComorbilidadesSeleccionadas.Remove(comorbilidad);
             }
-            StateHasChanged(); // Forzar la actualización del UI en el modal
+
+            await ComorbilidadesSeleccionadasChanged.InvokeAsync(ComorbilidadesSeleccionadas);
+            StateHasChanged();
         }
 
-        public void RemoverComorbilidad(string comorbilidad)
+        public async Task RemoverComorbilidad(string comorbilidad)
         {
             ComorbilidadesSeleccionadas.Remove(comorbilidad);
-            CheckCompletion();
+            await ComorbilidadesSeleccionadasChanged.InvokeAsync(ComorbilidadesSeleccionadas);
             StateHasChanged();
         }
 
-        // Métodos para los Toggle Buttons directos del UI
-        public void SeleccionarTipoMesa(string tipo)
+        // Método para los Toggle Buttons directos del UI
+        public async Task SeleccionarTipoMesa(string tipo)
         {
-            TipoMesaSeleccionado = tipo;
-            CheckCompletion();
-            StateHasChanged();
+            await TipoMesaSeleccionadoChanged.InvokeAsync(tipo);
         }
-
-        // Estos métodos no son estrictamente necesarios si usas @bind en los switches,
-        // pero son útiles para llamar a CheckCompletion explícitamente.
-        public void OnEvaluacionAnestesicaChanged(ChangeEventArgs e)
-        {
-            EvaluacionAnestesica = (bool)e.Value;
-            CheckCompletion();
-        }
-
-        public void OnTransfusionesChanged(ChangeEventArgs e)
-        {
-            Transfusiones = (bool)e.Value;
-            CheckCompletion();
-        }
-
-
-
-
-
     }
-
-
-
 }

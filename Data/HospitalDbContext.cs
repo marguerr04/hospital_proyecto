@@ -15,6 +15,7 @@ namespace proyecto_hospital_version_1.Data.Hospital // Namespace de tu DbContext
         public DbSet<TipoProcedimiento> TiposProcedimiento { get; set; } = default!;
         public DbSet<EspecialidadHospital> ESPECIALIDAD { get; set; } = default!;
 
+        public DbSet<SolicitudQuirurgica> SolicitudesQuirurgicas { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

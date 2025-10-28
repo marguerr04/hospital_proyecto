@@ -212,18 +212,39 @@
             @if (_pasoActual == 2)
             {
                 <Paso2RequerimientosCard Paciente="_pacienteSeleccionado"
-                                         @bind-DiagnosticoPrincipal="_diagnosticoPrincipal"
-                                         @bind-EsGes="_esGes" />
+                                         DiagnosticoPrincipal="_diagnosticoPrincipal"
+                                         DiagnosticoPrincipalChanged="(value) => _diagnosticoPrincipal = value"
+                                         EsGes="_esGes"
+                                         EsGesChanged="(value) => _esGes = value"
+                                         CodigoAsociado="_codigoAsociado"
+                                         CodigoAsociadoChanged="(value) => _codigoAsociado = value"
+                                         Peso="_peso"
+                                         PesoChanged="(value) => _peso = value"
+                                         Talla="_talla"
+                                         TallaChanged="(value) => _talla = value"
+                                         IMC="_imc"
+                                         EspecialidadOrigen="_especialidadOrigen"
+                                         EspecialidadOrigenChanged="(value) => _especialidadOrigen = value"
+                                         EspecialidadDestino="_especialidadDestino"
+                                         EspecialidadDestinoChanged="(value) => _especialidadDestino = value" />
             }
 
             @if (_pasoActual == 3)
             {
                                   
                     <Paso3GenerarSolicitudCard Paciente="_pacienteSeleccionado"
-                               ProcedimientoPrincipal="@_procedimientoSeleccionado"
-                               DiagnosticoPrincipal="@_diagnosticoPrincipal"
-                               ProcedenciaPrincipal="@_procedenciaSeleccionada"  
-                               EsGes="@_esGes" />
+                                           ProcedimientoPrincipal="@_procedimientoSeleccionado"
+                                           DiagnosticoPrincipal="@_diagnosticoPrincipal"
+                                           ProcedenciaPrincipal="@_procedenciaSeleccionada"
+                                           EsGes="@_esGes"
+                                           @bind-EquiposSeleccionados="_equiposSeleccionados"
+                                           @bind-TipoMesaSeleccionado="_tipoMesaSeleccionado"
+                                           @bind-EvaluacionAnestesica="_evaluacionAnestesica"
+                                           @bind-Transfusiones="_transfusiones"
+                                           @bind-SalaOperaciones="_salaOperaciones"
+                                           @bind-TiempoEstimado="_tiempoEstimado"
+                                           @bind-ComorbilidadesSeleccionadas="_comorbilidadesSeleccionadas"
+                                           @bind-ComentariosAdicionales="_comentariosAdicionales" />
             }
 
             <!-- Botones de Navegación -->
@@ -279,8 +300,6 @@
     private string _lateralidadSeleccionada = "";
     private string _extremidadSeleccionada = "";
 
-
-
     // Variables para búsqueda de pacientes
     private List<PacienteHospital> _pacientes = new();
     private string _estado = "inicial";
@@ -310,8 +329,31 @@
     // variables para la generación del consentimiento informado pdf
 
 
+
+    // --- VARIABLES FALTANTES DE PASO 2 ---
+    private string _codigoAsociado = ""; // 
+    private decimal? _peso;
+    private decimal? _talla;
+    // ESTA ES LA CORRECCIÓN
+    private decimal? _imc => (_talla.HasValue && _talla > 0 && _peso.HasValue)
+        ? Math.Round(_peso.Value / (_talla.Value * _talla.Value), 2)
+        : null;
+    private string _especialidadOrigen = "";
+    private string _especialidadDestino = "";
+
+    // --- VARIABLES FALTANTES DE PASO 3 ---
+    private List<string> _equiposSeleccionados = new List<string>();
+    private string _tipoMesaSeleccionado = "Estándar General";
+    private bool _evaluacionAnestesica;
+    private bool _transfusiones;
+    private string _salaOperaciones = "";
+    private int? _tiempoEstimado;
+    private List<string> _comorbilidadesSeleccionadas = new List<string>();
+    private string _comentariosAdicionales = "";
+
+
     private bool _mostrarPDF = false;
-    private ConsentimientoPDF? _consentimientoPdfRef; // <- NUEVA VARIABLE
+    private ConsentimientoPDF? _consentimientoPdfRef; // 
 
     private bool PuedeGenerarPDF =>
         _pacienteSeleccionado != null &&

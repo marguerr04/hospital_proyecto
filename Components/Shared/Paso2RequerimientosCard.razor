@@ -1,4 +1,7 @@
-﻿<div class="card shadow-sm mb-4">
+﻿@using proyecto_hospital_version_1.Models
+@using proyecto_hospital_version_1.Data.Hospital
+
+<div class="card shadow-sm mb-4">
     <div class="card-body p-4">
         <div class="alert alert-primary p-3 mb-4 d-flex align-items-center" style="--bs-alert-bg: #e0f2f7; --bs-alert-color: #0c5460; border-color: #bee5eb;">
             <i class="bi bi-card-checklist me-3 h4 mb-0"></i> <h5 class="mb-0">2. Requerimientos y generación de solicitud</h5>
@@ -13,15 +16,29 @@
             <div class="row mb-4 align-items-end">
                 <div class="col-md-3">
                     <label for="peso" class="form-label">Peso (Kg)</label>
-                    <input type="number" class="form-control" id="peso" @bind-value="_peso" @bind-value:event="oninput" placeholder="0" min="0" step="0.1">
+                    <input type="number"
+                           class="form-control"
+                           id="peso"
+                           value="@Peso"
+                           @onchange="OnPesoChanged"
+                           placeholder="0"
+                           min="0"
+                           step="0.1">
                 </div>
                 <div class="col-md-3">
                     <label for="talla" class="form-label">Talla (M)</label>
-                    <input type="number" class="form-control" id="talla" @bind-value="_talla" @bind-value:event="oninput" placeholder="0" min="0" step="0.01">
+                    <input type="number"
+                           class="form-control"
+                           id="talla"
+                           value="@Talla"
+                           @onchange="OnTallaChanged"
+                           placeholder="0"
+                           min="0"
+                           step="0.01">
                 </div>
                 <div class="col-md-6">
                     <label class="form-label d-block">IMC</label>
-                    <p class="form-control-plaintext h5 text-primary"><strong>@_imc.ToString("F2")</strong></p>
+                    <p class="form-control-plaintext h5 text-primary"><strong>@IMC?.ToString("F2")</strong></p>
                 </div>
             </div>
 
@@ -40,7 +57,7 @@
                                        id="diagnosticoPrincipal"
                                        list="listaDiagnosticos"
                                        value="@DiagnosticoPrincipal"
-                                       @oninput="async (e) => await OnDiagnosticoPrincipalChanged(e.Value?.ToString())"
+                                       @oninput="OnDiagnosticoInput"
                                        placeholder="Escriba el diagnóstico..." />
 
                                 <datalist id="listaDiagnosticos">
@@ -56,7 +73,7 @@
                                 <input type="text"
                                        class="form-control"
                                        id="codigoCie"
-                                       value="@_codigoAsociado"
+                                       value="@CodigoAsociado"
                                        readonly
                                        placeholder="Código">
                             </div>
@@ -67,7 +84,7 @@
                                    type="checkbox"
                                    id="esGesCheck"
                                    checked="@EsGes"
-                                   @onchange="OnEsGesCheckboxChanged" />
+                                   @onchange="OnEsGesChanged" />
                             <label class="form-check-label" for="esGesCheck">
                                 EsGes
                             </label>
@@ -84,8 +101,12 @@
 
                 <div class="col-md-6">
                     <div class="mb-3 p-3 bg-light border rounded">
-                        <h6 class="border-bottom pb-2 mb-3"><i class="bi bi-people me-2 text-primary"></i> Especialidades Involucradas</h6> <label for="especialidadOrigen" class="form-label">Especialidad Origen</label>
-                        <select class="form-select mb-3" id="especialidadOrigen" @bind="_especialidadOrigen">
+                        <h6 class="border-bottom pb-2 mb-3"><i class="bi bi-people me-2 text-primary"></i> Especialidades Involucradas</h6>
+                        <label for="especialidadOrigen" class="form-label">Especialidad Origen</label>
+                        <select class="form-select mb-3"
+                                id="especialidadOrigen"
+                                value="@EspecialidadOrigen"
+                                @onchange="OnEspecialidadOrigenChanged">
                             <option value="">Seleccionar especialidad que deriva...</option>
                             @foreach (var especialidad in _especialidadesDisponiblesBd)
                             {
@@ -93,7 +114,10 @@
                             }
                         </select>
                         <label for="especialidadDestino" class="form-label">Especialidad Destino</label>
-                        <select class="form-select" id="especialidadDestino" @bind="_especialidadDestino">
+                        <select class="form-select"
+                                id="especialidadDestino"
+                                value="@EspecialidadDestino"
+                                @onchange="OnEspecialidadDestinoChanged">
                             <option value="">Seleccionar especialidad que recibe...</option>
                             @foreach (var especialidad in _especialidadesDisponiblesBd)
                             {
@@ -105,7 +129,8 @@
             </div>
 
             <div class="mb-4 p-3 bg-light border rounded">
-                <h6 class="border-bottom pb-2 mb-3"><i class="bi bi-list-check me-2 text-primary"></i> Procedimientos a Realizar</h6> @if (!_procedimientosAnadidos.Any())
+                <h6 class="border-bottom pb-2 mb-3"><i class="bi bi-list-check me-2 text-primary"></i> Procedimientos a Realizar</h6>
+                @if (!_procedimientosAnadidos.Any())
                 {
                     <div class="alert alert-info text-center">
                         No hay procedimientos añadidos.
