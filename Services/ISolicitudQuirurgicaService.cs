@@ -7,5 +7,9 @@ namespace proyecto_hospital_version_1.Services
         Task<SolicitudQuirurgica> CrearSolicitudAsync(SolicitudQuirurgica nuevaSolicitud);
 
         Task<List<SolicitudQuirurgica>> ObtenerTodasLasSolicitudesAsync();
+
+
+        Task<SolicitudQuirurgica> ObtenerSolicitudPorIdAsync(int id);
+
     }
 }

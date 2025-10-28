@@ -128,27 +128,8 @@
                 </div>
             </div>
 
-            <div class="mb-4 p-3 bg-light border rounded">
-                <h6 class="border-bottom pb-2 mb-3"><i class="bi bi-list-check me-2 text-primary"></i> Procedimientos a Realizar</h6>
-                @if (!_procedimientosAnadidos.Any())
-                {
-                    <div class="alert alert-info text-center">
-                        No hay procedimientos añadidos.
-                    </div>
-                }
-                else
-                {
-                    <ul class="list-group">
-                        @foreach (var proc in _procedimientosAnadidos)
-                        {
-                            <li class="list-group-item">@proc</li>
-                        }
-                    </ul>
-                }
-                <button class="btn btn-primary mt-3 w-100" @onclick="AgregarProcedimientoDummy">
-                    <i class="bi bi-plus-circle me-2"></i> Agregar Procedimiento
-                </button>
-            </div>
+            <ProcedimientosCard ListaProcedimientos="_procedimientosAnadidos"
+                                OnAgregarPresionado="AgregarProcedimientoDummy" />
         }
         else
         {
