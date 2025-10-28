@@ -1,53 +1,50 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
-
+using proyecto_hospital_version_1.Data.Hospital; // Asegúrate de tener este using
 namespace proyecto_hospital_version_1.Models
 {
     public class SolicitudQuirurgica
     {
         public int Id { get; set; }
-
-        // Relación con Paciente
         public int PacienteId { get; set; }
 
         public PacienteHospital Paciente { get; set; }
 
-        // Datos del formulario
-        public string DiagnosticoPrincipal { get; set; }
-        public string CodigoCie { get; set; }
-        public string ProcedimientoPrincipal { get; set; }
-        public string Procedencia { get; set; }
+        [Required]
+        public string DiagnosticoPrincipal { get; set; } = string.Empty;
+
+        public string? CodigoCie { get; set; }
+
+        [Required]
+        public string ProcedimientoPrincipal { get; set; } = string.Empty;
+
+        [Required]
+        public string Procedencia { get; set; } = "Ambulatorio";
+
         public bool EsGes { get; set; }
+        public string? EspecialidadOrigen { get; set; }
+        public string? EspecialidadDestino { get; set; }
 
-        // Especialidades
-        public string EspecialidadOrigen { get; set; }
-        public string EspecialidadDestino { get; set; }
+        // CAMBIAR A NO NULLABLE con valores por defecto
+        public decimal Peso { get; set; }
+        public decimal Talla { get; set; }
+        public decimal IMC { get; set; }
 
-        // Datos clínicos
-        public decimal? Peso { get; set; }
-        public decimal? Talla { get; set; }
-        public decimal? IMC { get; set; }
-
-        // Equipos y recursos (como JSON o string delimitado)
-        public string EquiposRequeridos { get; set; } // "Arco C,Torre Lap,Sutura"
-        public string TipoMesa { get; set; }
-
-        // Evaluaciones
+        public string? EquiposRequeridos { get; set; }
+        public string? TipoMesa { get; set; }
         public bool EvaluacionAnestesica { get; set; }
         public bool Transfusiones { get; set; }
 
-        // Planificación
-        public string SalaOperaciones { get; set; }
-        public int? TiempoEstimado { get; set; }
+        [Required]
+        public string SalaOperaciones { get; set; } = string.Empty;
 
-        // Comorbilidades y comentarios
-        public string Comorbilidades { get; set; } // "Diabetes,HTA,Obesidad"
-        public string ComentariosAdicionales { get; set; }
+        public int TiempoEstimado { get; set; }
+        public string? Comorbilidades { get; set; }
+        public string? ComentariosAdicionales { get; set; }
 
-        // Metadata
-        public DateTime FechaCreacion { get; set; }
-        public string Estado { get; set; } = "Pendiente"; // Pendiente, Priorizada, Aprobada
-        public int Prioridad { get; set; } = 0; // 0=Normal, 1=Alta, 2=Urgente
-        public string CreadoPor { get; set; } // Usuario que creó
+        public DateTime FechaCreacion { get; set; } = DateTime.Now;
+        public string Estado { get; set; } = "Pendiente";
+        public int Prioridad { get; set; } = 0;
+        public string? CreadoPor { get; set; }
     }
 }

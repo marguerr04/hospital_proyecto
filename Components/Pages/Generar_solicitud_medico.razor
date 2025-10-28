@@ -603,7 +603,7 @@
     {
         if (_pasoActual != 3) return;
 
-        // VALIDACIONES MANUALES - Sin depender de _isPaso3Ready
+        // VALIDACIONES MANUALES
         var errores = new List<string>();
 
         if (_pacienteSeleccionado == null)
@@ -624,7 +624,13 @@
         if (_equiposSeleccionados.Count == 0)
             errores.Add("• No se han seleccionado equipos requeridos");
 
-        // Mostrar errores específicos
+        // Validaciones para peso y talla
+        if (!_peso.HasValue || _peso <= 0)
+            errores.Add("• Peso no válido");
+
+        if (!_talla.HasValue || _talla <= 0)
+            errores.Add("• Talla no válida");
+
         if (errores.Any())
         {
             var mensajeError = "Faltan los siguientes datos esenciales:\n" + string.Join("\n", errores);
@@ -637,43 +643,55 @@
         {
             var nuevaSolicitud = new SolicitudQuirurgica
                 {
+                    // OBLIGATORIOS
                     PacienteId = _pacienteSeleccionado.id,
                     DiagnosticoPrincipal = _diagnosticoPrincipal,
-                    CodigoCie = _codigoAsociado,
                     ProcedimientoPrincipal = _procedimientoSeleccionado,
                     Procedencia = _procedenciaSeleccionada,
+                    SalaOperaciones = _salaOperaciones,
+
+                    // CON VALORES POR DEFECTO (convertir nullable a no-nullable)
+                    Peso = _peso.Value,                          // ✅ .Value para convertir decimal? a decimal
+                    Talla = _talla.Value,                        // ✅ .Value para convertir decimal? a decimal
+                    IMC = _imc ?? 0,                            // ✅ Usar 0 si es null
+                    TiempoEstimado = _tiempoEstimado.Value,      // ✅ .Value para convertir int? a int
+
+                    // OPCIONALES
+                    CodigoCie = _codigoAsociado,
                     EsGes = _esGes,
                     EspecialidadOrigen = _especialidadOrigen,
                     EspecialidadDestino = _especialidadDestino,
-                    Peso = _peso,
-                    Talla = _talla,
-                    IMC = _imc,
                     EquiposRequeridos = string.Join(";", _equiposSeleccionados),
                     TipoMesa = _tipoMesaSeleccionado,
                     EvaluacionAnestesica = _evaluacionAnestesica,
                     Transfusiones = _transfusiones,
-                    SalaOperaciones = _salaOperaciones,
-                    TiempoEstimado = _tiempoEstimado,
                     Comorbilidades = string.Join(";", _comorbilidadesSeleccionadas),
                     ComentariosAdicionales = _comentariosAdicionales,
+                    CreadoPor = "Sistema",  // ✅ Valor fijo
+
+                    // METADATOS
                     FechaCreacion = DateTime.Now,
                     Estado = "Pendiente",
-                    Prioridad = 0,
+                    Prioridad = 0
                 };
 
             HospitalDb.SolicitudesQuirurgicas.Add(nuevaSolicitud);
             await HospitalDb.SaveChangesAsync();
 
             await JsRuntime.InvokeVoidAsync("alert", "¡Solicitud guardada con éxito!");
-
             ResetFormulario();
             _pasoActual = 1;
             StateHasChanged();
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Error al guardar solicitud: {ex.Message}");
-            await JsRuntime.InvokeVoidAsync("alert", $"Error al guardar solicitud: {ex.Message}");
+            // ERROR DETALLADO
+            var errorDetails = $"Error: {ex.Message}";
+            if (ex.InnerException != null)
+                errorDetails += $"\nDetalles: {ex.InnerException.Message}";
+
+            Console.WriteLine($"ERROR BD: {errorDetails}");
+            await JsRuntime.InvokeVoidAsync("alert", $"Error al guardar: {errorDetails}");
         }
     }
 
