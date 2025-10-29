@@ -44,6 +44,7 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
+    <PackageReference Include="MudBlazor" Version="8.13.0" />
     <PackageReference Include="PDFsharp" Version="6.2.2" />
     <PackageReference Include="QuestPDF" Version="2025.7.3" />
   </ItemGroup>
