@@ -54,11 +54,27 @@
                                 <td>@solicitud.DiagnosticoPrincipal</td>
                                 <td>@solicitud.SalaOperaciones</td>
                                 <td>@solicitud.FechaCreacion.ToString("dd/MM/yy HH:mm")</td>
-                                <td><span class="badge bg-warning">@solicitud.Estado</span></td>
+                                <!-- COLUMNA ESTADO - Mostrar el estado textual -->
+                                <td>
+                                    @switch (solicitud.Estado)
+                                    {
+                                        case "Priorizada":
+                                        case "Priorizada (Manual)":
+                                            <span class="badge bg-success">@solicitud.Estado</span>
+                                            break;
+                                        case "Pendiente":
+                                            <span class="badge bg-warning">@solicitud.Estado</span>
+                                            break;
+                                        default:
+                                            <span class="badge bg-secondary">@solicitud.Estado</span>
+                                            break;
+                                    }
+                                </td>
+                                <!-- COLUMNA PRIORIDAD - Mostrar la prioridad numérica -->
                                 <td>
                                     @if (solicitud.Prioridad > 0)
                                     {
-                                        <span class="badge bg-success">P@solicitud.Prioridad</span>
+                                        <span class="badge bg-dark">P@(solicitud.Prioridad)</span>
                                     }
                                     else
                                     {
@@ -144,6 +160,13 @@
 
                 <!-- AQUÍ ESTÁ TU COMPONENTE REUTILIZABLE -->
                 <CriteriosPriorizacion @bind-CriterioSeleccionado="_criterioSeleccionado" />
+
+
+
+                <button class="btn btn-primary mt-3" @onclick="GuardarPrioridadManual"
+                        disabled="@(string.IsNullOrEmpty(_criterioSeleccionado))">
+                    <i class="bi bi-save me-2"></i> Guardar Prioridad Manual
+                </button>
 
             </div>
         </div>
@@ -253,9 +276,6 @@
     }
 
     // funciones para la priorizacion
-
-
-
     private bool _showSystemSuggestion = true;
     private bool _showRejectionReason = false;
     private string _criterioSeleccionado = "";
@@ -263,6 +283,62 @@
     private string _otroMotivo = "";
 
 
+
+
+    // metodo para asiagnar priorizacion manual
+
+
+    private async Task GuardarPrioridadManual()
+    {
+        if (string.IsNullOrEmpty(_criterioSeleccionado) || _solicitudSeleccionada == null)
+        {
+            Console.WriteLine("No se ha seleccionado un criterio manual o no hay solicitud.");
+            return;
+        }
+        int prioridadManual = 0;
+        switch (_criterioSeleccionado)
+        {
+            case "ges":
+            case "logistica":
+            case "sanitaria":
+                prioridadManual = 1;
+                break;
+            case "percentil50":
+            case "licencia":
+            case "prais":
+                prioridadManual = 2;
+                break;
+            case "sename":
+            case "comges":
+                prioridadManual = 3;
+                break;
+            default:
+                Console.WriteLine($"Criterio no mapeado: '{_criterioSeleccionado}'");
+                return;
+        }
+
+        if (prioridadManual > 0)
+        {
+            try
+            {
+                _solicitudSeleccionada.Prioridad = prioridadManual;
+                _solicitudSeleccionada.Estado = "Priorizada (Manual)";
+
+                // --- AÑADIR FECHA DE LOG (también aquí) ---
+                _solicitudSeleccionada.FechaPriorizacion = DateTime.Now;
+
+                HospitalDb.SolicitudesQuirurgicas.Update(_solicitudSeleccionada);
+                await HospitalDb.SaveChangesAsync();
+
+                VolverALista();
+                await CargarSolicitudes();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error al guardar prioridad manual: {ex.Message}");
+            }
+        }
+    }
 
 
 }

@@ -46,5 +46,11 @@ namespace proyecto_hospital_version_1.Models
         public string Estado { get; set; } = "Pendiente";
         public int Prioridad { get; set; } = 0;
         public string? CreadoPor { get; set; }
+        // saber la fecha de priorización
+        public DateTime? FechaPriorizacion { get; set; }
+
+
+
     }
+
 }
