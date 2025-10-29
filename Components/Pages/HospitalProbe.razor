@@ -1,5 +1,6 @@
 ﻿@page "/hospital-probe"
 @using proyecto_hospital_version_1.Models
+@using proyecto_hospital_version_1.Shared
 @using proyecto_hospital_version_1.Components.Shared
 @using proyecto_hospital_version_1.Data.Hospital
 @inject HospitalDbContext HospitalDb
@@ -9,6 +10,7 @@
 <PageTitle>Prueba de Componentes Hospitalarios</PageTitle>
 
 <div class="container mt-4">
+
     <h1 class="mb-4">Prueba de Buscador de Pacientes y Cards</h1>
 
     <h3>1. Buscador de Pacientes</h3>
@@ -258,29 +260,6 @@
         </div>
     }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
     <hr class="my-4">
 
     <h3>🧪 Prueba de ProcedimientosCard</h3>
@@ -321,10 +300,62 @@
     </div>
 
 
+    <!-- ========== Sección de criterios de priorizacion ========== -->
+    <hr class="my-5">
 
+    <div class="card border-primary">
+        <div class="card-header bg-primary text-white">
+            <h4 class="mb-0">
+                <i class="bi bi-sort-up me-2"></i>
+               Componente CriteriosPriorizacion
+            </h4>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-8">
+                    <h5>Componente criterios priorizacion</h5>
+                    <p class="text-muted">
+                        componente de "priorizar-solicitud-original" para ser reutilizable.
+                    </p>
+
+
+                    <CriteriosPriorizacion @bind-CriterioSeleccionado="CriterioPruebaTest" />
+
+                </div>
+
+                <div class="col-md-4">
+                    <div class="card bg-light">
+                        <div class="card-header">
+                            <h6 class="mb-0"> Información de Prueba</h6>
+                        </div>
+                        <div class="card-body">
+                            <p><strong>Criterio Seleccionado:</strong></p>
+                            <div class="alert @(_criterioPruebaAlertClass)" role="alert">
+                                <strong>@(CriterioPruebaTest ?? "Ninguno")</strong>
+                            </div>
+
+                            <p><strong>Prioridad Sugerida:</strong></p>
+                            <span class="badge @_prioridadBadgeClass fs-6">
+                                @_prioridadSugeridaPrueba
+                            </span>
+
+                            <div class="mt-3">
+                                <button class="btn btn-sm btn-outline-secondary w-100"
+                                        @onclick="LimpiarPruebaPriorizacion"
+                                        disabled="@string.IsNullOrEmpty(CriterioPruebaTest)">
+                                    <i class="bi bi-arrow-clockwise me-1"></i> Limpiar Selección
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 
 @code {
+
     private PacienteHospital? _pacienteSeleccionado;
 
     // Variables para pruebas de componentes
@@ -344,19 +375,14 @@
 
     private string _mesaTest = string.Empty;
 
-    // ✅ NUEVAS VARIABLES PARA PROCEDIMIENTOS CARD
     private List<string> _procedimientosTest = new List<string>();
     private int _contadorClics = 0;
 
-    // Variables para verificación de solicitudes
     private List<SolicitudQuirurgica> _solicitudes = new();
     private int _totalSolicitudes = -1;
-
-    // Variables para prueba individual
     private int _idSolicitudBuscar;
     private SolicitudQuirurgica _solicitudIndividual;
 
-    // Variables para sistema de priorización
     private SolicitudQuirurgica _solicitudSeleccionada;
     private int _prioridadSugerida = 3;
     private string _motivoSugerencia = "Prioridad base.";
@@ -366,19 +392,17 @@
         _pacienteSeleccionado = paciente;
     }
 
-    // ✅ NUEVO MÉTODO PARA PROCEDIMIENTOS CARD
     private void HandleAgregarProcedimiento()
     {
         _contadorClics++;
 
-        // Agregar un procedimiento de ejemplo
         var nuevoProcedimiento = $"Procedimiento {_contadorClics} - {DateTime.Now:HH:mm:ss}";
         _procedimientosTest.Add(nuevoProcedimiento);
 
         StateHasChanged();
     }
 
-    // ✅ NUEVO MÉTODO PARA LIMPIAR PROCEDIMIENTOS
+    // metodo para limpiar procedimientos
     private void LimpiarProcedimientos()
     {
         _procedimientosTest.Clear();
@@ -495,4 +519,71 @@
     {
         await CargarSolicitudes();
     }
+
+
+    private string _criterioPruebaBackingField; // Campo privado
+    private string _criterioPruebaAlertClass = "alert-secondary";
+    private string _prioridadSugeridaPrueba = "Pendiente";
+    private string _prioridadBadgeClass = "bg-secondary";
+
+    // se enlaza a @bind-CriterioSeleccionado
+    private string CriterioPruebaTest
+    {
+        get => _criterioPruebaBackingField;
+        set
+        {
+            _criterioPruebaBackingField = value;
+            // Al asignar un valor, se ejecuta esta lógica
+            ActualizarEstadoPruebaCriterios();
+        }
+    }
+
+    private void LimpiarPruebaPriorizacion()
+    {
+        // Al asignar null, se dispara el 'set' de la propiedad CriterioPruebaTest
+        CriterioPruebaTest = null;
+    }
+
+    // Método único que actualiza la UI de prueba
+    private void ActualizarEstadoPruebaCriterios()
+    {
+        if (!string.IsNullOrEmpty(CriterioPruebaTest))
+        {
+            _criterioPruebaAlertClass = "alert-success";
+
+            // Lógica simple para determinar prioridad basada en el criterio
+            switch (CriterioPruebaTest)
+            {
+                case "sename":
+                case "prais":
+                case "sanitaria":
+                case "ges":
+                    _prioridadSugeridaPrueba = "P1 - Alta";
+                    _prioridadBadgeClass = "bg-danger";
+                    break;
+                case "comges":
+                case "percentil50":
+                case "licencia":
+                    _prioridadSugeridaPrueba = "P2 - Media";
+                    _prioridadBadgeClass = "bg-warning";
+                    break;
+                case "logistica":
+                    _prioridadSugeridaPrueba = "P3 - Logística";
+                    _prioridadBadgeClass = "bg-info";
+                    break;
+                default:
+                    _prioridadSugeridaPrueba = "P4 - Rutina";
+                    _prioridadBadgeClass = "bg-secondary";
+                    break;
+            }
+        }
+        else
+        {
+            _criterioPruebaAlertClass = "alert-secondary";
+            _prioridadSugeridaPrueba = "Pendiente";
+            _prioridadBadgeClass = "bg-secondary";
+        }
+
+    }
 }
+
