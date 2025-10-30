@@ -10,9 +10,8 @@ namespace proyecto_hospital_version_1.Models
         [Column("id")]
         public int Id { get; set; }
 
-        [Column("codigo")]
-        [StringLength(50)]
-        public string Codigo { get; set; } = string.Empty;
+        [Column("codigo")] // antes definido como string, que era diferente de la bd
+        public int Codigo { get; set; } 
 
         [Column("nombre")]
         [StringLength(255)]
@@ -21,7 +20,7 @@ namespace proyecto_hospital_version_1.Models
         [Column("descripcion")]
         public string? Descripcion { get; set; }
 
-        [Column("tipoProcedimiento_id")]
+        [Column("TIPO_PROCEDIMIENTO_ID")]
         public int TipoProcedimientoId { get; set; }
 
         [ForeignKey("TipoProcedimientoId")]

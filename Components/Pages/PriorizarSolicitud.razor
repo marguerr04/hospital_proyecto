@@ -1,5 +1,4 @@
 ﻿@page "/priorizar-solicitudes"
-@page "/priorizar-solicitudes/{SolicitudId:int}"
 @using proyecto_hospital_version_1.Shared
 @inject NavigationManager Navigation
 @layout Components.Layout.MainLayoutMedico
@@ -44,7 +43,7 @@
                                 <thead class="table-light">
                                     <tr>
                                         <th>ID</th>
-                                        <th>Paciente ID</th>
+                                        <th>Rut Paciente</th>
                                         <th>Procedimiento</th>
                                         <th>Diagnóstico</th>
                                         <th>Fecha</th>
@@ -57,7 +56,17 @@
                                     {
                                         <tr>
                                             <td><strong>@solicitud.Id</strong></td>
-                                            <td>@solicitud.PacienteId</td>
+                                            <td>
+                                                @if (solicitud.Paciente != null)
+                                                {
+                                                    <span>@solicitud.Paciente.rut-@solicitud.Paciente.dv</span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="text-muted">N/A</span>
+                                                }
+
+                                            </td>
                                             <td>@solicitud.ProcedimientoPrincipal</td>
                                             <td>@solicitud.DiagnosticoPrincipal</td>
                                             <td>@solicitud.FechaCreacion.ToString("dd/MM/yy HH:mm")</td>
@@ -97,7 +106,7 @@
                                 <thead class="table-light">
                                     <tr>
                                         <th>ID</th>
-                                        <th>Paciente ID</th>
+                                        <th>Rut Paciente</th>
                                         <th>Procedimiento</th>
                                         <th>Diagnóstico</th>
                                         <th>Fecha</th>
@@ -111,7 +120,17 @@
                                     {
                                         <tr>
                                             <td><strong>@solicitud.Id</strong></td>
-                                            <td>@solicitud.PacienteId</td>
+                                            <td>
+                                                @if (solicitud.Paciente != null)
+                                                {
+                                                    <span>@solicitud.Paciente.rut-@solicitud.Paciente.dv</span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="text-muted">N/A</span>
+                                                }
+
+                                            </td>
                                             <td>@solicitud.ProcedimientoPrincipal</td>
                                             <td>@solicitud.DiagnosticoPrincipal</td>
                                             <td>@solicitud.FechaCreacion.ToString("dd/MM/yy HH:mm")</td>

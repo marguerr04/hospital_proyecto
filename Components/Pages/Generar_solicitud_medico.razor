@@ -135,19 +135,14 @@
 
                     <div class="row mb-4">
                         <div class="col-md-6">
-                            <label for="procedimiento" class="form-label">Procedimiento</label>
-                            <select class="form-select" id="procedimiento" 
-                            @bind="_procedimientoSeleccionado">
-
-
-                                <option value="">Seleccione un procedimiento</option>
-                                <option value="Apendicectomía">Apendicectomía</option>
-                                <option value="Colecistectomía">Colecistectomía</option>
-                                <option value="Hernioplastia">Hernioplastia</option>
-                                <option value="Amigdalectomía">Amigdalectomía</option>
-                                <option value="Catarata">Catarata</option>
-                                <option value="Laparoscopia">Laparoscopia</option>
-                                <option value="Otro">Otro procedimiento</option>
+                                <label for="procedimiento" class="form-label">Procedimiento</label>
+                                <select class="form-select" id="procedimiento"
+                                        @bind="_procedimientoSeleccionado">
+                                    <option value="">Seleccione un procedimiento</option>
+                                    @foreach (var proc in _listaProcedimientos)
+                                    {
+                                        <option value="@proc.Nombre">@proc.Nombre</option>
+                                    }
                             </select>
 
 
@@ -370,6 +365,12 @@
 
     private string _nombrePacienteParaMostrar = "";
     private string _rutPacienteParaMostrar = "";
+
+
+
+    // variables fase 1 
+
+    private List<Procedimiento> _listaProcedimientos = new List<Procedimiento>();
     
     // variables para cambiar de rutas
 
@@ -441,10 +442,7 @@
 
 
 
-    protected override async Task OnInitializedAsync()
-    {
-        await Task.CompletedTask;
-    }
+
 
     private async Task CargarPacientes()
     {
@@ -779,7 +777,34 @@
         }
     }
 
-    // metodo para la generación de la solicitud
+    // para agregar cosas asincronas
+    protected override async Task OnInitializedAsync()
+    {
+
+
+        // Cargar los procedimientos desde la base de datos
+        await CargarListaProcedimientos();
+
+        // Ejemplo: await CargarOtraCosaAsync();
+    }
+
+    private async Task CargarListaProcedimientos()
+    {
+        try
+        {
+            // Esto cargará todos los procedimientos de la base de datos.
+            // Si necesitas filtrar o incluir TipoProcedimiento, puedes hacerlo aquí.
+            _listaProcedimientos = await HospitalDb.Procedimientos
+                                                .OrderBy(p => p.Nombre) // Ordenar alfabéticamente
+                                                .ToListAsync();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error al cargar procedimientos: {ex.Message}");
+            // Opcional: Mostrar un mensaje de error al usuario
+            await JsRuntime.InvokeVoidAsync("alert", $"Error al cargar procedimientos: {ex.Message}");
+        }
+    }
 
 
 
