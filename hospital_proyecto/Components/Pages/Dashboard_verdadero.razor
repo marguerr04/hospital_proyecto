@@ -1,0 +1,201 @@
+﻿@page "/dashboard_verdadero"
+@using MudBlazor;
+@using proyecto_hospital_version_1.Data;
+@using System.Globalization;
+@using System.Text;
+@inject DashboardService dashboard
+
+<PageTitle>Panel de Control - Administración Hospitalaria</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="mt-6 mb-8">
+    <MudText Typo="Typo.h4" Align="Align.Center" GutterBottom="true" Class="mb-1 text-primary">
+        🏥 Panel de Gestión Clínica
+    </MudText>
+    <MudText Typo="Typo.subtitle1" Align="Align.Center" Class="mb-6 text-secondary">
+        Unidad de Control de Gestión · @DateTime.Now:dd/MM/yyyy
+    </MudText>
+
+    <!-- Tarjetas superiores -->
+    <MudGrid Justify="Justify.Center" Spacing="3">
+        <MudItem xs="12" sm="6" md="4">
+            <MudPaper Elevation="3" Class="pa-4 text-center dashboard-card">
+                <MudIcon Icon="@Icons.Material.Filled.Timeline" Size="Size.Large" Color="Color.Primary" />
+                <MudText Typo="Typo.h6" Class="mt-2 text-primary">Percentil 75</MudText>
+                <MudText Typo="Typo.h4" Class="fw-bold mt-1">@Percentil75</MudText>
+                <MudText Typo="Typo.body2" Class="text-secondary mt-1">Casos analizados</MudText>
+            </MudPaper>
+        </MudItem>
+        <MudItem xs="12" sm="6" md="4">
+            <MudPaper Elevation="3" Class="pa-4 text-center dashboard-card">
+                <MudIcon Icon="@Icons.Material.Filled.TrendingDown" Size="Size.Large" Color="Color.Error" />
+                <MudText Typo="Typo.h6" Class="mt-2 text-error">Reducción</MudText>
+                <MudText Typo="Typo.h4" Class="fw-bold mt-1">@Reduccion%</MudText>
+                <MudText Typo="Typo.body2" Class="text-secondary mt-1">Comparado al mes anterior</MudText>
+            </MudPaper>
+        </MudItem>
+        <MudItem xs="12" sm="6" md="4">
+            <MudPaper Elevation="3" Class="pa-4 text-center dashboard-card">
+                <MudIcon Icon="@Icons.Material.Filled.PendingActions" Size="Size.Large" Color="Color.Info" />
+                <MudText Typo="Typo.h6" Class="mt-2 text-info">Pendientes</MudText>
+                <MudText Typo="Typo.h4" Class="fw-bold mt-1">@Pendientes</MudText>
+                <MudText Typo="Typo.body2" Class="text-secondary mt-1">Casos por revisar</MudText>
+            </MudPaper>
+        </MudItem>
+    </MudGrid>
+
+    <MudDivider Class="my-6" />
+
+    @if (!_isLoaded)
+    {
+        <div class="text-center mt-6">
+            <MudProgressCircular Indeterminate="true" Color="Color.Primary" Size="Size.Large" />
+            <MudText Typo="Typo.subtitle2" Class="mt-2 text-secondary">Cargando datos...</MudText>
+        </div>
+    }
+    else
+    {
+        <MudGrid Justify="Justify.Center" Spacing="3">
+
+            <!-- Distribución por Estado -->
+            <MudItem xs="12" md="6">
+                <MudPaper Elevation="2" Class="pa-4 dashboard-chart">
+                    <MudText Typo="Typo.h6" Class="mb-3 text-primary">Distribución por Estado</MudText>
+                    @if (EstadoSeries.Any() && EstadoLabels.Any())
+                    {
+                        <MudChart ChartType="ChartType.Bar"
+                                  Labels="@EstadoLabels"
+                                  Series="@EstadoSeries"
+                                  Colors="@EstadoColors"
+                                  Height="300px"
+                                  Width="100%" />
+                    }
+                    else
+                    {
+                        <MudText Typo="Typo.body2" Align="Align.Center" Class="text-secondary">No hay datos para mostrar</MudText>
+                    }
+                </MudPaper>
+            </MudItem>
+
+            <!-- Contactabilidad -->
+            <MudItem xs="12" md="6">
+                <MudPaper Elevation="2" Class="pa-4 dashboard-chart">
+                    <MudText Typo="Typo.h6" Class="mb-3 text-primary">Contactabilidad</MudText>
+                    @if (ContactoSeries.Any() && ContactoLabels.Any())
+                    {
+                        <MudChart ChartType="ChartType.Donut"
+                                  Labels="@ContactoLabels"
+                                  Series="@ContactoSeries"
+                                  Colors="@ContactoColors"
+                                  Height="300px"
+                                  Width="100%" />
+                    }
+                    else
+                    {
+                        <MudText Typo="Typo.body2" Align="Align.Center" Class="text-secondary">No hay datos para mostrar</MudText>
+                    }
+                </MudPaper>
+            </MudItem>
+        </MudGrid>
+
+        <pre>
+EstadoSeries: @string.Join(", ", EstadoSeries.SelectMany(s => s.Data))
+ContactoSeries: @string.Join(", ", ContactoSeries.SelectMany(s => s.Data))
+Percentil75: @Percentil75
+        </pre>
+    }
+</MudContainer>
+
+@code {
+    private int Percentil75;
+    private int Reduccion;
+    private int Pendientes;
+
+    private string[] EstadoLabels = Array.Empty<string>();
+    private string[] EstadoColors = Array.Empty<string>();
+    private List<ChartSeries> EstadoSeries = new();
+
+    private string[] ContactoLabels = Array.Empty<string>();
+    private string[] ContactoColors = Array.Empty<string>();
+    private List<ChartSeries> ContactoSeries = new();
+
+    private bool _isLoaded = false;
+
+    private string[] GenerarColores(int cantidad)
+    {
+        string[] paleta = new string[]
+        {
+            "#1976d2", "#e53935", "#43a047", "#fbc02d", "#8e24aa",
+            "#ff5722", "#00acc1", "#c0ca33", "#ff9800", "#7b1fa2"
+        };
+        string[] colores = new string[cantidad];
+        for (int i = 0; i < cantidad; i++)
+            colores[i] = paleta[i % paleta.Length];
+        return colores;
+    }
+
+    private string NormalizarNombre(string nombre)
+    {
+        // elimina acentos y caracteres especiales
+        if (string.IsNullOrEmpty(nombre)) return nombre;
+        var normalized = nombre.Normalize(NormalizationForm.FormD);
+        var sb = new System.Text.StringBuilder();
+        foreach (var c in normalized)
+        {
+            if (CharUnicodeInfo.GetUnicodeCategory(c) != UnicodeCategory.NonSpacingMark)
+                sb.Append(c);
+        }
+        return sb.ToString().Normalize(NormalizationForm.FormC);
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            // Percentil
+            var percentil = await dashboard.ObtenerPercentil75Async();
+            Percentil75 = (int)Math.Round((double)percentil, 0);
+
+            Reduccion = await dashboard.ObtenerReduccionAsync();
+            Pendientes = await dashboard.ObtenerPendientesAsync();
+
+            // Procedimientos (Distribución por Estado)
+            var estadoDic = await dashboard.ObtenerProcedimientosPorTipoAsync();
+            if (estadoDic != null && estadoDic.Any())
+            {
+                EstadoLabels = estadoDic.Keys.Select(k => NormalizarNombre(k)).ToArray();
+                EstadoSeries = new List<ChartSeries>
+                {
+                    new ChartSeries
+                    {
+                        Name = "Casos",
+                        Data = estadoDic.Values.Select(v => (double)v).ToArray()
+                    }
+                };
+                EstadoColors = GenerarColores(EstadoLabels.Length);
+            }
+
+            // Contactabilidad
+            var contactoDic = await dashboard.ObtenerPorcentajeContactoAsync();
+            if (contactoDic != null && contactoDic.Any())
+            {
+                ContactoLabels = contactoDic.Keys.Select(k => NormalizarNombre(k)).ToArray();
+                ContactoSeries = new List<ChartSeries>
+                {
+                    new ChartSeries
+                    {
+                        Name = "Porcentaje",
+                        Data = contactoDic.Values.Select(v => (double)v).ToArray()
+                    }
+                };
+                ContactoColors = GenerarColores(ContactoLabels.Length);
+            }
+
+            _isLoaded = true;
+            await InvokeAsync(StateHasChanged);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine("Error cargando dashboard: " + ex.Message);
+        }
+    }
+}

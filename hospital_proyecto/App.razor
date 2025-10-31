@@ -1,0 +1,23 @@
+﻿@using MudBlazor
+@using MudBlazor.Services
+@using Microsoft.AspNetCore.Components.Routing
+@using proyecto_hospital_version_1.Components.Layout
+@namespace proyecto_hospital_version_1
+
+
+<MudThemeProvider />   @* Solo aplica el tema global *@
+<MudDialogProvider />  @* Habilita diálogos *@
+<MudSnackbarProvider />@* Habilita notificaciones *@
+
+<Router AppAssembly="@typeof(App).Assembly">
+    <Found Context="routeData">
+        <RouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)" />
+        <FocusOnNavigate RouteData="@routeData" Selector="h1" />
+    </Found>
+    <NotFound>
+        <LayoutView Layout="@typeof(MainLayout)">
+            <p>Lo sentimos, la página no existe.</p>
+        </LayoutView>
+    </NotFound>
+</Router>
+
