@@ -1,6 +1,9 @@
 ﻿@using proyecto_hospital_version_1.Models
 @using proyecto_hospital_version_1.Data.Hospital
 
+
+
+
 <div class="card shadow-sm mb-4">
     <div class="card-body p-4">
         <div class="alert alert-primary p-3 mb-4 d-flex align-items-center" style="--bs-alert-bg: #e0f2f7; --bs-alert-color: #0c5460; border-color: #bee5eb;">
@@ -55,12 +58,13 @@
                                 <input type="text"
                                        class="form-control"
                                        id="diagnosticoPrincipal"
-                                       list="listaDiagnosticos"
-                                       value="@DiagnosticoPrincipal"
-                                       @onchange="OnDiagnosticoInput"
-                                       placeholder="Escriba el diagnóstico..." />
+                                       list="listaDiagnosticos-@EsGes.ToString()"
+                                                                                         value="@DiagnosticoPrincipal"
+                                                                                         @onchange="OnDiagnosticoInput"
+                                                                                         placeholder="Escriba el diagnóstico..." />
 
-                                <datalist id="listaDiagnosticos">
+                               
+                                <datalist id="listaDiagnosticos-@EsGes.ToString()" @key="EsGes">
                                     @foreach (var diagnostico in _diagnosticosSugeridos)
                                     {
                                         <option value="@diagnostico">@diagnostico</option>
@@ -90,12 +94,7 @@
                             </label>
                         </div>
 
-                        @if (EsGes)
-                        {
-                            <div class="alert alert-info mt-2 p-2 small">
-                                Aquí se mostrarían las enfermedades consideradas GES (próxima iteración).
-                            </div>
-                        }
+
                     </div>
                 </div>
 

@@ -24,6 +24,11 @@ namespace proyecto_hospital_version_1.Data.Hospital
         public DbSet<CausalSalida> CAUSAL_SALIDA { get; set; }
         public DbSet<PrevisionTipo> TIPO_PREVISION { get; set; }
 
+
+
+        public DbSet<PatologiaGes> PatologiasGes { get; set; }
+        public DbSet<MapeoGes> MapeosGes { get; set; }
+
         // DbSets mi compañero que no debo usar (en conflicto con los mios)
         /*
         public DbSet<Paciente> PACIENTE { get; set; }
