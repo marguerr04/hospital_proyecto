@@ -1,13 +1,13 @@
 ﻿using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
-using proyecto_hospital_version_1.Data.Hospital;
 using proyecto_hospital_version_1.Models;
 using proyecto_hospital_version_1.Services;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore; // Añadir esto para usar Include y ToListAsync
+using Microsoft.EntityFrameworkCore;
+using proyecto_hospital_version_1.Data._Legacy; // Añadir esto para usar Include y ToListAsync
 
 namespace proyecto_hospital_version_1.Components.Shared
 {
@@ -16,7 +16,7 @@ namespace proyecto_hospital_version_1.Components.Shared
         [Inject] private IEspecialidadHospital EspecialidadHospitalService { get; set; } = default!;
         [Inject] private IJSRuntime JsRuntime { get; set; } = default!;
         [Inject] private IDiagnosticoService DiagnosticoService { get; set; } = default!; // Aunque lo usaremos indirectamente, lo mantenemos por si acaso.
-        [Inject] private HospitalDbContext HospitalDb { get; set; } = default!; // Inyectar DbContext para acceder directamente a las entidades
+        [Inject] private HospitalDbContextLegacy HospitalDb { get; set; } = default!; // Inyectar DbContext para acceder directamente a las entidades
 
         // --- PARÁMETROS ---
         [Parameter] public PacienteHospital? Paciente { get; set; }

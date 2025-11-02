@@ -1,7 +1,8 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
-using proyecto_hospital_version_1.Data.Hospital; // Asegúrate de tener este using
-namespace proyecto_hospital_version_1.Models
+// comentado temporal   using proyecto_hospital_version_1.Data.Hospital;
+using proyecto_hospital_version_1.Models; // Asegúrate de tener este using
+namespace proyecto_hospital_version_1.Data._Legacy
 {
     public class SolicitudQuirurgica
     {

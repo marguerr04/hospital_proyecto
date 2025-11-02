@@ -1,4 +1,4 @@
-﻿using proyecto_hospital_version_1.Data.Hospital; 
+﻿using proyecto_hospital_version_1.Data._Legacy; 
 using System.Threading.Tasks;
 using proyecto_hospital_version_1.Models;
 

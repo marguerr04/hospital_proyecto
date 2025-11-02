@@ -1,10 +1,10 @@
 using Microsoft.EntityFrameworkCore;
 using proyecto_hospital_version_1.Components;
 using proyecto_hospital_version_1.Data;
-using proyecto_hospital_version_1.Data.Hospital;
 using proyecto_hospital_version_1.Models;
 using proyecto_hospital_version_1.Services;
-using MudBlazor.Services; // NUEVO: Agregado para MudBlazor (Dashboard)
+using MudBlazor.Services;
+using proyecto_hospital_version_1.Data._Legacy; // NUEVO: Agregado para MudBlazor (Dashboard)
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -18,9 +18,20 @@ builder.Services.AddRazorComponents()
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("Default")));
 
-// Tu DbContext para 'HospitalV4' (ahora con las nuevas tablas)
+// Tu DbContext para 'HospitalV4' (ahora con las nuevas tablas), esto es para la integracion actual
+// Comentario para integracion actual 
+/*
 builder.Services.AddDbContext<HospitalDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("HospitalV4")));
+*/
+
+
+builder.Services.AddDbContext<HospitalDbContextLegacy>(options =>
+    options.UseSqlServer(builder.Configuration.GetConnectionString("HospitalV4")));
+
+
+
+
 
 // Tus servicios de lógica de negocio
 builder.Services.AddScoped<IPacienteService, PacienteService>();

@@ -1,14 +1,17 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using proyecto_hospital_version_1.Data.Hospital;
-using proyecto_hospital_version_1.Models; 
+using proyecto_hospital_version_1.Data._Legacy;
+using proyecto_hospital_version_1.Models;
+
+// se cambiara el db context referenciado de mi proyecto a legacy para evitar confuciones y conflicots con la api
+
 
 namespace proyecto_hospital_version_1.Services
 {
     public class EspecialidadHospitalService : IEspecialidadHospital
     {
-        private readonly HospitalDbContext _context;
+        private readonly HospitalDbContextLegacy _context;
 
-        public EspecialidadHospitalService(HospitalDbContext context)
+        public EspecialidadHospitalService(HospitalDbContextLegacy context)
         {
             _context = context;
         }

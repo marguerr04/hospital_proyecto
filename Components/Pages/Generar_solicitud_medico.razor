@@ -1,9 +1,10 @@
 ﻿@page "/generar_solicitud_medico"
 @layout Components.Layout.MainLayoutMedico
-@using proyecto_hospital_version_1.Data.Hospital
-@inject HospitalDbContext HospitalDb
+@using proyecto_hospital_version_1.Data._Legacy
+@inject HospitalDbContextLegacy HospitalDb
 @using proyecto_hospital_version_1.Components.Shared
 @using Microsoft.EntityFrameworkCore
+
 
 
 @inject IJSRuntime JsRuntime // Para posibles alertas o interacciones JS
@@ -16,7 +17,7 @@
 
 <div class="solicitud-container">
     <div class="row">
-        <!-- Columna Izquierda Principal (Contiene todo el flujo) -->
+        <!-- Columna Izquierda Principal (Contiene todo el flujo) , se pondr arroba usinf-->
         <div class="col-lg-8">
             <h1 class="h3 mb-4">Nueva Solicitud Quirúrgica</h1>
 

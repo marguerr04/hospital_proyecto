@@ -1,15 +1,17 @@
-﻿using proyecto_hospital_version_1.Data;     // Para el DbContext
-using proyecto_hospital_version_1.Models; // Para los modelos
-using Microsoft.EntityFrameworkCore;
-using proyecto_hospital_version_1.Data.Hospital;
+﻿using Microsoft.EntityFrameworkCore;
+using proyecto_hospital_version_1.Data._Legacy;   // Para acceder al contexto y modelos del Legacy
+ // (si tus modelos están ahí)
+
+
+// se cambiaran temporalmente a legacy para comptabilidad con api y evitar errores de conflicto
 
 namespace proyecto_hospital_version_1.Services
 {
     public class SolicitudQuirurgicaService : ISolicitudQuirurgicaService
     {
-        private readonly HospitalDbContext _context;
+        private readonly HospitalDbContextLegacy _context;
 
-        public SolicitudQuirurgicaService(HospitalDbContext context)
+        public SolicitudQuirurgicaService(HospitalDbContextLegacy context)
         {
             _context = context;
         }
@@ -35,21 +37,19 @@ namespace proyecto_hospital_version_1.Services
             }
         }
 
-        // ✅ MÉTODO NUEVO/MODIFICADO - Para cargar solicitud con datos del paciente
-        public async Task<SolicitudQuirurgica> ObtenerSolicitudPorIdAsync(int id)
+        public async Task<SolicitudQuirurgica?> ObtenerSolicitudPorIdAsync(int id)
         {
             return await _context.SolicitudesQuirurgicas
-                             .Include(s => s.Paciente) // ✅ INCLUYE PACIENTE
-                             .FirstOrDefaultAsync(s => s.Id == id);
+                                 .Include(s => s.Paciente)
+                                 .FirstOrDefaultAsync(s => s.Id == id);
         }
 
-        // Método para el Dashboard (Paso 4-5) - YA LO TIENES
         public async Task<List<SolicitudQuirurgica>> ObtenerTodasLasSolicitudesAsync()
         {
             return await _context.SolicitudesQuirurgicas
-                             .Include(s => s.Paciente)
-                             .AsNoTracking()
-                             .ToListAsync();
+                                 .Include(s => s.Paciente)
+                                 .AsNoTracking()
+                                 .ToListAsync();
         }
     }
 }

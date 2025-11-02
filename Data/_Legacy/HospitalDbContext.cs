@@ -2,11 +2,11 @@
 using proyecto_hospital_version_1.Models;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace proyecto_hospital_version_1.Data.Hospital
+namespace proyecto_hospital_version_1.Data._Legacy
 {
-    public class HospitalDbContext : DbContext
+    public class HospitalDbContextLegacy : DbContext
     {
-        public HospitalDbContext(DbContextOptions<HospitalDbContext> options) : base(options) { }
+        public HospitalDbContextLegacy(DbContextOptions<HospitalDbContextLegacy> options) : base(options) { }
 
         // mis dbsets (MANTENIDOS)
         public DbSet<PacienteHospital> Pacientes { get; set; }

@@ -4,13 +4,14 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
-using proyecto_hospital_version_1.Data.Hospital;
+using proyecto_hospital_version_1.Data._Legacy;
+
 
 #nullable disable
 
 namespace proyecto_hospital_version_1.Migrations.HospitalDb
 {
-    [DbContext(typeof(HospitalDbContext))]
+    [DbContext(typeof(HospitalDbContextLegacy))]
     partial class HospitalDbContextModelSnapshot : ModelSnapshot
     {
         protected override void BuildModel(ModelBuilder modelBuilder)
