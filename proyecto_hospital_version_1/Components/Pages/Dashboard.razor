@@ -1,0 +1,153 @@
+﻿@page "/dashboard"
+@inject NavigationManager Navigation
+
+<PageTitle>Panel de Trabajo Quirúrgico</PageTitle>
+
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col">
+            <h1 class="h3">Panel de Trabajo Quirúrgico</h1>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="widget-card mb-4">
+                <h5 class="card-title mb-3">1. Buscar Paciente</h5>
+                <div class="input-group">
+                    <input @bind="searchTerm" type="text" class="form-control" placeholder="Buscar por RUT o Nombre..." @onkeyup="HandleSearchInput" />
+                    <button class="btn btn-primary" @onclick="BuscarPaciente">
+                        <i class="bi bi-search"></i> Buscar
+                    </button>
+                </div>
+            </div>
+
+            @if (pacienteSeleccionado != null)
+            {
+                <div class="widget-card">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="card-title mb-0">2. Solicitudes Activas del Paciente</h5>
+                        @* Se esta evaluando si se incluye lo de que admin pueda generar solicitud desde 0 
+                        <button class="btn btn-success" @onclick="CrearNuevaSolicitud">
+                            <i class="bi bi-file-earmark-plus-fill me-2"></i> Nueva Solicitud Quirúrgica
+                        </button>
+                        *@
+                    </div>
+
+                    @if (solicitudesActivas.Any())
+                    {
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Diagnóstico</th>
+                                    <th>Fecha Solicitud</th>
+                                    <th>Estado</th>
+                                    <th>Prioridad</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var solicitud in solicitudesActivas)
+                                {
+                                    <tr>
+                                        <td>@solicitud.Diagnostico</td>
+                                        <td>@solicitud.FechaCreacion.ToShortDateString()</td>
+                                        <td><span class="badge bg-warning text-dark">@solicitud.Estado</span></td>
+                                        <td>@solicitud.Prioridad</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    }
+                    else
+                    {
+                        <div class="alert alert-info">No se encontraron solicitudes activas para este paciente.</div>
+                    }
+                </div>
+            }
+        </div>
+
+        <div class="col-lg-4">
+            @if (pacienteSeleccionado != null)
+            {
+                <div class="widget-card mb-4">
+                    <h5 class="card-title mb-3">Ficha del Paciente</h5>
+                    <p><strong>Nombre:</strong> @pacienteSeleccionado.NombreCompleto</p>
+                    <p><strong>RUT:</strong> @pacienteSeleccionado.Rut</p>
+                    <p><strong>Edad:</strong> @pacienteSeleccionado.Edad años</p>
+                </div>
+
+                <div class="widget-card alert-widget">
+                    <h5 class="card-title mb-3"><i class="bi bi-exclamation-triangle-fill me-2"></i> Alertas Clave</h5>
+                    @if (pacienteSeleccionado.EsGes)
+                    {
+                        <p class="mb-1">⚠️ Paciente GES</p>
+                    }
+                    @if (pacienteSeleccionado.EsPrais)
+                    {
+                        <p class="mb-1">⭐ Paciente PRAIS</p>
+                    }
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@code {
+    private string searchTerm = "";
+    private Paciente? pacienteSeleccionado;
+    private List<SolicitudQuirurgica> solicitudesActivas = new();
+
+    // Lógica del Prototipo: Simula la búsqueda de un paciente
+    private void BuscarPaciente()
+    {
+        // datos falsos para el prototipo.
+        pacienteSeleccionado = new Paciente
+            {
+                NombreCompleto = "Gabriel Picand",
+                Rut = "9.487.570-6",
+                Edad = 22,
+                EsGes = true,
+                EsPrais = false
+            };
+
+        solicitudesActivas = new List<SolicitudQuirurgica>
+        {
+            new SolicitudQuirurgica { Diagnostico = "Colelitiasis", FechaCreacion = DateTime.Now.AddDays(-30), Estado = "En Espera", Prioridad = "Baja" },
+            new SolicitudQuirurgica { Diagnostico = "Hernia Inguinal", FechaCreacion = DateTime.Now.AddDays(-90), Estado = "En Espera", Prioridad = "Media" }
+        };
+    }
+
+    // Opcional: Para que la búsqueda se active al presionar Enter
+    private void HandleSearchInput(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter")
+        {
+            BuscarPaciente();
+        }
+    }
+
+    private void CrearNuevaSolicitud()
+    {
+        // Navega al formulario de solicitud.
+        // Pasaremos el ID del paciente en la URL en el futuro.
+        Navigation.NavigateTo("/solicitudform");
+    }
+
+    // Clases de modelo para el prototipo (en el futuro irán en la carpeta Data)
+    public class Paciente
+    {
+        public string NombreCompleto { get; set; } = "";
+        public string Rut { get; set; } = "";
+        public int Edad { get; set; }
+        public bool EsGes { get; set; }
+        public bool EsPrais { get; set; }
+    }
+
+    public class SolicitudQuirurgica
+    {
+        public string Diagnostico { get; set; } = "";
+        public DateTime FechaCreacion { get; set; }
+        public string Estado { get; set; } = "";
+        public string Prioridad { get; set; } = "";
+    }
+}

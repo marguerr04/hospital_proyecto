@@ -1,0 +1,847 @@
+﻿@page "/generar_solicitud_medico"
+@layout Components.Layout.MainLayoutMedico
+@using proyecto_hospital_version_1.Data._Legacy
+@inject HospitalDbContextLegacy HospitalDb
+@using proyecto_hospital_version_1.Components.Shared
+@using Microsoft.EntityFrameworkCore
+
+
+
+@inject IJSRuntime JsRuntime // Para posibles alertas o interacciones JS
+
+<PageTitle>Nueva Solicitud Quirúrgica</PageTitle>
+
+
+
+
+
+<div class="solicitud-container">
+    <div class="row">
+        <!-- Columna Izquierda Principal (Contiene todo el flujo) , se pondr arroba usinf-->
+        <div class="col-lg-8">
+            <h1 class="h3 mb-4">Nueva Solicitud Quirúrgica</h1>
+
+            @if (_pasoActual == 1){
+
+
+                <!-- Navegación por pasos -->
+                <div class="alert alert-primary p-3 mb-4 d-flex align-items-center" style="--bs-alert-bg: #e0f2f7; --bs-alert-color: #0c5460; border-color: #bee5eb;">
+                    <i class="bi  bi-pencil-square me-3 h4 mb-0"></i> 
+                    <h5 class="mb-0">1) Contexto y Consentimiento</h5>
+                </div>
+
+            
+            
+            <!-- SECCIÓN DE BÚSQUEDA DE PACIENTES (Ahora dentro de su propia tarjeta) -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-body">
+                    <!-- Controles de búsqueda -->
+                    <div class="row">
+                        <div class="col-md-6">
+                            <label>Buscar por rut sin puntos ni digito veríficador:</label>
+                            <input type="text"
+                                   class="form-control"
+                                   placeholder="Buscar..."
+                                   @bind="_busquedaTexto"
+                                   @bind:event="oninput"
+                                   @onkeypress="@(async (e) => { if (e.Key == "Enter") await CargarPacientes(); })" />
+                        </div>
+                        <div class="col-md-3">
+                            <label>DV:</label>
+                            <input type="text"
+                                   class="form-control text-center"
+                                   placeholder="K"
+                                   maxlength="1"
+                                   @bind="_busquedaDv"
+                                   @bind:event="oninput"
+                                   style="text-transform: uppercase;" />
+                        </div>
+                        <div class="col-md-3">
+                            <label>&nbsp;</label>
+                            <div>
+                                <button class="btn btn-success w-100" @onclick="CargarPacientes">
+                                    Buscar
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    @if (!string.IsNullOrWhiteSpace(_busquedaTexto) || !string.IsNullOrWhiteSpace(_busquedaDv))
+                    {
+                        <div class="alert alert-info mt-3">
+                            <button class="btn btn-sm btn-outline-secondary ms-2" @onclick="LimpiarBusqueda">Limpiar</button>
+                        </div>
+
+                        @if (_pacienteSeleccionado != null)
+                        {
+                            <div class="mt-3">
+                                <h3>Información del Paciente Seleccionado</h3>
+                                <InfoPacienteCard Paciente="_pacienteSeleccionado" />
+                            </div>
+                        }
+                    }
+
+                </div>
+            </div>
+
+
+
+            
+            <!-- Tarjeta Principal de Contenido (Diagnóstico y Consentimiento) -->
+            <div class="card shadow-sm">
+                <div class="card-body p-4">
+                    <div class="info-paciente mb-4">
+                        <strong>Paciente:</strong> @_nombrePacienteParaMostrar - <strong>RUT:</strong> @_rutPacienteParaMostrar
+                    </div>
+
+                    <h5 class="mb-3 border-bottom pb-2">1. Procedencia y Diagnóstico</h5>
+                    <div class="btn-group w-100 mb-3" role="group">
+                        <!-- Ambulatorio -->
+                        <input type="radio"
+                               class="btn-check"
+                               name="procedencia"
+                               id="btn-ambulatorio"
+                               autocomplete="off"
+                               value="Ambulatorio/CRS"
+                               checked="@(_procedenciaSeleccionada == "Ambulatorio")"
+                               @onchange="@(() => _procedenciaSeleccionada = "Ambulatorio")" />
+                        <label class="btn btn-outline-primary" for="btn-ambulatorio">Ambulatorio</label>
+
+                        <!-- Hospitalizado -->
+                        <input type="radio"
+                               class="btn-check"
+                               name="procedencia"
+                               id="btn-hospitalizado"
+                               autocomplete="off"
+                               value="Hospitalizado"
+                               checked="@(_procedenciaSeleccionada == "Hospitalizado")"
+                               @onchange="@(() => _procedenciaSeleccionada = "Hospitalizado")" />
+                        <label class="btn btn-outline-primary" for="btn-hospitalizado">Hospitalizado</label>
+
+                        <!-- Urgencia -->
+                        <input type="radio"
+                               class="btn-check"
+                               name="procedencia"
+                               id="btn-urgencia"
+                               autocomplete="off"
+                               value="Urgencia"
+                               checked="@(_procedenciaSeleccionada == "Urgencia")"
+                               @onchange="@(() => _procedenciaSeleccionada = "Urgencia")" />
+                        <label class="btn btn-outline-primary" for="btn-urgencia">Urgencia</label>
+                    </div>
+
+
+
+
+
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                                <label for="procedimiento" class="form-label">Procedimiento</label>
+                                <select class="form-select" id="procedimiento"
+                                        @bind="_procedimientoSeleccionado">
+                                    <option value="">Seleccione un procedimiento</option>
+                                    @foreach (var proc in _listaProcedimientos)
+                                    {
+                                        <option value="@proc.Nombre">@proc.Nombre</option>
+                                    }
+                            </select>
+
+
+
+                        </div>
+                        <div class="col-md-3">
+                            <label for="lateralidad" class="form-label">Lateralidad</label>
+                            <select class="form-select" id="lateralidad" @bind="_lateralidadSeleccionada">
+                                <option value="">-</option>
+                                <option value="Derecha">Derecha</option>
+                                <option value="Izquierda">Izquierda</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="extremidad" class="form-label">Extremidad</label>
+                            <select class="form-select" id="extremidad" @bind="_extremidadSeleccionada">
+                                <option value="">-</option>
+                                <option value="Superior">Superior</option>
+                                <option value="Inferior">Inferior</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <h5 class="mb-3 border-bottom pb-2">2. Consentimiento Informado</h5>
+                    @* Agregar un binding para que este asociado a la variable de consentimeitno informado*@
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div class="form-check">
+                                <input class="form-check-input"
+                                       type="checkbox"
+                                       @bind="_consentimientoAceptado"
+                                       id="consentimientoCheck">
+                                <label class="form-check-label" for="consentimientoCheck">
+                                    Se confirma que el consentimiento será informado y acordado por el paciente.
+                                </label>
+                        </div>
+
+
+                     <!-- BOTÓN CORREGIDO - Con referencia al componente PDF -->
+                        <button class="btn btn-success" 
+                                @onclick="GenerarPDF"
+                                disabled="@(!PuedeGenerarPDF)"
+                                title="@(PuedeGenerarPDF ? "Generar PDF de consentimiento" : "Debe seleccionar paciente, procedimiento y aceptar el consentimiento")">
+                            <i class="bi bi-file-earmark-pdf-fill me-2"></i> Generar PDF
+                        </button>
+                        </div>
+
+                        <!-- Componente PDF con referencia -->
+                        <ConsentimientoPDF @ref="_consentimientoPdfRef"
+                                           Paciente="_pacienteSeleccionado"
+                                           Procedimiento="@_procedimientoSeleccionado"
+                                           Lateralidad="@_lateralidadSeleccionada"
+                                           Extremidad="@_extremidadSeleccionada" />
+
+
+                                </div>
+                           </div>
+
+           
+                                        
+            }
+
+            @if (_pasoActual == 2)
+            {
+                <Paso2RequerimientosCard Paciente="_pacienteSeleccionado"
+                                         DiagnosticoPrincipal="@_diagnosticoPrincipal"
+                                         DiagnosticoPrincipalChanged="(value) => _diagnosticoPrincipal = value"
+                                         EsGes="_esGes"
+                                         EsGesChanged="(value) => _esGes = value"
+                                         CodigoAsociado="@_codigoAsociado"
+                                         CodigoAsociadoChanged="(value) => _codigoAsociado = value"
+                                         Peso="_peso"
+                                         PesoChanged="(value) => _peso = value"
+                                         Talla="_talla"
+                                         TallaChanged="(value) => _talla = value"
+                                         IMC="_imc"
+                                         EspecialidadOrigen="_especialidadOrigen"
+                                         EspecialidadOrigenChanged="(value) => _especialidadOrigen = value"
+                                         EspecialidadDestino="_especialidadDestino"
+                                         EspecialidadDestinoChanged="(value) => _especialidadDestino = value" />
+            }
+
+            @if (_pasoActual == 3)
+            {
+                                  
+                    <Paso3GenerarSolicitudCard Paciente="_pacienteSeleccionado"
+                                           ProcedimientoPrincipal="@_procedimientoSeleccionado"
+                                           DiagnosticoPrincipal="@_diagnosticoPrincipal"
+                                           ProcedenciaPrincipal="@_procedenciaSeleccionada"
+                                           EsGes="@_esGes"
+                                           @bind-EquiposSeleccionados="_equiposSeleccionados"
+                                           @bind-TipoMesaSeleccionado="_tipoMesaSeleccionado"
+                                           @bind-EvaluacionAnestesica="_evaluacionAnestesica"
+                                           @bind-Transfusiones="_transfusiones"
+                                           @bind-SalaOperaciones="_salaOperaciones"
+                                           @bind-TiempoEstimado="_tiempoEstimado"
+                                           @bind-ComorbilidadesSeleccionadas="_comorbilidadesSeleccionadas"
+                                           @bind-ComentariosAdicionales="_comentariosAdicionales" />
+            }
+            @*
+                 Botones de Navegación 
+                <div class="d-flex justify-content-end mt-4">
+                <button class="btn btn-secondary me-2" @onclick="GoPreviousStep" disabled="@(_pasoActual == 1)">← Anterior</button>
+                <button class="btn btn-primary" @onclick="GoNextStep" disabled="@(_pasoActual == 3)">Siguiente →</button>
+            </div>
+
+
+            *@
+            <!-- Botones de Navegación -->
+            <div class="d-flex justify-content-end mt-4">
+                <button class="btn btn-secondary me-2" @onclick="GoPreviousStep" disabled="@(_pasoActual == 1)">← Anterior</button>
+    
+                @if (_pasoActual == 3)
+                {
+                    <button class="btn btn-success" @onclick="GuardarSolicitud">
+                        <i class="bi bi-check-circle me-2"></i> Guardar Solicitud
+                    </button>
+                }
+                else
+                {
+                    <button class="btn btn-primary" @onclick="GoNextStep">Siguiente →</button>
+                }
+            </div>
+        </div>
+
+        <!-- Columna Derecha (Alertas) - No se modifica -->
+        <div class="col-lg-4">
+            <div class="card alert-widget-sticky">
+                <div class="card-body">
+                    <h5 class="card-title mb-3"><i class="bi bi-exclamation-triangle-fill me-2"></i> Alertas Clínicas Clave</h5>
+                    <p class="alert-item alergia">❗ Alergia a Penicilina</p>
+                    
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @* Codigo para comprobar *@
+
+    <!-- PANEL DE VERIFICACIÓN VISUAL -->
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</div>
+
+
+
+<style>
+    .alert-widget-sticky {
+        position: sticky;
+        top: 20px;
+    }
+
+    .info-paciente {
+        font-size: 0.95rem;
+    }
+
+    .solicitud-container {
+        padding: 20px;
+    }
+</style>
+
+@code {
+    // Variables existentes
+    private PacienteHospital? _pacienteSeleccionado = null;
+    private string _procedenciaSeleccionada = "Ambulatorio"; 
+    private int? NumeroBusqueda { get; set; }
+    private string TextoBusqueda { get; set; } = string.Empty;
+
+
+
+
+
+    private string _procedimientoSeleccionado = "";
+    private string _lateralidadSeleccionada = "";
+    private string _extremidadSeleccionada = "";
+
+    // Variables para búsqueda de pacientes
+    private List<PacienteHospital> _pacientes = new();
+    private string _estado = "inicial";
+    private string? _error;
+    private int _cantidadMostrar = 10;
+    private int _totalPacientes = 0;
+    private string _busquedaTexto = "";
+    private string _busquedaDv = "";
+
+
+    private string _nombrePacienteParaMostrar = "";
+    private string _rutPacienteParaMostrar = "";
+
+
+
+    // variables fase 1 
+
+    private List<Procedimiento> _listaProcedimientos = new List<Procedimiento>();
+    
+    // variables para cambiar de rutas
+
+    private int _pasoActual = 1;
+    private bool _consentimientoAceptado = false;
+
+
+    // variables de la 2nda etapa
+
+
+    private string _diagnosticoPrincipal = "";
+    private bool _esGes = false;
+
+
+    // variables para la generación del consentimiento informado pdf
+    private bool _isPaso3Ready; // Nueva variable para el estado del Paso 3
+
+
+    // --- VARIABLES FALTANTES DE PASO 2 ---
+    private string _codigoAsociado = ""; // 
+    private decimal? _peso;
+    private decimal? _talla; // ahora se guardara en cm
+    // Correcion de fomrmula para que acepte cm en vez de metros
+    private decimal? _imc
+    {
+        get
+        {
+            if (!_peso.HasValue || !_talla.HasValue || _talla <= 0 || _peso <= 0)
+                return null;
+
+            decimal alturaMetros = _talla.Value / 100;
+            return Math.Round(_peso.Value / (alturaMetros * alturaMetros), 2);
+        }
+    }
+    private string _especialidadOrigen = "";
+    private string _especialidadDestino = "";
+
+    // --- VARIABLES FALTANTES DE PASO 3 ---
+    private List<string> _equiposSeleccionados = new List<string>();
+    private string _tipoMesaSeleccionado = "Estándar General";
+    private bool _evaluacionAnestesica;
+    private bool _transfusiones;
+    private string _salaOperaciones = "";
+    private int? _tiempoEstimado;
+    private List<string> _comorbilidadesSeleccionadas = new List<string>();
+    private string _comentariosAdicionales = "";
+
+
+    private bool _mostrarPDF = false;
+    private ConsentimientoPDF? _consentimientoPdfRef; // 
+
+    private bool PuedeGenerarPDF =>
+        _pacienteSeleccionado != null &&
+        _consentimientoAceptado &&
+        !string.IsNullOrEmpty(_procedimientoSeleccionado);
+
+    public async Task GenerarPDF()
+    {
+        Console.WriteLine($"[Generar_Solicitud_Medico] Botón Generar PDF clickeado.");
+        Console.WriteLine($"[Generar_Solicitud_Medico] _pacienteSeleccionado es null? {_pacienteSeleccionado == null}");
+        Console.WriteLine($"[Generar_Solicitud_Medico] _procedimientoSeleccionado: {_procedimientoSeleccionado}");
+        Console.WriteLine($"[Generar_Solicitud_Medico] _consentimientoAceptado: {_consentimientoAceptado}");
+        Console.WriteLine($"[Generar_Solicitud_Medico] PuedeGenerarPDF: {PuedeGenerarPDF}");
+
+
+        // Se llama a ActualizarDatosPDF para que Blazor re-evalúe los parámetros del componente hijo.
+        // Esto es crucial para que el componente ConsentimientoPDF vea los datos actualizados.
+        if (_consentimientoPdfRef != null)
+        {
+            // Forzar la re-asignación de los parámetros para asegurar que Blazor los actualice.
+            // Aunque se hace vía binding, a veces es útil forzar la referencia.
+            // (La línea original en tu código ya hacía esto: _consentimientoPdfRef.Paciente = _pacienteSeleccionado;)
+            // Aquí no necesitamos re-asignarlos manualmente porque ya están como Parameters.
+            // El `StateHasChanged()` de este componente padre, o la llamada al método hijo,
+            // debería provocar la actualización de los parámetros del hijo.
+        }
+        else
+        {
+            Console.Error.WriteLine("[Generar_Solicitud_Medico] ERROR: _consentimientoPdfRef es NULL. El componente ConsentimientoPDF no se ha renderizado o asignado correctamente.");
+            await JsRuntime.InvokeVoidAsync("alert", "Error interno: El componente de generación de PDF no está disponible. Contacte a soporte.");
+            return;
+        }
+
+        if (PuedeGenerarPDF)
+        {
+            Console.WriteLine("[Generar_Solicitud_Medico] Llamando a _consentimientoPdfRef.GenerarPdf()...");
+            await _consentimientoPdfRef.GenerarPdf();
+        }
+        else
+        {
+            Console.WriteLine("[Generar_Solicitud_Medico] No se cumplen las condiciones para generar el PDF.");
+            string mensaje = "No se puede generar el PDF. Asegúrese de:\n" +
+                             "1. Haber seleccionado un paciente.\n" +
+                             "2. Haber seleccionado un procedimiento principal.\n" +
+                             "3. Haber marcado la casilla de consentimiento.";
+            await JsRuntime.InvokeVoidAsync("alert", mensaje);
+        }
+    }
+
+
+
+
+
+    private async Task CargarPacientes()
+    {
+        if (string.IsNullOrWhiteSpace(_busquedaTexto) && string.IsNullOrWhiteSpace(_busquedaDv))
+        {
+            return;
+        }
+        _estado = "cargando";
+        StateHasChanged();
+
+        try
+        {
+            var query = HospitalDb.Pacientes
+            .Include(p => p.Ubicaciones)  // 
+        .    AsQueryable();
+            if (!string.IsNullOrWhiteSpace(_busquedaTexto))
+            {
+                var busqueda = _busquedaTexto.ToLower();
+                query = query.Where(p =>
+                    p.primerNombre.ToLower().Contains(busqueda) ||
+                    (p.segundoNombre != null && p.segundoNombre.ToLower().Contains(busqueda)) ||
+                    p.apellidoPaterno.ToLower().Contains(busqueda) ||
+                    (p.apellidoMaterno != null && p.apellidoMaterno.ToLower().Contains(busqueda)) ||
+                    p.rut.Contains(busqueda)
+                );
+            }
+
+            if (!string.IsNullOrWhiteSpace(_busquedaDv))
+            {
+                var dvUpper = _busquedaDv.ToUpper();
+                query = query.Where(p => p.dv.ToUpper() == dvUpper);
+            }
+
+
+            var pacienteEncontrado = await query.FirstOrDefaultAsync();
+
+            if (pacienteEncontrado != null)
+            {
+                _pacienteSeleccionado = pacienteEncontrado;
+
+                _nombrePacienteParaMostrar = $"{pacienteEncontrado.primerNombre} {pacienteEncontrado.apellidoPaterno}";
+                _rutPacienteParaMostrar = $"{pacienteEncontrado.rut}-{pacienteEncontrado.dv}";
+            }
+            else
+            {
+                // Si no se encuentra, mostramos un mensaje indicándolo.
+                _pacienteSeleccionado = null;
+                _nombrePacienteParaMostrar = "Paciente no encontrado";
+                _rutPacienteParaMostrar = "";
+            }
+            // ===== FIN DEL CAMBIO IMPORTANTE =====
+
+            _estado = "ok";
+        }
+        catch (Exception ex)
+        {
+            _estado = "error";
+            _error = ex.Message;
+            Console.WriteLine($"Error al buscar pacientes: {ex}");
+        }
+
+        StateHasChanged();
+    }
+
+    private async Task BuscarPacientes()
+    {
+        await CargarPacientes();
+    }
+
+    private async Task LimpiarBusqueda()
+    {
+        _busquedaTexto = "";
+        _busquedaDv = "";
+        _pacientes.Clear();
+        _estado = "inicial";
+        _pacienteSeleccionado = null;
+
+        _nombrePacienteParaMostrar = "";
+        _rutPacienteParaMostrar = "";
+
+
+        StateHasChanged();
+    }
+
+    private void SeleccionarPaciente(PacienteHospital paciente)
+    {
+        Console.WriteLine($"Paciente seleccionado: {paciente.primerNombre} {paciente.apellidoPaterno}");
+    }
+
+    private void Buscar()
+    {
+        Console.WriteLine($"Número ingresado: {NumeroBusqueda}");
+        Console.WriteLine($"Texto ingresado: {TextoBusqueda}");
+    }
+
+
+    // metodo para la generación de soliocitudes
+
+
+    private async Task GuardarSolicitud()
+    {
+        if (_pasoActual != 3) return;
+
+        // VALIDACIONES MANUALES
+        var errores = new List<string>();
+
+        if (_pacienteSeleccionado == null)
+            errores.Add("• Paciente no seleccionado");
+
+        if (string.IsNullOrWhiteSpace(_diagnosticoPrincipal))
+            errores.Add("• Diagnóstico principal vacío");
+
+        if (string.IsNullOrWhiteSpace(_procedimientoSeleccionado))
+            errores.Add("• Procedimiento principal vacío");
+
+        if (string.IsNullOrWhiteSpace(_salaOperaciones))
+            errores.Add("• Sala de operaciones no especificada");
+
+        if (!_tiempoEstimado.HasValue || _tiempoEstimado <= 0)
+            errores.Add("• Tiempo estimado no válido (debe ser mayor a 0)");
+
+        if (_equiposSeleccionados.Count == 0)
+            errores.Add("• No se han seleccionado equipos requeridos");
+
+        // Validaciones para peso y talla
+        if (!_peso.HasValue || _peso <= 0)
+            errores.Add("• Peso no válido");
+
+        if (!_talla.HasValue || _talla <= 0)
+            errores.Add("• Talla no válida");
+
+        if (errores.Any())
+        {
+            var mensajeError = "Faltan los siguientes datos esenciales:\n" + string.Join("\n", errores);
+            await JsRuntime.InvokeVoidAsync("alert", mensajeError);
+            return;
+        }
+
+        // Si llegamos aquí, todas las validaciones pasaron
+        try
+        {
+            var nuevaSolicitud = new SolicitudQuirurgica
+                {
+                    // OBLIGATORIOS
+                    PacienteId = _pacienteSeleccionado.id,
+                    DiagnosticoPrincipal = _diagnosticoPrincipal,
+                    ProcedimientoPrincipal = _procedimientoSeleccionado,
+                    Procedencia = _procedenciaSeleccionada,
+                    SalaOperaciones = _salaOperaciones,
+
+                    // CON VALORES POR DEFECTO (convertir nullable a no-nullable)
+                    Peso = _peso.Value,                          // ✅ .Value para convertir decimal? a decimal
+                    Talla = _talla.Value,                        // ✅ .Value para convertir decimal? a decimal
+                    IMC = _imc ?? 0,                            // ✅ Usar 0 si es null
+                    TiempoEstimado = _tiempoEstimado.Value,      // ✅ .Value para convertir int? a int
+
+                    // OPCIONALES
+                    CodigoCie = _codigoAsociado,
+                    EsGes = _esGes,
+                    EspecialidadOrigen = _especialidadOrigen,
+                    EspecialidadDestino = _especialidadDestino,
+                    EquiposRequeridos = string.Join(";", _equiposSeleccionados),
+                    TipoMesa = _tipoMesaSeleccionado,
+                    EvaluacionAnestesica = _evaluacionAnestesica,
+                    Transfusiones = _transfusiones,
+                    Comorbilidades = string.Join(";", _comorbilidadesSeleccionadas),
+                    ComentariosAdicionales = _comentariosAdicionales,
+                    CreadoPor = "Sistema",  // ✅ Valor fijo
+
+                    // METADATOS
+                    FechaCreacion = DateTime.Now,
+                    Estado = "Pendiente",
+                    Prioridad = 0
+                };
+
+            HospitalDb.SolicitudesQuirurgicas.Add(nuevaSolicitud);
+            await HospitalDb.SaveChangesAsync();
+
+            await JsRuntime.InvokeVoidAsync("alert", "¡Solicitud guardada con éxito!");
+            ResetFormulario();
+            _pasoActual = 1;
+            StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            // ERROR DETALLADO
+            var errorDetails = $"Error: {ex.Message}";
+            if (ex.InnerException != null)
+                errorDetails += $"\nDetalles: {ex.InnerException.Message}";
+
+            Console.WriteLine($"ERROR BD: {errorDetails}");
+            await JsRuntime.InvokeVoidAsync("alert", $"Error al guardar: {errorDetails}");
+        }
+    }
+
+    private void ResetFormulario()
+    {
+        // Resetea todas las variables a su estado inicial
+        _pacienteSeleccionado = null;
+        _busquedaTexto = "";
+        _busquedaDv = "";
+        _nombrePacienteParaMostrar = "";
+        _rutPacienteParaMostrar = "";
+
+        _procedenciaSeleccionada = "Ambulatorio";
+        _procedimientoSeleccionado = "";
+        _lateralidadSeleccionada = "";
+        _extremidadSeleccionada = "";
+        _consentimientoAceptado = false;
+
+        _diagnosticoPrincipal = "";
+        _esGes = false;
+        _codigoAsociado = "";
+        _peso = null;
+        _talla = null;
+        _especialidadOrigen = "";
+        _especialidadDestino = "";
+
+        _equiposSeleccionados = new List<string>();
+        _tipoMesaSeleccionado = "Estándar General"; // Asegúrate de que este valor coincida con el default en Paso3
+        _evaluacionAnestesica = false;
+        _transfusiones = false;
+        _salaOperaciones = "";
+        _tiempoEstimado = null;
+        _comorbilidadesSeleccionadas = new List<string>();
+        _comentariosAdicionales = "";
+
+        _isPaso3Ready = false; // Resetear el estado del paso 3
+    }
+
+    // Método para verificar si un paso está listo para avanzar
+    private bool IsPasoReady(int paso)
+    {
+        switch (paso)
+        {
+            case 1:
+                return _pacienteSeleccionado != null &&
+                       !string.IsNullOrEmpty(_procedimientoSeleccionado) &&
+                       _consentimientoAceptado;
+            case 2:
+                return !string.IsNullOrEmpty(_diagnosticoPrincipal) &&
+                       !string.IsNullOrEmpty(_codigoAsociado) && // Si CIE-10 es obligatorio
+                       _peso.HasValue && _talla.HasValue && _peso > 0 && _talla > 0;
+            case 3:
+                return _isPaso3Ready; // Depende de la validación interna del componente Paso3GenerarSolicitudCard
+            default:
+                return false;
+        }
+    }
+
+
+
+
+
+
+
+
+
+
+    private void GoNextStep()
+    {
+        if (_pasoActual == 1)
+        {
+            if (_pacienteSeleccionado == null)
+            {
+                JsRuntime.InvokeVoidAsync("alert", "Debe seleccionar un paciente para continuar.");
+                return;
+            }
+            if (string.IsNullOrEmpty(_procedimientoSeleccionado))
+            {
+                JsRuntime.InvokeVoidAsync("alert", "Debe seleccionar un Procedimiento Principal.");
+                return;
+            }
+            if (!_consentimientoAceptado)
+            {
+                JsRuntime.InvokeVoidAsync("alert", "Debe aceptar el consentimiento informado para continuar.");
+                return;
+            }
+        }
+
+        if (_pasoActual == 2)
+        {
+            if (string.IsNullOrEmpty(_diagnosticoPrincipal))
+            {
+                JsRuntime.InvokeVoidAsync("alert", "Debe ingresar un diagnóstico principal en el Paso 2.");
+                return;
+            }
+        }
+
+        // CAMBIO IMPORTANTE: Permitir avanzar al Paso 3 sin validaciones estrictas
+        if (_pasoActual < 3)
+        {
+            _pasoActual++;
+            StateHasChanged();
+        }
+        else if (_pasoActual == 3)
+        {
+            // Cuando esté en Paso 3 y haga clic en "Siguiente", guardar la solicitud
+            GuardarSolicitud();
+        }
+    }
+
+
+
+
+
+
+    private void GoPreviousStep()
+    {
+        if (_pasoActual > 1)
+        {
+            _pasoActual--;
+            StateHasChanged();
+        }
+    }
+
+
+
+
+    private async Task ActualizarDatosPDF()
+    {
+        if (_consentimientoPdfRef != null)
+        {
+            // Forzar la actualización de los parámetros
+            _consentimientoPdfRef.Paciente = _pacienteSeleccionado;
+            _consentimientoPdfRef.Procedimiento = _procedimientoSeleccionado;
+            _consentimientoPdfRef.Lateralidad = _lateralidadSeleccionada;
+            _consentimientoPdfRef.Extremidad = _extremidadSeleccionada;
+
+            // Forzar re-renderizado del componente
+            StateHasChanged();
+        }
+    }
+
+    // para agregar cosas asincronas
+    protected override async Task OnInitializedAsync()
+    {
+
+
+        // Cargar los procedimientos desde la base de datos
+        await CargarListaProcedimientos();
+
+        // Ejemplo: await CargarOtraCosaAsync();
+    }
+
+    private async Task CargarListaProcedimientos()
+    {
+        try
+        {
+            // Esto cargará todos los procedimientos de la base de datos.
+            // Si necesitas filtrar o incluir TipoProcedimiento, puedes hacerlo aquí.
+            _listaProcedimientos = await HospitalDb.Procedimientos
+                                                .OrderBy(p => p.Nombre) // Ordenar alfabéticamente
+                                                .ToListAsync();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error al cargar procedimientos: {ex.Message}");
+            // Opcional: Mostrar un mensaje de error al usuario
+            await JsRuntime.InvokeVoidAsync("alert", $"Error al cargar procedimientos: {ex.Message}");
+        }
+    }
+
+
+
+
+
+
+
+
+}

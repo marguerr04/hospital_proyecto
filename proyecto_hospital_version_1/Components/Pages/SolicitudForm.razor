@@ -1,0 +1,72 @@
+﻿@page "/solicitudform"
+
+<PageTitle>Nueva Solicitud Quirúrgica</PageTitle>
+
+<div class="solicitud-container">
+    <div class="row">
+        <div class="col-lg-8">
+            <h1 class="h3 mb-4">Nueva Solicitud Quirúrgica</h1>
+
+            <nav class="nav nav-pills nav-fill mb-4">
+                <a class="nav-link active" href="#">1) Contexto y Consentimiento</a>
+            </nav>
+
+            <div class="card shadow-sm">
+                <div class="card-body p-4">
+                    <div class="info-paciente mb-4">
+                        <strong>Paciente:</strong> Gabriel Picand - <strong>RUT:</strong> 9.487.570-6
+                    </div>
+
+                    <h5 class="mb-3 border-bottom pb-2">1. Procedencia y Diagnóstico</h5>
+
+                    <div class="btn-group w-100 mb-3" role="group">
+                        <input type="radio" class="btn-check" name="procedencia" id="btn-ambulatorio" autocomplete="off" checked>
+                        <label class="btn btn-outline-primary" for="btn-ambulatorio">Ambulatorio/CRS</label>
+
+                        <input type="radio" class="btn-check" name="procedencia" id="btn-hospitalizado" autocomplete="off">
+                        <label class="btn btn-outline-primary" for="btn-hospitalizado">Hospitalizado</label>
+
+                        <input type="radio" class="btn-check" name="procedencia" id="btn-urgencia" autocomplete="off">
+                        <label class="btn btn-outline-primary" for="btn-urgencia">Urgencia</label>
+                    </div>
+
+                    <div class="mb-4">
+                        <label for="diagnostico" class="form-label">Diagnóstico Principal (CIE-10)</label>
+                        <input type="text" class="form-control" id="diagnostico" placeholder="Ej: Colelitiasis">
+                    </div>
+
+                    <h5 class="mb-3 border-bottom pb-2">2. Consentimiento Informado</h5>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" value="" id="consentimientoCheck" checked>
+                            <label class="form-check-label" for="consentimientoCheck">
+                                Se confirma que el consentimiento informado fue discutido y aceptado por el paciente.
+                            </label>
+                        </div>
+                        <button class="btn btn-success">
+                            <i class="bi bi-file-earmark-pdf-fill me-2"></i> Generar PDF
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="d-flex justify-content-end mt-4">
+                <button class="btn btn-secondary me-2" disabled>← Anterior</button>
+                <button class="btn btn-primary">Siguiente →</button>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card alert-widget-sticky">
+                <div class="card-body">
+                    <h5 class="card-title mb-3"><i class="bi bi-exclamation-triangle-fill me-2"></i> Alertas Clínicas Clave</h5>
+                    <p class="alert-item ges">⚠️ Paciente GES</p>
+                    <p class="alert-item alergia">❗ Alergia a Penicilina</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+}

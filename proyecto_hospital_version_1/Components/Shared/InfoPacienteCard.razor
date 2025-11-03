@@ -1,0 +1,58 @@
+﻿@using proyecto_hospital_version_1.Data._Legacy
+@using proyecto_hospital_version_1.Models 
+
+<div class="card shadow-sm mb-4">
+    <div class="card-body">
+        <h5 class="card-title">1. Identificación del paciente</h5>
+        <hr class="mb-3" />
+
+        @if (Paciente != null)
+        {
+            <div class="row">
+                <div class="col-md-6 mb-2">
+                    <strong>Nombre Paciente:</strong> @Paciente.NombreCompleto
+                </div>
+                <div class="col-md-6 mb-2">
+                    <strong>RUT:</strong> @(Paciente.rut)-@(Paciente.dv)
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-6 mb-2">
+                    <strong>Edad:</strong> @Paciente.EdadCompleta
+                </div>
+                <div class="col-md-6 mb-2">
+                    <strong>Sexo Biológico:</strong> @Paciente.sexo
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-6 mb-2">
+                    <strong>PRAIS:</strong> @(Paciente.PRAIS.GetValueOrDefault() ? "Sí" : "No")
+                </div>
+                <div class="col-md-6 mb-2">
+                    @if (Paciente.Ubicaciones != null && Paciente.Ubicaciones.Any())
+                    {
+                        <strong>Dirección: </strong> @Paciente.Ubicaciones.First().DireccionCompleta
+                    }
+                    else
+                    {
+                        <strong>Dirección:</strong>
+
+                        <div class="col-md-6 mb-2">
+                            No registrada
+                        </div>
+                    }
+                </div>
+            </div>
+        }
+        else
+        {
+            <div class="alert alert-info mb-0">
+                <em>Busque y seleccione un paciente para ver su información.</em>
+            </div>
+        }
+    </div>
+</div>
+@code {
+    [Parameter]
+    public PacienteHospital? Paciente { get; set; }
+}

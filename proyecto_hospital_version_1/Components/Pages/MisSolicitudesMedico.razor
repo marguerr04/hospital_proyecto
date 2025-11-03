@@ -1,0 +1,126 @@
+﻿@page "/mis-solicitudes-medico"
+@layout Components.Layout.MainLayoutMedico
+
+<PageTitle>Mis Solicitudes - Médico</PageTitle>
+
+<div class="container-fluid mt-4">
+    <div class="row">
+        <div class="col-12">
+            <h2 class="fw-bold mb-4">Mis Solicitudes</h2>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Solicitudes recientes -->
+        <div class="col-lg-7">
+            <h5 class="mb-3 text-muted">Solicitudes Recientes</h5>
+
+            <!-- Solicitud -->
+            <div class="card mb-3 shadow-sm border-0 solicitud-card">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <h6 class="fw-bold mb-0">María González Pérez</h6>
+                            <small class="text-muted">RUT 12.345.678-9</small>
+                        </div>
+                        <span class="badge bg-success">Prioritaria</span>
+                    </div>
+                    <div class="mt-2">
+                        <span class="badge bg-danger me-2">Paciente GES</span>
+                        <span>Fractura de cadera</span>
+                        <div class="text-muted small mt-1">Hace 8 días</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card mb-3 shadow-sm border-0 solicitud-card">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <h6 class="fw-bold mb-0">Jorge Contreras</h6>
+                            <small class="text-muted">RUT 8.765.432-1</small>
+                        </div>
+                        <span class="badge bg-secondary">No GES</span>
+                    </div>
+                    <div class="mt-2">
+                        <span>Urgencia diferida</span>
+                        <div class="text-muted small mt-1">Hace 5 días</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card mb-3 shadow-sm border-0 solicitud-card">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <h6 class="fw-bold mb-0">Juan Soto</h6>
+                            <small class="text-muted">RUT 5.678.601-2</small>
+                        </div>
+                        <span class="badge bg-warning text-dark">Intermedia</span>
+                    </div>
+                    <div class="mt-2">
+                        <span>Ambulatorio / CRS</span>
+                        <div class="text-muted small mt-1">Hace 12 días</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card mb-3 shadow-sm border-0 solicitud-card">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <h6 class="fw-bold mb-0">Ana Torres</h6>
+                            <small class="text-muted">RUT 3.456.789-0</small>
+                        </div>
+                        <span class="badge bg-primary text-white">Pendiente</span>
+                    </div>
+                    <div class="mt-2">
+                        <span>Rechazo de mano</span>
+                        <div class="text-muted small mt-1">Hace 15 días</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Columna derecha: Próximas fechas programadas, se puede agregar calendario para comodidad y visualización-->
+        <div class="col-lg-5">
+            <h5 class="mb-3 text-muted">Próximas Fechas Programadas</h5>
+
+            <div class="card mb-3 shadow-sm border-0">
+                <div class="card-body">
+                    <h6 class="fw-bold mb-1">28 mayo de 2024</h6>
+                    <p class="mb-0">María González Pérez</p>
+                    <small class="text-muted d-block">Paciente cadera</small>
+                    <span class="badge bg-success mt-2">Paciente GES</span>
+                    <div class="text-muted small mt-2">
+                        <i class="bi bi-clock me-1"></i> 10:00 · Pabellón 3
+                    </div>
+                </div>
+            </div>
+
+            <div class="card mb-3 shadow-sm border-0">
+                <div class="card-body">
+                    <h6 class="fw-bold mb-1">5 junio de 2024</h6>
+                    <p class="mb-0">Martín Ramos</p>
+                    <small class="text-muted d-block">Artroscopía de rodilla</small>
+                    <span class="badge bg-secondary mt-2">No GES</span>
+                    <div class="text-muted small mt-2">
+                        <i class="bi bi-clock me-1"></i> 14:00 · Pabellón 1
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .solicitud-card:hover {
+        transform: translateY(-2px);
+        transition: all 0.2s ease-in-out;
+        background-color: #f8f9fa;
+    }
+</style>
+
+@code {
+    // Aquí luego puedes agregar lógica dinámica con listas o consultas al backend
+}

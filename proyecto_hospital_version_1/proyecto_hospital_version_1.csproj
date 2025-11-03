@@ -1,0 +1,62 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+	<GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="Components\NewFolder\**" />
+    <Content Remove="Components\NewFolder\**" />
+    <EmbeddedResource Remove="Components\NewFolder\**" />
+    <None Remove="Components\NewFolder\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Remove="Components\Shared\ProcedimientosCard.razor.cs" />
+    <Compile Remove="Models\Especialidad.cs" />
+    <Compile Remove="Services\EspecialidadService.cs" />
+    <Compile Remove="Services\IEspecialidadService.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Remove="Components\Layout\MainLayoutMedico.razor.css" />
+    <None Remove="Components\Layout\NavMenuMedico.razor.css" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="Components\Layout\MainLayoutMedico.razor.css" />
+    <Content Include="Components\Layout\NavMenuMedico.razor.css" />
+    <Content Include="Components\Shared\ProcedimientosCard.razor.cs" />
+    <Content Include="Models\Especialidad.cs" />
+    <Content Include="Services\EspecialidadService.cs" />
+    <Content Include="Services\IEspecialidadService.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.9">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="9.0.9" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="9.0.9">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="MudBlazor" Version="8.13.0" />
+    <PackageReference Include="PDFsharp" Version="6.2.2" />
+    <PackageReference Include="QuestPDF" Version="2025.7.3" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="wwwroot\img\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Hospital.Api\Hospital.Api\Hospital.Api.csproj" />
+  </ItemGroup>
+
+</Project>

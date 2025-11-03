@@ -1,0 +1,33 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.9.34728.123
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "proyecto_hospital_version_1", "proyecto_hospital_version_1.csproj", "{8134E959-9103-466C-9FB3-E92E3ADB258D}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ApiHospital", "ApiHospital", "{823010C0-AF9E-48F9-9B4A-BC1BAD72182A}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hospital.Api", "..\Hospital.Api\Hospital.Api\Hospital.Api.csproj", "{2BFDDFEA-E3D3-4CA4-B870-3FA37922DB42}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{8134E959-9103-466C-9FB3-E92E3ADB258D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8134E959-9103-466C-9FB3-E92E3ADB258D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8134E959-9103-466C-9FB3-E92E3ADB258D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8134E959-9103-466C-9FB3-E92E3ADB258D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2BFDDFEA-E3D3-4CA4-B870-3FA37922DB42}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2BFDDFEA-E3D3-4CA4-B870-3FA37922DB42}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2BFDDFEA-E3D3-4CA4-B870-3FA37922DB42}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2BFDDFEA-E3D3-4CA4-B870-3FA37922DB42}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {3FCDFD06-6245-460A-B3A5-3E332A538806}
+	EndGlobalSection
+EndGlobal

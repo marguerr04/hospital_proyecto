@@ -1,0 +1,590 @@
+﻿@page "/hospital-probe"
+@using proyecto_hospital_version_1.Models
+@using proyecto_hospital_version_1.Shared
+@using proyecto_hospital_version_1.Components.Shared
+@using proyecto_hospital_version_1.Data._Legacy
+@inject HospitalDbContextLegacy HospitalDb
+@inject ISolicitudQuirurgicaService SolicitudService
+@using Microsoft.EntityFrameworkCore
+
+
+<PageTitle>Prueba de Componentes Hospitalarios</PageTitle>
+
+<div class="container mt-4">
+
+    <h1 class="mb-4">Prueba de Buscador de Pacientes y Cards</h1>
+
+    <h3>1. Buscador de Pacientes</h3>
+    <p>Utiliza el componente <code>BuscadorPaciente</code> para encontrar un paciente por RUT.</p>
+    <div class="mb-4">
+        <BuscadorPaciente OnPacienteEncontrado="HandlePacienteSeleccionado" />
+    </div>
+
+    @if (_pacienteSeleccionado != null)
+    {
+        <h3>2. Información del Paciente Seleccionado</h3>
+        <div class="mb-4">
+            <InfoPacienteCard Paciente="_pacienteSeleccionado" />
+        </div>
+
+        <h3>3. Alertas Clínicas del Paciente</h3>
+        <div class="mb-4">
+            <AlertasClinicasCard Paciente="_pacienteSeleccionado" />
+        </div>
+    }
+    else
+    {
+        <div class="alert alert-info mt-4">
+            No se ha seleccionado ningún paciente. Use el buscador para iniciar la prueba.
+        </div>
+    }
+
+    <hr class="my-4">
+
+    <!-- Sección de priorización -->
+    @if (_solicitudSeleccionada == null)
+    {
+        <h3>🧪 Sistema de Priorización de Solicitudes</h3>
+
+        <button class="btn btn-info mb-3" @onclick="CargarSolicitudes">
+            <i class="bi bi-arrow-clockwise me-2"></i> Actualizar Lista
+        </button>
+
+        @if (_solicitudes == null)
+        {
+            <div class="alert alert-warning">Cargando solicitudes...</div>
+        }
+        else if (!_solicitudes.Any())
+        {
+            <div class="alert alert-warning">No hay solicitudes guardadas en la base de datos.</div>
+        }
+        else
+        {
+            <div class="table-responsive">
+                <table class="table table-striped table-sm">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>ID</th>
+                            <th>Paciente ID</th>
+                            <th>Procedimiento</th>
+                            <th>Diagnóstico</th>
+                            <th>Sala</th>
+                            <th>Fecha</th>
+                            <th>Estado</th>
+                            <th>Prioridad</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var solicitud in _solicitudes.OrderByDescending(s => s.Id))
+                        {
+                            <tr>
+                                <td><strong>@solicitud.Id</strong></td>
+                                <td>@solicitud.PacienteId</td>
+                                <td>@solicitud.ProcedimientoPrincipal</td>
+                                <td>@solicitud.DiagnosticoPrincipal</td>
+                                <td>@solicitud.SalaOperaciones</td>
+                                <td>@solicitud.FechaCreacion.ToString("dd/MM/yy HH:mm")</td>
+                                <td><span class="badge bg-warning">@solicitud.Estado</span></td>
+                                <td>
+                                    @if (solicitud.Prioridad > 0)
+                                    {
+                                        <span class="badge bg-success">P@solicitud.Prioridad</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-secondary">Sin prioridad</span>
+                                    }
+                                </td>
+                                <td>
+                                    <button class="btn btn-primary btn-sm" @onclick="() => VerDetalle(solicitud.Id)">
+                                        <i class="bi bi-sort-up me-1"></i> Priorizar
+                                    </button>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="alert alert-success">
+                <strong>Total:</strong> @_solicitudes.Count solicitudes encontradas en la base de datos.
+            </div>
+        }
+    }
+    else
+    {
+        <div class="mb-3">
+            <button class="btn btn-outline-secondary" @onclick="VolverALista">
+                &larr; Volver a la lista
+            </button>
+        </div>
+
+        <h3>Detalle y Priorización (ID: @_solicitudSeleccionada.Id)</h3>
+
+        @if (_solicitudSeleccionada.Paciente != null)
+        {
+            <InfoPacienteCard Paciente="_solicitudSeleccionada.Paciente" />
+        }
+
+        <div class="card shadow-sm mb-4">
+            <div class="card-body">
+                <h5 class="card-title">Detalles de la Solicitud</h5>
+                <hr />
+                <div class="row">
+                    <div class="col-md-6">
+                        <strong>Diagnóstico:</strong> @_solicitudSeleccionada.DiagnosticoPrincipal
+                    </div>
+                    <div class="col-md-6">
+                        <strong>Procedimiento:</strong> @_solicitudSeleccionada.ProcedimientoPrincipal
+                    </div>
+                    <div class="col-md-6">
+                        <strong>Procedencia:</strong> @_solicitudSeleccionada.Procedencia
+                    </div>
+                    <div class="col-md-6">
+                        <strong>Es GES:</strong> @(_solicitudSeleccionada.EsGes ? "Sí" : "No")
+                    </div>
+                    <div class="col-12">
+                        <strong>Comorbilidades:</strong> @_solicitudSeleccionada.Comorbilidades
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card shadow-sm mb-4 border-success">
+            <div class="card-header bg-success text-white">
+                Sugerencia del Sistema
+            </div>
+            <div class="card-body">
+                <h4 class="card-title text-success">Prioridad Sugerida: P@_prioridadSugerida</h4>
+                <p><strong>Motivo:</strong> @_motivoSugerencia</p>
+                <hr />
+                <button class="btn btn-success btn-lg" @onclick="AceptarPrioridad">
+                    <i class="bi bi-check-circle me-2"></i> Aceptar y Guardar Prioridad
+                </button>
+            </div>
+        </div>
+    }
+
+    <hr class="my-4">
+
+    <h3>Pruebas de Componentes Refactorizados</h3>
+    <p>Prueba de los componentes de formulario de forma aislada.</p>
+
+    <div class="row">
+        <div class="col-md-7">
+            <div class="card shadow-sm mb-3">
+                <div class="card-header">
+                    <h5>Selector de Equipos</h5>
+                </div>
+                <div class="card-body">
+                    <SelectorEquipos @bind-EquiposSeleccionados="_equiposTest"
+                                     OpcionesEquipos="_opcionesEquiposTest" />
+                    <div class="mt-2">
+                        <small class="text-muted">Equipos seleccionados: @string.Join(", ", _equiposTest)</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-5">
+            <div class="card shadow-sm">
+                <div class="card-header">
+                    <h5>Datos de Prueba</h5>
+                </div>
+                <div class="card-body">
+                    <h6>Equipos:</h6>
+                    <pre>@System.Text.Json.JsonSerializer.Serialize(_equiposTest, new System.Text.Json.JsonSerializerOptions { WriteIndented = true })</pre>
+
+                    <h6>Comorbilidades:</h6>
+                    <pre>@System.Text.Json.JsonSerializer.Serialize(_comorbilidadesTest, new System.Text.Json.JsonSerializerOptions { WriteIndented = true })</pre>
+
+                    <h6>Tipo de Mesa:</h6>
+                    <pre>@_mesaTest</pre>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <hr class="my-4">
+
+    <h3>Prueba de Carga Individual con Paciente</h3>
+    <div class="row">
+        <div class="col-md-6">
+            <div class="input-group mb-3">
+                <input type="number" @bind="_idSolicitudBuscar" placeholder="ID de solicitud" class="form-control" />
+                <button class="btn btn-warning" @onclick="BuscarSolicitudIndividual">
+                    <i class="bi bi-search me-1"></i> Buscar Solicitud
+                </button>
+            </div>
+        </div>
+    </div>
+
+    @if (_solicitudIndividual != null)
+    {
+        <div class="card mt-3">
+            <div class="card-header bg-success text-white">
+                <h5>Solicitud Encontrada - ID: @_solicitudIndividual.Id</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6>Datos de la Solicitud:</h6>
+                        <p><strong>Procedimiento:</strong> @_solicitudIndividual.ProcedimientoPrincipal</p>
+                        <p><strong>Diagnóstico:</strong> @_solicitudIndividual.DiagnosticoPrincipal</p>
+                        <p><strong>Sala:</strong> @_solicitudIndividual.SalaOperaciones</p>
+                        <p><strong>Estado:</strong> <span class="badge bg-warning">@_solicitudIndividual.Estado</span></p>
+                    </div>
+                    <div class="col-md-6">
+                        <h6>Datos del Paciente (Cargados):</h6>
+                        @if (_solicitudIndividual.Paciente != null)
+                        {
+                            <div class="border p-2 rounded bg-light">
+                                <p><strong>Nombre:</strong> @_solicitudIndividual.Paciente.primerNombre @_solicitudIndividual.Paciente.apellidoPaterno</p>
+                                <p><strong>RUT:</strong> @_solicitudIndividual.Paciente.rut-@_solicitudIndividual.Paciente.dv</p>
+                                <p><strong>ID Paciente:</strong> @_solicitudIndividual.Paciente.id</p>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="alert alert-warning">Paciente no cargado (null)</div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+    else if (_idSolicitudBuscar > 0)
+    {
+        <div class="alert alert-warning mt-3">
+            No se encontró ninguna solicitud con ID: @_idSolicitudBuscar
+        </div>
+    }
+
+    <hr class="my-4">
+
+    <h3>🧪 Prueba de ProcedimientosCard</h3>
+    <p>Prueba el componente de lista de procedimientos.</p>
+
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card shadow-sm">
+                <div class="card-header">
+                    <h5>Componente ProcedimientosCard</h5>
+                </div>
+                <div class="card-body">
+                    <!-- Componente ProcedimientosCard -->
+                    <ProcedimientosCard ListaProcedimientos="_procedimientosTest"
+                                        OnAgregarPresionado="HandleAgregarProcedimiento" />
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card shadow-sm">
+                <div class="card-header">
+                    <h5>Datos de Prueba</h5>
+                </div>
+                <div class="card-body">
+                    <h6>Procedimientos en lista:</h6>
+                    <pre>@System.Text.Json.JsonSerializer.Serialize(_procedimientosTest, new System.Text.Json.JsonSerializerOptions { WriteIndented = true })</pre>
+
+                    <h6>Contador de clics:</h6>
+                    <p>Has hecho clic <strong>@_contadorClics</strong> veces en "Agregar Procedimiento"</p>
+
+                    <button class="btn btn-outline-warning btn-sm" @onclick="LimpiarProcedimientos">
+                        <i class="bi bi-trash me-1"></i> Limpiar Lista
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- ========== Sección de criterios de priorizacion ========== -->
+    <hr class="my-5">
+
+    <div class="card border-primary">
+        <div class="card-header bg-primary text-white">
+            <h4 class="mb-0">
+                <i class="bi bi-sort-up me-2"></i>
+               Componente CriteriosPriorizacion
+            </h4>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-8">
+                    <h5>Componente criterios priorizacion</h5>
+                    <p class="text-muted">
+                        componente de "priorizar-solicitud-original" para ser reutilizable.
+                    </p>
+
+
+                    <CriteriosPriorizacion @bind-CriterioSeleccionado="CriterioPruebaTest" />
+
+                </div>
+
+                <div class="col-md-4">
+                    <div class="card bg-light">
+                        <div class="card-header">
+                            <h6 class="mb-0"> Información de Prueba</h6>
+                        </div>
+                        <div class="card-body">
+                            <p><strong>Criterio Seleccionado:</strong></p>
+                            <div class="alert @(_criterioPruebaAlertClass)" role="alert">
+                                <strong>@(CriterioPruebaTest ?? "Ninguno")</strong>
+                            </div>
+
+                            <p><strong>Prioridad Sugerida:</strong></p>
+                            <span class="badge @_prioridadBadgeClass fs-6">
+                                @_prioridadSugeridaPrueba
+                            </span>
+
+                            <div class="mt-3">
+                                <button class="btn btn-sm btn-outline-secondary w-100"
+                                        @onclick="LimpiarPruebaPriorizacion"
+                                        disabled="@string.IsNullOrEmpty(CriterioPruebaTest)">
+                                    <i class="bi bi-arrow-clockwise me-1"></i> Limpiar Selección
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+
+    private PacienteHospital? _pacienteSeleccionado;
+
+    // Variables para pruebas de componentes
+    private List<string> _equiposTest = new List<string>();
+    private List<string> _opcionesEquiposTest = new List<string>
+    {
+        "Arco C", "Torre Lap", "Sutura mecánica", "Microscopio", "Láser",
+        "Bombas de infusión", "Monitor de signos vitales"
+    };
+
+    private List<string> _comorbilidadesTest = new List<string>();
+    private List<string> _opcionesComorbilidadesTest = new List<string>
+    {
+        "Diabetes Mellitus", "Hipertensión Arterial", "Asma", "Insuficiencia Renal Crónica",
+        "Cardiopatía Isquémica", "EPOC", "Obesidad Mórbida"
+    };
+
+    private string _mesaTest = string.Empty;
+
+    private List<string> _procedimientosTest = new List<string>();
+    private int _contadorClics = 0;
+
+    private List<SolicitudQuirurgica> _solicitudes = new();
+    private int _totalSolicitudes = -1;
+    private int _idSolicitudBuscar;
+    private SolicitudQuirurgica _solicitudIndividual;
+
+    private SolicitudQuirurgica _solicitudSeleccionada;
+    private int _prioridadSugerida = 3;
+    private string _motivoSugerencia = "Prioridad base.";
+
+    private void HandlePacienteSeleccionado(PacienteHospital? paciente)
+    {
+        _pacienteSeleccionado = paciente;
+    }
+
+    private void HandleAgregarProcedimiento()
+    {
+        _contadorClics++;
+
+        var nuevoProcedimiento = $"Procedimiento {_contadorClics} - {DateTime.Now:HH:mm:ss}";
+        _procedimientosTest.Add(nuevoProcedimiento);
+
+        StateHasChanged();
+    }
+
+    // metodo para limpiar procedimientos
+    private void LimpiarProcedimientos()
+    {
+        _procedimientosTest.Clear();
+        _contadorClics = 0;
+        StateHasChanged();
+    }
+
+    // Método para cargar solicitudes
+    private async Task CargarSolicitudes()
+    {
+        try
+        {
+            _solicitudes = await HospitalDb.SolicitudesQuirurgicas
+                .Include(s => s.Paciente)
+                .OrderByDescending(s => s.FechaCreacion)
+                .Take(50)
+                .ToListAsync();
+
+            StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error al cargar solicitudes: {ex.Message}");
+        }
+    }
+
+    // Método para contar solicitudes
+    private async Task ContarSolicitudes()
+    {
+        try
+        {
+            _totalSolicitudes = await HospitalDb.SolicitudesQuirurgicas.CountAsync();
+            StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error al contar solicitudes: {ex.Message}");
+        }
+    }
+
+    // Método para buscar solicitud individual
+    private async Task BuscarSolicitudIndividual()
+    {
+        if (_idSolicitudBuscar > 0)
+        {
+            try
+            {
+                _solicitudIndividual = await HospitalDb.SolicitudesQuirurgicas
+                    .Include(s => s.Paciente)
+                    .FirstOrDefaultAsync(s => s.Id == _idSolicitudBuscar);
+
+                StateHasChanged();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error al buscar solicitud: {ex.Message}");
+            }
+        }
+    }
+
+    private async Task VerDetalle(int id)
+    {
+        _solicitudSeleccionada = await HospitalDb.SolicitudesQuirurgicas
+            .Include(s => s.Paciente)
+            .FirstOrDefaultAsync(s => s.Id == id);
+
+        if (_solicitudSeleccionada != null)
+        {
+            // Urgencia > GES > Resto
+            if (_solicitudSeleccionada.Procedencia == "Urgencia")
+            {
+                _prioridadSugerida = 1;
+                _motivoSugerencia = "Procedencia es URGENCIA. Máxima prioridad.";
+            }
+            else if (_solicitudSeleccionada.EsGes)
+            {
+                _prioridadSugerida = 2;
+                _motivoSugerencia = "Paciente con patología GES.";
+            }
+            else
+            {
+                _prioridadSugerida = 3;
+                _motivoSugerencia = "Prioridad estándar por orden de llegada.";
+            }
+        }
+    }
+
+    private async Task AceptarPrioridad()
+    {
+        try
+        {
+            _solicitudSeleccionada.Prioridad = _prioridadSugerida;
+            _solicitudSeleccionada.Estado = "Priorizada";
+
+            // Guardar cambios en la base de datos
+            HospitalDb.SolicitudesQuirurgicas.Update(_solicitudSeleccionada);
+            await HospitalDb.SaveChangesAsync();
+
+            VolverALista();
+            await CargarSolicitudes(); // Recargar lista para ver cambios
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error al actualizar: {ex.Message}");
+        }
+    }
+
+    private void VolverALista()
+    {
+        _solicitudSeleccionada = null;
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await CargarSolicitudes();
+    }
+
+
+    private string _criterioPruebaBackingField; // Campo privado
+    private string _criterioPruebaAlertClass = "alert-secondary";
+    private string _prioridadSugeridaPrueba = "Pendiente";
+    private string _prioridadBadgeClass = "bg-secondary";
+
+    // se enlaza a @bind-CriterioSeleccionado
+    private string CriterioPruebaTest
+    {
+        get => _criterioPruebaBackingField;
+        set
+        {
+            _criterioPruebaBackingField = value;
+            // Al asignar un valor, se ejecuta esta lógica
+            ActualizarEstadoPruebaCriterios();
+        }
+    }
+
+    private void LimpiarPruebaPriorizacion()
+    {
+        // Al asignar null, se dispara el 'set' de la propiedad CriterioPruebaTest
+        CriterioPruebaTest = null;
+    }
+
+    // Método único que actualiza la UI de prueba
+    private void ActualizarEstadoPruebaCriterios()
+    {
+        if (!string.IsNullOrEmpty(CriterioPruebaTest))
+        {
+            _criterioPruebaAlertClass = "alert-success";
+
+            // Lógica simple para determinar prioridad basada en el criterio
+            switch (CriterioPruebaTest)
+            {
+                case "sename":
+                case "prais":
+                case "sanitaria":
+                case "ges":
+                    _prioridadSugeridaPrueba = "P1 - Alta";
+                    _prioridadBadgeClass = "bg-danger";
+                    break;
+                case "comges":
+                case "percentil50":
+                case "licencia":
+                    _prioridadSugeridaPrueba = "P2 - Media";
+                    _prioridadBadgeClass = "bg-warning";
+                    break;
+                case "logistica":
+                    _prioridadSugeridaPrueba = "P3 - Logística";
+                    _prioridadBadgeClass = "bg-info";
+                    break;
+                default:
+                    _prioridadSugeridaPrueba = "P4 - Rutina";
+                    _prioridadBadgeClass = "bg-secondary";
+                    break;
+            }
+        }
+        else
+        {
+            _criterioPruebaAlertClass = "alert-secondary";
+            _prioridadSugeridaPrueba = "Pendiente";
+            _prioridadBadgeClass = "bg-secondary";
+        }
+
+    }
+}
+
