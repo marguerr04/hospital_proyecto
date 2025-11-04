@@ -5,11 +5,9 @@
 @using proyecto_hospital_version_1.Data._Legacy
 @inject HospitalDbContextLegacy HospitalDb
 @inject ISolicitudQuirurgicaService SolicitudService
+@inject IProcedimientoService ProcedimientoService
 @using Microsoft.EntityFrameworkCore
-
-
-@*Ocupaba models *@
-
+@inject IJSRuntime JsRuntime
 
 <PageTitle>Prueba de Componentes Hospitalarios</PageTitle>
 
@@ -303,7 +301,6 @@
         </div>
     </div>
 
-
     <!-- ========== Sección de criterios de priorizacion ========== -->
     <hr class="my-5">
 
@@ -311,7 +308,7 @@
         <div class="card-header bg-primary text-white">
             <h4 class="mb-0">
                 <i class="bi bi-sort-up me-2"></i>
-               Componente CriteriosPriorizacion
+                Componente CriteriosPriorizacion
             </h4>
         </div>
         <div class="card-body">
@@ -321,7 +318,6 @@
                     <p class="text-muted">
                         componente de "priorizar-solicitud-original" para ser reutilizable.
                     </p>
-
 
                     <CriteriosPriorizacion @bind-CriterioSeleccionado="CriterioPruebaTest" />
 
@@ -358,8 +354,96 @@
     </div>
 </div>
 
-@code {
+<!-- ========== PRUEBA DEL COMPONENTE PASO1CONTEXTOCARD ========== -->
+<hr class="my-5">
 
+<div class="card border-warning">
+    <div class="card-header bg-warning text-dark">
+        <h4 class="mb-0">
+            <i class="bi bi-clipboard-check me-2"></i>
+            🧪 Prueba de Paso1ContextoCard
+        </h4>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-8">
+                <h5>Componente Paso1ContextoCard</h5>
+                <p class="text-muted">
+                    Prueba completa del formulario de contexto y consentimiento.
+                </p>
+
+                <!-- COMPONENTE CORRECTAMENTE REFACTORIZADO -->
+                <Paso1ContextoCard @bind-PacienteSeleccionado="_pacientePrueba"
+                                   @bind-ProcedenciaSeleccionada="_procedenciaPrueba"
+                                   @bind-ProcedimientoSeleccionado="_procedimientoPrueba"
+                                   @bind-LateralidadSeleccionada="_lateralidadPrueba"
+                                   @bind-ExtremidadSeleccionada="_extremidadPrueba"
+                                   @bind-ConsentimientoAceptado="_consentimientoPrueba"
+                                   ListaProcedimientos="_procedimientosParaPrueba" />
+
+            </div>
+
+            <div class="col-md-4">
+                <div class="card bg-light">
+                    <div class="card-header">
+                        <h6 class="mb-0">📊 Estado del Componente</h6>
+                    </div>
+                    <div class="card-body">
+                        <h6>Datos del Formulario:</h6>
+
+                        <p><strong>Paciente:</strong></p>
+                        <div class="alert @(_pacientePrueba != null ? "alert-success" : "alert-warning") p-2">
+                            @if (_pacientePrueba != null)
+                            {
+                                @_pacientePrueba.primerNombre @_pacientePrueba.apellidoPaterno
+                                <br />
+                                <small>RUT: @_pacientePrueba.rut-@_pacientePrueba.dv</small>
+                            }
+                            else
+                            {
+                                <span>No seleccionado</span>
+                            }
+                        </div>
+
+                        <p><strong>Procedencia:</strong></p>
+                        <span class="badge bg-info">@_procedenciaPrueba</span>
+
+                        <p><strong>Procedimiento:</strong></p>
+                        <span class="badge @(string.IsNullOrEmpty(_procedimientoPrueba) ? "bg-secondary" : "bg-primary")">
+                            @(string.IsNullOrEmpty(_procedimientoPrueba) ? "No seleccionado" : _procedimientoPrueba)
+                        </span>
+
+                        <p><strong>Lateralidad:</strong></p>
+                        <span class="badge bg-secondary">@(string.IsNullOrEmpty(_lateralidadPrueba) ? "-" : _lateralidadPrueba)</span>
+
+                        <p><strong>Extremidad:</strong></p>
+                        <span class="badge bg-secondary">@(string.IsNullOrEmpty(_extremidadPrueba) ? "-" : _extremidadPrueba)</span>
+
+                        <p><strong>Consentimiento:</strong></p>
+                        <span class="badge @(_consentimientoPrueba ? "bg-success" : "bg-danger")">
+                            @(_consentimientoPrueba ? "Aceptado" : "Pendiente")
+                        </span>
+
+                        <p><strong>Puede Generar PDF:</strong></p>
+                        <span class="badge @(_puedeGenerarPDFPrueba ? "bg-success" : "bg-warning")">
+                            @(_puedeGenerarPDFPrueba ? "SÍ" : "NO")
+                        </span>
+
+                        <div class="mt-3">
+                            <button class="btn btn-sm btn-outline-danger w-100"
+                                    @onclick="LimpiarPruebaPaso1"
+                                    disabled="@(!HayDatosEnPrueba)">
+                                <i class="bi bi-trash me-1"></i> Limpiar Todo
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
     private PacienteHospital? _pacienteSeleccionado;
 
     // Variables para pruebas de componentes
@@ -399,14 +483,11 @@
     private void HandleAgregarProcedimiento()
     {
         _contadorClics++;
-
         var nuevoProcedimiento = $"Procedimiento {_contadorClics} - {DateTime.Now:HH:mm:ss}";
         _procedimientosTest.Add(nuevoProcedimiento);
-
         StateHasChanged();
     }
 
-    // metodo para limpiar procedimientos
     private void LimpiarProcedimientos()
     {
         _procedimientosTest.Clear();
@@ -414,7 +495,6 @@
         StateHasChanged();
     }
 
-    // Método para cargar solicitudes
     private async Task CargarSolicitudes()
     {
         try
@@ -433,7 +513,6 @@
         }
     }
 
-    // Método para contar solicitudes
     private async Task ContarSolicitudes()
     {
         try
@@ -447,7 +526,6 @@
         }
     }
 
-    // Método para buscar solicitud individual
     private async Task BuscarSolicitudIndividual()
     {
         if (_idSolicitudBuscar > 0)
@@ -475,7 +553,6 @@
 
         if (_solicitudSeleccionada != null)
         {
-            // Urgencia > GES > Resto
             if (_solicitudSeleccionada.Procedencia == "Urgencia")
             {
                 _prioridadSugerida = 1;
@@ -501,12 +578,11 @@
             _solicitudSeleccionada.Prioridad = _prioridadSugerida;
             _solicitudSeleccionada.Estado = "Priorizada";
 
-            // Guardar cambios en la base de datos
             HospitalDb.SolicitudesQuirurgicas.Update(_solicitudSeleccionada);
             await HospitalDb.SaveChangesAsync();
 
             VolverALista();
-            await CargarSolicitudes(); // Recargar lista para ver cambios
+            await CargarSolicitudes();
         }
         catch (Exception ex)
         {
@@ -522,40 +598,35 @@
     protected override async Task OnInitializedAsync()
     {
         await CargarSolicitudes();
+        await CargarListaProcedimientos();  // Cargar procedimientos para la prueba
     }
 
-
-    private string _criterioPruebaBackingField; // Campo privado
+    private string _criterioPruebaBackingField;
     private string _criterioPruebaAlertClass = "alert-secondary";
     private string _prioridadSugeridaPrueba = "Pendiente";
     private string _prioridadBadgeClass = "bg-secondary";
 
-    // se enlaza a @bind-CriterioSeleccionado
     private string CriterioPruebaTest
     {
         get => _criterioPruebaBackingField;
         set
         {
             _criterioPruebaBackingField = value;
-            // Al asignar un valor, se ejecuta esta lógica
             ActualizarEstadoPruebaCriterios();
         }
     }
 
     private void LimpiarPruebaPriorizacion()
     {
-        // Al asignar null, se dispara el 'set' de la propiedad CriterioPruebaTest
         CriterioPruebaTest = null;
     }
 
-    // Método único que actualiza la UI de prueba
     private void ActualizarEstadoPruebaCriterios()
     {
         if (!string.IsNullOrEmpty(CriterioPruebaTest))
         {
             _criterioPruebaAlertClass = "alert-success";
 
-            // Lógica simple para determinar prioridad basada en el criterio
             switch (CriterioPruebaTest)
             {
                 case "sename":
@@ -587,7 +658,60 @@
             _prioridadSugeridaPrueba = "Pendiente";
             _prioridadBadgeClass = "bg-secondary";
         }
+    }
 
+    // ========== VARIABLES PARA PRUEBA DE PASO1CONTEXTOCARD ==========
+    private PacienteHospital? _pacientePrueba;
+    private string _procedenciaPrueba = "Ambulatorio";
+    private string _procedimientoPrueba = "";
+    private string _lateralidadPrueba = "";
+    private string _extremidadPrueba = "";
+    private bool _consentimientoPrueba = false;
+
+    // Lista de procedimientos - ahora la cargaremos de la BD
+    private List<ProcedimientoDto> _procedimientosParaPrueba = new List<ProcedimientoDto>();
+
+    // Cargar procedimientos de la BD para las pruebas
+    private async Task CargarListaProcedimientos()
+    {
+        try
+        {
+            _procedimientosParaPrueba = await ProcedimientoService.GetProcedimientosAsync();
+            Console.WriteLine($"Procedimientos cargados para prueba: {_procedimientosParaPrueba.Count}");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error al cargar procedimientos: {ex.Message}");
+            // Usar lista de prueba si falla la carga
+            _procedimientosParaPrueba = new List<ProcedimientoDto>
+            {
+                new ProcedimientoDto { Nombre = "Artroscopia de rodilla" },
+                new ProcedimientoDto { Nombre = "Colecistectomía laparoscópica" },
+                new ProcedimientoDto { Nombre = "Herniorrafia inguinal" },
+                new ProcedimientoDto { Nombre = "Apéndicectomía" },
+                new ProcedimientoDto { Nombre = "Cirugía de cataratas" }
+            };
+        }
+    }
+
+    private bool _puedeGenerarPDFPrueba =>
+        _pacientePrueba != null &&
+        !string.IsNullOrEmpty(_procedimientoPrueba) &&
+        _consentimientoPrueba;
+
+    private bool HayDatosEnPrueba =>
+        _pacientePrueba != null ||
+        !string.IsNullOrEmpty(_procedimientoPrueba) ||
+        _consentimientoPrueba;
+
+    private void LimpiarPruebaPaso1()
+    {
+        _pacientePrueba = null;
+        _procedenciaPrueba = "Ambulatorio";
+        _procedimientoPrueba = "";
+        _lateralidadPrueba = "";
+        _extremidadPrueba = "";
+        _consentimientoPrueba = false;
+        StateHasChanged();
     }
 }
-

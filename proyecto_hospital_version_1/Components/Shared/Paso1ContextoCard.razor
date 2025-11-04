@@ -1,0 +1,351 @@
+﻿@using proyecto_hospital_version_1.Data._Legacy
+@using proyecto_hospital_version_1.Components.Shared
+@using Microsoft.EntityFrameworkCore
+@inject HospitalDbContextLegacy HospitalDb
+@inject IJSRuntime JsRuntime
+
+<!-- NAVEGACIÓN DEL PASO -->
+<div class="alert alert-primary p-3 mb-4 d-flex align-items-center"
+     style="--bs-alert-bg: #e0f2f7; --bs-alert-color: #0c5460; border-color: #bee5eb;">
+    <i class="bi bi-pencil-square me-3 h4 mb-0"></i>
+    <h5 class="mb-0">1) Contexto y Consentimiento</h5>
+</div>
+
+<!-- BÚSQUEDA DE PACIENTES -->
+<div class="card shadow-sm mb-4">
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-6">
+                <label>Buscar por rut sin puntos ni digito veríficador:</label>
+                <input type="text"
+                       class="form-control"
+                       placeholder="Buscar..."
+                       @bind="_busquedaTexto"
+                       @bind:event="oninput"
+                       @onkeypress="@(async (e) => { if (e.Key == "Enter") await CargarPacientes(); })" />
+            </div>
+            <div class="col-md-3">
+                <label>DV:</label>
+                <input type="text"
+                       class="form-control text-center"
+                       placeholder="K"
+                       maxlength="1"
+                       @bind="_busquedaDv"
+                       @bind:event="oninput"
+                       style="text-transform: uppercase;" />
+            </div>
+            <div class="col-md-3">
+                <label>&nbsp;</label>
+                <div>
+                    <button class="btn btn-success w-100" @onclick="CargarPacientes">
+                        Buscar
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        @if (!string.IsNullOrWhiteSpace(_busquedaTexto) || !string.IsNullOrWhiteSpace(_busquedaDv))
+        {
+            <div class="alert alert-info mt-3">
+                <button class="btn btn-sm btn-outline-secondary ms-2" @onclick="LimpiarBusqueda">Limpiar</button>
+            </div>
+
+            @if (PacienteSeleccionado != null)
+            {
+                <div class="mt-3">
+                    <h3>Información del Paciente Seleccionado</h3>
+                    <InfoPacienteCard Paciente="PacienteSeleccionado" />
+                </div>
+            }
+        }
+    </div>
+</div>
+
+<!-- TARJETA PRINCIPAL DE CONTENIDO -->
+<div class="card shadow-sm">
+    <div class="card-body p-4">
+        <div class="info-paciente mb-4">
+            <strong>Paciente:</strong> @_nombrePacienteParaMostrar - <strong>RUT:</strong> @_rutPacienteParaMostrar
+        </div>
+
+        <h5 class="mb-3 border-bottom pb-2">1. Procedencia y Diagnóstico</h5>
+        <div class="btn-group w-100 mb-3" role="group">
+            <!-- Ambulatorio -->
+            <input type="radio"
+                   class="btn-check"
+                   name="procedencia"
+                   id="btn-ambulatorio"
+                   autocomplete="off"
+                   value="Ambulatorio"
+                   checked="@(ProcedenciaSeleccionada == "Ambulatorio")"
+                   @onchange="@(() => UpdateProcedencia("Ambulatorio"))" />
+            <label class="btn btn-outline-primary" for="btn-ambulatorio">Ambulatorio</label>
+
+            <!-- Hospitalizado -->
+            <input type="radio"
+                   class="btn-check"
+                   name="procedencia"
+                   id="btn-hospitalizado"
+                   autocomplete="off"
+                   value="Hospitalizado"
+                   checked="@(ProcedenciaSeleccionada == "Hospitalizado")"
+                   @onchange="@(() => UpdateProcedencia("Hospitalizado"))" />
+            <label class="btn btn-outline-primary" for="btn-hospitalizado">Hospitalizado</label>
+
+            <!-- Urgencia -->
+            <input type="radio"
+                   class="btn-check"
+                   name="procedencia"
+                   id="btn-urgencia"
+                   autocomplete="off"
+                   value="Urgencia"
+                   checked="@(ProcedenciaSeleccionada == "Urgencia")"
+                   @onchange="@(() => UpdateProcedencia("Urgencia"))" />
+            <label class="btn btn-outline-primary" for="btn-urgencia">Urgencia</label>
+        </div>
+
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <label for="procedimiento" class="form-label">Procedimiento</label>
+                <select class="form-select" id="procedimiento"
+                        value="@ProcedimientoSeleccionado"
+                        @onchange="@((e) => UpdateProcedimiento(e.Value?.ToString() ?? ""))">
+                    <option value="">Seleccione un procedimiento</option>
+                    @foreach (var proc in ListaProcedimientos)
+                    {
+                        <option value="@proc.Nombre">@proc.Nombre</option>
+                    }
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label for="lateralidad" class="form-label">Lateralidad</label>
+                <select class="form-select" id="lateralidad"
+                        value="@LateralidadSeleccionada"
+                        @onchange="@((e) => UpdateLateralidad(e.Value?.ToString() ?? ""))">
+                    <option value="">-</option>
+                    <option value="Derecha">Derecha</option>
+                    <option value="Izquierda">Izquierda</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label for="extremidad" class="form-label">Extremidad</label>
+                <select class="form-select" id="extremidad"
+                        value="@ExtremidadSeleccionada"
+                        @onchange="@((e) => UpdateExtremidad(e.Value?.ToString() ?? ""))">
+                    <option value="">-</option>
+                    <option value="Superior">Superior</option>
+                    <option value="Inferior">Inferior</option>
+                </select>
+            </div>
+        </div>
+
+        <h5 class="mb-3 border-bottom pb-2">2. Consentimiento Informado</h5>
+        <div class="d-flex justify-content-between align-items-center">
+            <div class="form-check">
+                <input class="form-check-input"
+                       type="checkbox"
+                       checked="@ConsentimientoAceptado"
+                       @onchange="@((e) => UpdateConsentimiento((bool)e.Value))"
+                       id="consentimientoCheck">
+                <label class="form-check-label" for="consentimientoCheck">
+                    Se confirma que el consentimiento será informado y acordado por el paciente.
+                </label>
+            </div>
+
+            <button class="btn btn-success"
+                    @onclick="GenerarPDF"
+                    disabled="@(!PuedeGenerarPDF)"
+                    title="@(PuedeGenerarPDF ? "Generar PDF de consentimiento" : "Debe seleccionar paciente, procedimiento y aceptar el consentimiento")">
+                <i class="bi bi-file-earmark-pdf-fill me-2"></i> Generar PDF
+            </button>
+        </div>
+
+        <!-- Componente PDF con referencia -->
+        <ConsentimientoPDF @ref="_consentimientoPdfRef"
+                           Paciente="@PacienteSeleccionado"
+                           Procedimiento="@ProcedimientoSeleccionado"
+                           Lateralidad="@LateralidadSeleccionada"
+                           Extremidad="@ExtremidadSeleccionada" />
+    </div>
+</div>
+
+<style>
+    .info-paciente {
+        font-size: 0.95rem;
+    }
+</style>
+
+@code {
+    // PARAMETERS - Para comunicarse con el componente padre
+    [Parameter] public PacienteHospital? PacienteSeleccionado { get; set; }
+    [Parameter] public EventCallback<PacienteHospital?> PacienteSeleccionadoChanged { get; set; }
+
+    [Parameter] public string ProcedenciaSeleccionada { get; set; } = "Ambulatorio";
+    [Parameter] public EventCallback<string> ProcedenciaSeleccionadaChanged { get; set; }
+
+    [Parameter] public string ProcedimientoSeleccionado { get; set; } = "";
+    [Parameter] public EventCallback<string> ProcedimientoSeleccionadoChanged { get; set; }
+
+    [Parameter] public string LateralidadSeleccionada { get; set; } = "";
+    [Parameter] public EventCallback<string> LateralidadSeleccionadaChanged { get; set; }
+
+    [Parameter] public string ExtremidadSeleccionada { get; set; } = "";
+    [Parameter] public EventCallback<string> ExtremidadSeleccionadaChanged { get; set; }
+
+    [Parameter] public bool ConsentimientoAceptado { get; set; } = false;
+    [Parameter] public EventCallback<bool> ConsentimientoAceptadoChanged { get; set; }
+
+    [Parameter] public List<ProcedimientoDto> ListaProcedimientos { get; set; } = new();
+
+    // Variables internas para búsqueda
+    private string _busquedaTexto = "";
+    private string _busquedaDv = "";
+    private string _estado = "inicial";
+    private string? _error;
+
+    // Variables para mostrar info del paciente
+    private string _nombrePacienteParaMostrar = "";
+    private string _rutPacienteParaMostrar = "";
+
+    // Referencia al componente PDF
+    private ConsentimientoPDF? _consentimientoPdfRef;
+
+    private bool PuedeGenerarPDF =>
+        PacienteSeleccionado != null &&
+        ConsentimientoAceptado &&
+        !string.IsNullOrEmpty(ProcedimientoSeleccionado);
+
+    // Métodos de actualización que notifican al padre
+    private async Task UpdateProcedencia(string value)
+    {
+        ProcedenciaSeleccionada = value;
+        await ProcedenciaSeleccionadaChanged.InvokeAsync(value);
+    }
+
+    private async Task UpdateProcedimiento(string value)
+    {
+        ProcedimientoSeleccionado = value;
+        await ProcedimientoSeleccionadoChanged.InvokeAsync(value);
+    }
+
+    private async Task UpdateLateralidad(string value)
+    {
+        LateralidadSeleccionada = value;
+        await LateralidadSeleccionadaChanged.InvokeAsync(value);
+    }
+
+    private async Task UpdateExtremidad(string value)
+    {
+        ExtremidadSeleccionada = value;
+        await ExtremidadSeleccionadaChanged.InvokeAsync(value);
+    }
+
+    private async Task UpdateConsentimiento(bool value)
+    {
+        ConsentimientoAceptado = value;
+        await ConsentimientoAceptadoChanged.InvokeAsync(value);
+    }
+
+    private async Task CargarPacientes()
+    {
+        if (string.IsNullOrWhiteSpace(_busquedaTexto) && string.IsNullOrWhiteSpace(_busquedaDv))
+        {
+            return;
+        }
+        _estado = "cargando";
+        StateHasChanged();
+
+        try
+        {
+            var query = HospitalDb.Pacientes
+                .Include(p => p.Ubicaciones)
+                .AsQueryable();
+
+            if (!string.IsNullOrWhiteSpace(_busquedaTexto))
+            {
+                var busqueda = _busquedaTexto.ToLower();
+                query = query.Where(p =>
+                    p.primerNombre.ToLower().Contains(busqueda) ||
+                    (p.segundoNombre != null && p.segundoNombre.ToLower().Contains(busqueda)) ||
+                    p.apellidoPaterno.ToLower().Contains(busqueda) ||
+                    (p.apellidoMaterno != null && p.apellidoMaterno.ToLower().Contains(busqueda)) ||
+                    p.rut.Contains(busqueda)
+                );
+            }
+
+            if (!string.IsNullOrWhiteSpace(_busquedaDv))
+            {
+                var dvUpper = _busquedaDv.ToUpper();
+                query = query.Where(p => p.dv.ToUpper() == dvUpper);
+            }
+
+            var pacienteEncontrado = await query.FirstOrDefaultAsync();
+
+            if (pacienteEncontrado != null)
+            {
+                PacienteSeleccionado = pacienteEncontrado;
+                await PacienteSeleccionadoChanged.InvokeAsync(pacienteEncontrado);
+
+                _nombrePacienteParaMostrar = $"{pacienteEncontrado.primerNombre} {pacienteEncontrado.apellidoPaterno}";
+                _rutPacienteParaMostrar = $"{pacienteEncontrado.rut}-{pacienteEncontrado.dv}";
+            }
+            else
+            {
+                PacienteSeleccionado = null;
+                await PacienteSeleccionadoChanged.InvokeAsync(null);
+                _nombrePacienteParaMostrar = "Paciente no encontrado";
+                _rutPacienteParaMostrar = "";
+            }
+
+            _estado = "ok";
+        }
+        catch (Exception ex)
+        {
+            _estado = "error";
+            _error = ex.Message;
+            Console.WriteLine($"Error al buscar pacientes: {ex}");
+        }
+
+        StateHasChanged();
+    }
+
+    private async Task LimpiarBusqueda()
+    {
+        _busquedaTexto = "";
+        _busquedaDv = "";
+        _estado = "inicial";
+        PacienteSeleccionado = null;
+        await PacienteSeleccionadoChanged.InvokeAsync(null);
+
+        _nombrePacienteParaMostrar = "";
+        _rutPacienteParaMostrar = "";
+
+        StateHasChanged();
+    }
+
+    public async Task GenerarPDF()
+    {
+        if (_consentimientoPdfRef != null && PuedeGenerarPDF)
+        {
+            await _consentimientoPdfRef.GenerarPdf();
+        }
+        else
+        {
+            string mensaje = "No se puede generar el PDF. Asegúrese de:\n" +
+                           "1. Haber seleccionado un paciente.\n" +
+                           "2. Haber seleccionado un procedimiento principal.\n" +
+                           "3. Haber marcado la casilla de consentimiento.";
+            await JsRuntime.InvokeVoidAsync("alert", mensaje);
+        }
+    }
+
+    // Actualizar info cuando el paciente cambie desde el padre
+    protected override void OnParametersSet()
+    {
+        if (PacienteSeleccionado != null)
+        {
+            _nombrePacienteParaMostrar = $"{PacienteSeleccionado.primerNombre} {PacienteSeleccionado.apellidoPaterno}";
+            _rutPacienteParaMostrar = $"{PacienteSeleccionado.rut}-{PacienteSeleccionado.dv}";
+        }
+    }
+}
