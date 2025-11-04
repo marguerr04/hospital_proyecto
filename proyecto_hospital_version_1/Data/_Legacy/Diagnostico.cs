@@ -1,9 +1,10 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Collections.Generic;
-namespace proyecto_hospital_version_1.Models
+
+namespace proyecto_hospital_version_1.Data._Legacy
 {
-    [Table("DIAGNOSTICO")] 
+    [Table("DIAGNOSTICO")]
     public class Diagnostico
     {
         [Key]

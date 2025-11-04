@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace proyecto_hospital_version_1.Models
+namespace proyecto_hospital_version_1.Data._Legacy
 {
     [Table("PACIENTE")]
     public class PacienteHospital

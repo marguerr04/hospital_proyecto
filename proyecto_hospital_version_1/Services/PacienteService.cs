@@ -1,5 +1,4 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using proyecto_hospital_version_1.Models;
 using proyecto_hospital_version_1.Data._Legacy; // El DbContext sigue en Data.Hospital
 
 // se cambiar a dbcontestlegacy para evitar cualquier conflicto con la api

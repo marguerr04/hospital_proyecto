@@ -6,6 +6,7 @@ using proyecto_hospital_version_1.Services;
 using MudBlazor.Services;
 using proyecto_hospital_version_1.Data._Legacy; // NUEVO: Agregado para MudBlazor (Dashboard)
 
+
 var builder = WebApplication.CreateBuilder(args);
 
 // --- SECCIÓN DE SERVICIOS (builder.Services) ---
@@ -46,6 +47,11 @@ builder.Services.AddScoped<IPacienteService, PacienteService>();
 builder.Services.AddScoped<IEspecialidadHospital, EspecialidadHospitalService>();
 builder.Services.AddScoped<IDiagnosticoService, DiagnosticoService>();
 builder.Services.AddScoped<ISolicitudQuirurgicaService, SolicitudQuirurgicaService>();
+// Diagnostico
+builder.Services.AddScoped<IProcedimientoService, ProcedimientoService>();
+// Service nuevo
+builder.Services.AddScoped<IEspecialidadService, EspecialidadService>();
+
 
 
 // NUEVOS SERVICIOS (de tu compañero para el Dashboard)

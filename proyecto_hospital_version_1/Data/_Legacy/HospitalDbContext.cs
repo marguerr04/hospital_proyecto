@@ -1,5 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using proyecto_hospital_version_1.Models;
+using proyecto_hospital_version_1.Data._Legacy;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace proyecto_hospital_version_1.Data._Legacy

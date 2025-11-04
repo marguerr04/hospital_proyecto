@@ -1,6 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using proyecto_hospital_version_1.Data._Legacy;
-using proyecto_hospital_version_1.Models;
 
 // se cambiara el db context referenciado de mi proyecto a legacy para evitar confuciones y conflicots con la api
 

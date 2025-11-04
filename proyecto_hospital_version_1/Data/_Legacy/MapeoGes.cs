@@ -2,7 +2,7 @@
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Collections.Generic;
 using System;
-namespace proyecto_hospital_version_1.Models
+namespace proyecto_hospital_version_1.Data._Legacy
 {
     [Table("MAPEO_GES")]
     public class MapeoGes
@@ -11,10 +11,10 @@ namespace proyecto_hospital_version_1.Models
         [Column("id")]
         public int Id { get; set; }
 
-        [Column("DIAGNOSTICO_ID")] 
+        [Column("DIAGNOSTICO_ID")]
         public int DiagnosticoId { get; set; }
 
-        [Column("PATOLOGIA_GES_ID")] 
+        [Column("PATOLOGIA_GES_ID")]
         public int PatologiaGesId { get; set; }
 
         [Column("fechaVigenciaInicial")]

@@ -1,4 +1,4 @@
-﻿namespace proyecto_hospital_version_1.Models
+﻿namespace proyecto_hospital_version_1.Data._Legacy
 {
     public class Paciente
     {

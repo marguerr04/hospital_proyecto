@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace proyecto_hospital_version_1.Models
+namespace proyecto_hospital_version_1.Data._Legacy
 {
     [Table("PROCEDIMIENTO")]
     public class Procedimiento
@@ -11,7 +11,7 @@ namespace proyecto_hospital_version_1.Models
         public int Id { get; set; }
 
         [Column("codigo")] // antes definido como string, que era diferente de la bd
-        public int Codigo { get; set; } 
+        public int Codigo { get; set; }
 
         [Column("nombre")]
         [StringLength(255)]

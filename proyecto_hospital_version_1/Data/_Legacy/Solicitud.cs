@@ -1,7 +1,7 @@
 ﻿using proyecto_hospital_version_1.Data;
 using System; // Para DateTime
 
-namespace proyecto_hospital_version_1.Models 
+namespace proyecto_hospital_version_1.Data._Legacy
 {
     public class Solicitud
     {
@@ -11,6 +11,6 @@ namespace proyecto_hospital_version_1.Models
         public Procedencia Procedencia { get; set; }
         public bool EsGes { get; set; }
         public int PacienteId { get; set; }
-        public Paciente? Paciente { get; set; } 
+        public Paciente? Paciente { get; set; }
     }
 }

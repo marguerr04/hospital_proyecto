@@ -2,8 +2,13 @@
 @layout Components.Layout.MainLayoutMedico
 @using proyecto_hospital_version_1.Data._Legacy
 @inject HospitalDbContextLegacy HospitalDb
+@inject IProcedimientoService ProcedimientoService
+
 @using proyecto_hospital_version_1.Components.Shared
 @using Microsoft.EntityFrameworkCore
+@using proyecto_hospital_version_1.Services
+
+
 
 
 
@@ -341,7 +346,7 @@
 
 @code {
     // Variables existentes
-    private PacienteHospital? _pacienteSeleccionado = null;
+    private proyecto_hospital_version_1.Data._Legacy.PacienteHospital? _pacienteSeleccionado = null;
     private string _procedenciaSeleccionada = "Ambulatorio"; 
     private int? NumeroBusqueda { get; set; }
     private string TextoBusqueda { get; set; } = string.Empty;
@@ -371,7 +376,8 @@
 
     // variables fase 1 
 
-    private List<Procedimiento> _listaProcedimientos = new List<Procedimiento>();
+    private List<ProcedimientoDto> _listaProcedimientos = new();
+
     
     // variables para cambiar de rutas
 
@@ -823,16 +829,14 @@
     {
         try
         {
-            // Esto cargará todos los procedimientos de la base de datos.
-            // Si necesitas filtrar o incluir TipoProcedimiento, puedes hacerlo aquí.
-            _listaProcedimientos = await HospitalDb.Procedimientos
-                                                .OrderBy(p => p.Nombre) // Ordenar alfabéticamente
-                                                .ToListAsync();
+            // Llama a la API mediante el servicio
+            _listaProcedimientos = await ProcedimientoService.GetProcedimientosAsync();
+
+            Console.WriteLine($"Procedimientos cargados: {_listaProcedimientos.Count}");
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Error al cargar procedimientos: {ex.Message}");
-            // Opcional: Mostrar un mensaje de error al usuario
+            Console.WriteLine($"Error al cargar procedimientos desde API: {ex.Message}");
             await JsRuntime.InvokeVoidAsync("alert", $"Error al cargar procedimientos: {ex.Message}");
         }
     }

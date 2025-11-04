@@ -1,5 +1,5 @@
 ﻿using System.Net.Http.Json;
-using proyecto_hospital_version_1.Models;
+using proyecto_hospital_version_1.Data._Legacy;
 
 namespace proyecto_hospital_version_1.Services
 {

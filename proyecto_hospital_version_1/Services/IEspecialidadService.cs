@@ -1,13 +1,11 @@
-﻿using proyecto_hospital_version_1.Models;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace proyecto_hospital_version_1.Services
 {
-    public interface IEspecialidadHospitalService
+    public interface IEspecialidadService
     {
-        Task<List<EspecialidadHospital>> GetEspecialidadesAsync();
-        Task<List<string>> GetDiagnosticosSugeridosAsync(); 
-
+        Task<List<EspecialidadDto>> GetEspecialidadesAsync();
+        Task<List<EspecialidadDto>> BuscarEspecialidadesAsync(string texto);
     }
 }

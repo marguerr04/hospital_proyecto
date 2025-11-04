@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 
 namespace proyecto_hospital_version_1.Data
@@ -21,7 +22,7 @@ namespace proyecto_hospital_version_1.Data
         public DbSet<EstadoSolicitud> ESTADO_SOLICITUD { get; set; }
         public DbSet<DetallePaciente> DETALLE_PACIENTE { get; set; }
         public DbSet<DetalleClinico> DETALLE_CLINICO { get; set; }
-        public DbSet<Procedimiento> Procedimientos { get; set; } = null!;
+
         public DbSet<Solicitud> SOLICITUDES { get; set; } = null!;
 
         // Tablas de catálogo
@@ -31,6 +32,18 @@ namespace proyecto_hospital_version_1.Data
         public DbSet<CausalSalida> CAUSAL_SALIDA { get; set; }
         public DbSet<Diagnostico> DIAGNOSTICO { get; set; }
         public DbSet<PrevisionTipo> TIPO_PREVISION { get; set; }
+
+
+        // en proceso de reemplazo de procedimientos
+        public DbSet<Procedimiento> Procedimientos { get; set; } = null!;
+
+        public DbSet<Procedimiento> PROCEDIMIENTO { get; set; } = null!;
+        public DbSet<TipoProcedimiento> TIPO_PROCEDIMIENTO { get; set; } = null!;
+
+        public DbSet<Especialidad> ESPECIALIDAD { get; set; } = null!;
+
+
+
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -94,6 +107,18 @@ namespace proyecto_hospital_version_1.Data
                 entity.Property(e => e.Peso).HasPrecision(5, 2);
                 entity.Property(e => e.IMC).HasPrecision(5, 2);
             });
+
+
+            base.OnModelCreating(modelBuilder);
+
+            modelBuilder.Entity<Procedimiento>().ToTable("PROCEDIMIENTO");
+            modelBuilder.Entity<TipoProcedimiento>().ToTable("TIPO_PROCEDIMIENTO");
+
+
+            modelBuilder.Entity<Especialidad>().ToTable("ESPECIALIDAD");
+
+
+
 
         }
     }
@@ -183,6 +208,10 @@ namespace proyecto_hospital_version_1.Data
         public int TipoPrevisionId { get; set; }
     }
 
+    /*
+     Reemplazo de procedimiento local para que este enlazada a base de datos , mi procedimiento
+     
+
     public class Procedimiento
     {
         public int Id { get; set; }
@@ -191,6 +220,54 @@ namespace proyecto_hospital_version_1.Data
         public string Descripcion { get; set; } = string.Empty;
         public int TipoProcedimientoId { get; set; }
     }
+
+     */
+
+
+    [Table("PROCEDIMIENTO")]
+    public class Procedimiento
+    {
+        [Key]
+        [Column("id")]
+        public int Id { get; set; }
+
+        [Column("codigo")]
+        public int Codigo { get; set; }
+
+        [Column("nombre")]
+        [StringLength(255)]
+        public string Nombre { get; set; } = string.Empty;
+
+        [Column("descripcion")]
+        public string? Descripcion { get; set; }
+
+        [Column("TIPO_PROCEDIMIENTO_ID")]
+        public int TipoProcedimientoId { get; set; }
+
+        // 🔹 FK opcional: crea relación si existe la tabla TIPO_PROCEDIMIENTO
+        [ForeignKey("TipoProcedimientoId")]
+        public TipoProcedimiento? TipoProcedimiento { get; set; }
+    }
+
+    [Table("TIPO_PROCEDIMIENTO")]
+    public class TipoProcedimiento
+    {
+        [Key]
+        [Column("id")]
+        public int Id { get; set; }
+
+        [Column("nombre")]
+        [StringLength(50)]
+        public string Nombre { get; set; } = string.Empty;
+
+        public ICollection<Procedimiento> Procedimientos { get; set; } = new List<Procedimiento>();
+    }
+
+
+
+
+
+
 
     public class Extremidad
     {
@@ -366,6 +443,36 @@ namespace proyecto_hospital_version_1.Data
 
 
     }
+
+    // Migracion para la Pacinete hospital 
+    [Table("ESPECIALIDAD")]
+    public class Especialidad
+    {
+        [Key]
+        [Column("id")]
+        public int Id { get; set; }
+
+        [Required]
+        [Column("nombre")]
+        [StringLength(255)]
+        public string Nombre { get; set; } = string.Empty;
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 }

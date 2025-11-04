@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
-using proyecto_hospital_version_1.Models;
 using proyecto_hospital_version_1.Services;
 using System;
 using System.Collections.Generic;

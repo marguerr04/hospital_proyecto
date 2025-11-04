@@ -1,27 +1,36 @@
-﻿using proyecto_hospital_version_1.Models;
+﻿using System.Collections.Generic;
+using System;
+using System.Net.Http.Json;
+using System.Threading.Tasks;
+
 namespace proyecto_hospital_version_1.Services
 {
     public class EspecialidadService : IEspecialidadService
     {
-        // Simula la lista fija. 
-        // Más adelante puedes inyectar tu DbContext y traerlos de la BD.
-        private readonly List<Especialidad> _especialidades = new List<Especialidad>
-        {
-            new Especialidad { Id = 1, Nombre = "Ortopedia" },
-            new Especialidad { Id = 2, Nombre = "Otorrinolaringología" },
-            new Especialidad { Id = 3, Nombre = "Urología" },
-            new Especialidad { Id = 4, Nombre = "Cirugía Cardiovascular" },
-            new Especialidad { Id = 5, Nombre = "Cirugía Plástica y Reconstructiva" },
-            new Especialidad { Id = 6, Nombre = "Anestesiología" },
-            new Especialidad { Id = 7, Nombre = "Medicina General" },
-            new Especialidad { Id = 8, Nombre = "Pediatría" }
-        };
+        private readonly HttpClient _http;
 
-        public async Task<IEnumerable<Especialidad>> GetEspecialidadesAsync()
+        public EspecialidadService(HttpClient http)
         {
-            // Simula una llamada asíncrona a la BD
-            await Task.Delay(10); 
-            return _especialidades;
+            _http = http;
         }
+
+        public async Task<List<EspecialidadDto>> GetEspecialidadesAsync()
+        {
+            var result = await _http.GetFromJsonAsync<List<EspecialidadDto>>("api/especialidad");
+            return result ?? new List<EspecialidadDto>();
+        }
+
+        public async Task<List<EspecialidadDto>> BuscarEspecialidadesAsync(string texto)
+        {
+            var url = $"api/especialidad/buscar?texto={Uri.EscapeDataString(texto)}";
+            var result = await _http.GetFromJsonAsync<List<EspecialidadDto>>(url);
+            return result ?? new List<EspecialidadDto>();
+        }
+    }
+
+    public class EspecialidadDto
+    {
+        public int Id { get; set; }
+        public string Nombre { get; set; } = string.Empty;
     }
 }
