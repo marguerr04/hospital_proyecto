@@ -1,11 +1,13 @@
 ﻿@page "/dashboard_verdadero"
-@using MudBlazor;
-@using proyecto_hospital_version_1.Data;
-@using System.Globalization;
-@using System.Text;
+@using MudBlazor
+@using proyecto_hospital_version_1.Data
+@using System.Text
+@using System.Globalization
 @inject DashboardService dashboard
+@inject IJSRuntime JS
 
 <PageTitle>Panel de Control - Administración Hospitalaria</PageTitle>
+
 
 <MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="mt-6 mb-8">
     <MudText Typo="Typo.h4" Align="Align.Center" GutterBottom="true" Class="mb-1 text-primary">
@@ -43,66 +45,20 @@
         </MudItem>
     </MudGrid>
 
-    <MudDivider Class="my-6" />
-
-    @if (!_isLoaded)
-    {
-        <div class="text-center mt-6">
-            <MudProgressCircular Indeterminate="true" Color="Color.Primary" Size="Size.Large" />
-            <MudText Typo="Typo.subtitle2" Class="mt-2 text-secondary">Cargando datos...</MudText>
-        </div>
-    }
-    else
-    {
-        <MudGrid Justify="Justify.Center" Spacing="3">
-
-            <!-- Distribución por Estado -->
-            <MudItem xs="12" md="6">
-                <MudPaper Elevation="2" Class="pa-4 dashboard-chart">
-                    <MudText Typo="Typo.h6" Class="mb-3 text-primary">Distribución por Estado</MudText>
-                    @if (EstadoSeries.Any() && EstadoLabels.Any())
-                    {
-                        <MudChart ChartType="ChartType.Bar"
-                                  Labels="@EstadoLabels"
-                                  Series="@EstadoSeries"
-                                  Colors="@EstadoColors"
-                                  Height="300px"
-                                  Width="100%" />
-                    }
-                    else
-                    {
-                        <MudText Typo="Typo.body2" Align="Align.Center" Class="text-secondary">No hay datos para mostrar</MudText>
-                    }
-                </MudPaper>
-            </MudItem>
-
-            <!-- Contactabilidad -->
-            <MudItem xs="12" md="6">
-                <MudPaper Elevation="2" Class="pa-4 dashboard-chart">
-                    <MudText Typo="Typo.h6" Class="mb-3 text-primary">Contactabilidad</MudText>
-                    @if (ContactoSeries.Any() && ContactoLabels.Any())
-                    {
-                        <MudChart ChartType="ChartType.Donut"
-                                  Labels="@ContactoLabels"
-                                  Series="@ContactoSeries"
-                                  Colors="@ContactoColors"
-                                  Height="300px"
-                                  Width="100%" />
-                    }
-                    else
-                    {
-                        <MudText Typo="Typo.body2" Align="Align.Center" Class="text-secondary">No hay datos para mostrar</MudText>
-                    }
-                </MudPaper>
-            </MudItem>
-        </MudGrid>
-
-        <pre>
-EstadoSeries: @string.Join(", ", EstadoSeries.SelectMany(s => s.Data))
-ContactoSeries: @string.Join(", ", ContactoSeries.SelectMany(s => s.Data))
-Percentil75: @Percentil75
-        </pre>
-    }
+    <MudGrid Class="mt-4">
+        <!-- Gráfico de Estados -->
+        <MudItem xs="12" md="6">
+            <MudPaper Class="pa-4">
+                <canvas id="chartEstado"></canvas>
+            </MudPaper>
+        </MudItem>
+        <!-- Gráfico de Contactabilidad -->
+        <MudItem xs="12" md="6">
+            <MudPaper Class="pa-4">
+                <canvas id="chartContacto"></canvas>
+            </MudPaper>
+        </MudItem>
+    </MudGrid>
 </MudContainer>
 
 @code {
@@ -120,25 +76,32 @@ Percentil75: @Percentil75
 
     private bool _isLoaded = false;
 
+    // claves para forzar re-render de cada MudChart (separadas)
+    private string _chartKeyEstado = Guid.NewGuid().ToString();
+    private string _chartKeyContacto = Guid.NewGuid().ToString();
+
     private string[] GenerarColores(int cantidad)
     {
-        string[] paleta = new string[]
+        (int r, int g, int b)[] paletaRgb = new (int, int, int)[]
         {
-            "#1976d2", "#e53935", "#43a047", "#fbc02d", "#8e24aa",
-            "#ff5722", "#00acc1", "#c0ca33", "#ff9800", "#7b1fa2"
+            (25,118,210), (229,57,53), (67,160,71), (251,192,45), (142,36,170),
+            (255,87,34), (0,172,193), (192,202,51), (255,152,0), (123,31,162)
         };
+
         string[] colores = new string[cantidad];
         for (int i = 0; i < cantidad; i++)
-            colores[i] = paleta[i % paleta.Length];
+        {
+            var (r, g, b) = paletaRgb[i % paletaRgb.Length];
+            colores[i] = $"rgba({r},{g},{b},0.85)";
+        }
         return colores;
     }
 
     private string NormalizarNombre(string nombre)
     {
-        // elimina acentos y caracteres especiales
         if (string.IsNullOrEmpty(nombre)) return nombre;
         var normalized = nombre.Normalize(NormalizationForm.FormD);
-        var sb = new System.Text.StringBuilder();
+        var sb = new StringBuilder();
         foreach (var c in normalized)
         {
             if (CharUnicodeInfo.GetUnicodeCategory(c) != UnicodeCategory.NonSpacingMark)
@@ -151,51 +114,39 @@ Percentil75: @Percentil75
     {
         try
         {
-            // Percentil
-            var percentil = await dashboard.ObtenerPercentil75Async();
-            Percentil75 = (int)Math.Round((double)percentil, 0);
-
+            // Cargar datos básicos
+            Percentil75 = await dashboard.ObtenerPercentil75Async();
             Reduccion = await dashboard.ObtenerReduccionAsync();
             Pendientes = await dashboard.ObtenerPendientesAsync();
 
-            // Procedimientos (Distribución por Estado)
+            // Cargar datos para gráficos
             var estadoDic = await dashboard.ObtenerProcedimientosPorTipoAsync();
-            if (estadoDic != null && estadoDic.Any())
+            var contactoDic = await dashboard.ObtenerPorcentajeContactoAsync();
+
+            // Actualizar gráfico de estados
+            if (estadoDic?.Any() == true)
             {
-                EstadoLabels = estadoDic.Keys.Select(k => NormalizarNombre(k)).ToArray();
-                EstadoSeries = new List<ChartSeries>
-                {
-                    new ChartSeries
-                    {
-                        Name = "Casos",
-                        Data = estadoDic.Values.Select(v => (double)v).ToArray()
-                    }
-                };
-                EstadoColors = GenerarColores(EstadoLabels.Length);
+                var labels = estadoDic.Keys.ToArray();
+                var data = estadoDic.Values.Select(v => (double)v).ToArray();
+                var colors = GenerarColores(labels.Length);
+                await JS.InvokeVoidAsync("dashboardCharts.renderBar", "chartEstado", labels, data, colors);
             }
 
-            // Contactabilidad
-            var contactoDic = await dashboard.ObtenerPorcentajeContactoAsync();
-            if (contactoDic != null && contactoDic.Any())
+            // Actualizar gráfico de contactabilidad
+            if (contactoDic?.Any() == true)
             {
-                ContactoLabels = contactoDic.Keys.Select(k => NormalizarNombre(k)).ToArray();
-                ContactoSeries = new List<ChartSeries>
-                {
-                    new ChartSeries
-                    {
-                        Name = "Porcentaje",
-                        Data = contactoDic.Values.Select(v => (double)v).ToArray()
-                    }
-                };
-                ContactoColors = GenerarColores(ContactoLabels.Length);
+                var labels = contactoDic.Keys.ToArray();
+                var data = contactoDic.Values.ToArray();
+                var colors = GenerarColores(labels.Length);
+                await JS.InvokeVoidAsync("dashboardCharts.renderDonut", "chartContacto", labels, data, colors);
             }
 
             _isLoaded = true;
-            await InvokeAsync(StateHasChanged);
+            StateHasChanged();
         }
         catch (Exception ex)
         {
-            Console.WriteLine("Error cargando dashboard: " + ex.Message);
+            Console.WriteLine($"Error cargando dashboard: {ex.Message}");
         }
     }
 }

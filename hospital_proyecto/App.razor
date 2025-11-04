@@ -5,10 +5,6 @@
 @namespace proyecto_hospital_version_1
 
 
-<MudThemeProvider />   @* Solo aplica el tema global *@
-<MudDialogProvider />  @* Habilita diálogos *@
-<MudSnackbarProvider />@* Habilita notificaciones *@
-
 <Router AppAssembly="@typeof(App).Assembly">
     <Found Context="routeData">
         <RouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)" />
@@ -21,3 +17,6 @@
     </NotFound>
 </Router>
 
+<MudThemeProvider />   
+<MudDialogProvider />  
+<MudSnackbarProvider />
