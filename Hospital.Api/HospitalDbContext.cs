@@ -35,6 +35,7 @@ namespace proyecto_hospital_version_1.Data
 
 
         // en proceso de reemplazo de procedimientos
+
         public DbSet<Procedimiento> Procedimientos { get; set; } = null!;
 
         public DbSet<Procedimiento> PROCEDIMIENTO { get; set; } = null!;
@@ -391,7 +392,7 @@ namespace proyecto_hospital_version_1.Data
 
 
 
-
+    [Table("SolicitudesQuirurgicas")]
     public class SolicitudQuirurgica
     {
         public int Id { get; set; }
@@ -457,20 +458,6 @@ namespace proyecto_hospital_version_1.Data
         [StringLength(255)]
         public string Nombre { get; set; } = string.Empty;
     }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
