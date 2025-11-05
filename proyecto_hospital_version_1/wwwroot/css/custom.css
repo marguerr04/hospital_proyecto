@@ -135,3 +135,8 @@ select.form-select {
      z-index: 1050; 
     direction: ltr;
 }
+
+
+.mud-icon {
+    color: var(--color-primario) !important;
+}

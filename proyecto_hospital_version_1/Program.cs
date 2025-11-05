@@ -5,7 +5,7 @@ using proyecto_hospital_version_1.Models;
 using proyecto_hospital_version_1.Services;
 using MudBlazor.Services;
 using proyecto_hospital_version_1.Data._Legacy; // NUEVO: Agregado para MudBlazor (Dashboard)
-
+using MudBlazor.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -25,12 +25,17 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 builder.Services.AddDbContext<HospitalDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("HospitalV4")));
 */
-
+builder.Services.AddMudServices(config =>
+{
+    config.SnackbarConfiguration.PositionClass = MudBlazor.Defaults.Classes.Position.BottomRight;
+});
 
 builder.Services.AddDbContext<HospitalDbContextLegacy>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("HospitalV4")));
 
 
+builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri("http://localhost:5227") });
+builder.Services.AddScoped<DashboardService>();
 
 // servicio de la api
 builder.Services.AddScoped(sp => new HttpClient
@@ -62,6 +67,9 @@ builder.Services.AddServerSideBlazor(); // Necesario para MapBlazorHub
 
 
 // --- FIN DE SERVICIOS ---
+
+
+
 
 var app = builder.Build();
 

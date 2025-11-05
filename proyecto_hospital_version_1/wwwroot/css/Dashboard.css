@@ -1,0 +1,108 @@
+﻿/* --- Estilos del Sidebar --- */
+.drawer-admin {
+    background: linear-gradient(180deg, #3a3a3a 0%, #2a2a2a 100%);
+    color: white;
+}
+
+/* --- Estilos del Dashboard (MudBlazor) --- */
+.dashboard-card {
+    border-radius: 8px;
+    transition: all 0.3s ease;
+}
+
+    .dashboard-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 12px 20px rgba(0,0,0,0.1);
+    }
+
+.dashboard-chart {
+    border-radius: 8px;
+}
+
+/* --- Estilos del Dashboard (Tus estilos) --- */
+.dashboard-container {
+    background-color: #f8f9fa;
+    padding: 2rem;
+    min-height: 100vh;
+}
+
+.dashboard-widget-card {
+    background-color: #ffffff;
+    border-radius: 8px;
+    padding: 1.5rem;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+    .dashboard-widget-card .widget-label {
+        color: #6c757d;
+        font-size: 0.9rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .dashboard-widget-card .widget-value {
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: #2c3e50;
+    }
+
+    .dashboard-widget-card .widget-icon {
+        font-size: 2.5rem;
+        color: #0d6efd;
+    }
+
+.filters-section .form-label {
+    font-weight: 500;
+    color: #343a40;
+}
+
+.filters-section .form-select {
+    border-radius: 5px;
+    height: calc(2.25rem + 2px);
+}
+
+.charts-section img, .charts-section canvas {
+    border: 1px solid #dee2e6;
+    border-radius: 5px;
+}
+
+.chart-buttons .btn {
+    font-size: 0.85rem;
+    padding: 0.5rem 1rem;
+}
+
+.action-buttons .btn {
+    font-size: 0.9rem;
+    padding: 0.6rem 1.2rem;
+}
+
+
+
+.charts-section canvas {
+    max-width: 100% !important;
+    height: 350px !important;
+    display: block;
+    margin: auto;
+}
+
+
+canvas {
+    max-width: 100% !important;
+    height: 350px !important;
+}
+
+
+.metric-icon-1 {
+    color: #4e79a7 !important;
+}
+
+.metric-icon-2 {
+    color: #e15759 !important;
+}
+
+.metric-icon-3 {
+    color: #76b7b2 !important;
+}
