@@ -1,0 +1,46 @@
+﻿/* 🎨 Colores institucionales y estilos generales */
+.header-bar-custom {
+    background-color: #0d6efd;
+    color: white;
+    font-weight: 600;
+    border-radius: 0.5rem;
+    padding: 1rem 1.5rem;
+}
+
+.search-bar-background {
+    background-color: #f8f9fa;
+    border-radius: 0.5rem;
+}
+
+.thead-hospital-light {
+    background-color: #e9f2ff;
+    border-bottom: 2px solid #0d6efd;
+    color: #052c65;
+    font-weight: 600;
+}
+
+.table-hover tbody tr:hover {
+    background-color: #f2f8ff;
+}
+
+.table td {
+    vertical-align: middle;
+    font-size: 0.95rem;
+}
+
+.bg-hospital-green {
+    background-color: #198754 !important;
+    color: white !important;
+    box-shadow: 0 0 4px rgba(25, 135, 84, 0.4);
+}
+
+.btn-search-custom {
+    background-color: #0d6efd !important;
+    border-color: #0d6efd !important;
+    color: white !important;
+}
+
+    .btn-search-custom:hover {
+        background-color: #0b5ed7 !important;
+        border-color: #0b5ed7 !important;
+    }

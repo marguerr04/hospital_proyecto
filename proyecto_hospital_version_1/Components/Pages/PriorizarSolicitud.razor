@@ -5,22 +5,89 @@
 @using proyecto_hospital_version_1.Data._Legacy
 @inject HospitalDbContextLegacy HospitalDb
 @using Microsoft.EntityFrameworkCore
-
-
-
-@*Ocupaba models*@
-
+@using MudBlazor
 
 <PageTitle>Priorizar Solicitud Quirúrgica</PageTitle>
+
+<style>
+    /* 🎨 Colores institucionales y estilos generales */
+    .header-bar-custom {
+        background-color: #0d6efd;
+        color: white;
+        font-weight: 600;
+        border-radius: 0.5rem;
+        padding: 1rem 1.5rem;
+    }
+
+    .search-bar-background {
+        background-color: #f8f9fa;
+        border-radius: 0.5rem;
+    }
+
+    .thead-hospital-light {
+        background-color: #e9f2ff;
+        border-bottom: 2px solid #0d6efd;
+        color: #052c65;
+        font-weight: 600;
+    }
+
+    .table-hover tbody tr:hover {
+        background-color: #f2f8ff;
+    }
+
+    .table td {
+        vertical-align: middle;
+        font-size: 0.95rem;
+    }
+
+    .bg-hospital-green {
+        background-color: #198754 !important;
+        color: white !important;
+        box-shadow: 0 0 4px rgba(25, 135, 84, 0.4);
+    }
+
+    .btn-search-custom {
+        background-color: #0d6efd !important;
+        border-color: #0d6efd !important;
+        color: white !important;
+    }
+
+        .btn-search-custom:hover {
+            background-color: #0b5ed7 !important;
+            border-color: #0b5ed7 !important;
+        }
+</style>
 
 <div class="container-fluid mt-4">
     @if (_solicitudSeleccionada == null)
     {
-        <h3 class="border-bottom pb-2 mb-3">Sistema de Priorización de Solicitudes</h3>
+        <!-- 🔷 Encabezado superior -->
+        <div class="header-bar-custom mb-3 shadow-sm">
+            <h4 class="mb-0">Sistema de Priorización de Solicitudes</h4>
+        </div>
 
-        <button class="btn btn-outline-primary mb-3" @onclick="CargarSolicitudes">
-            <i class="bi bi-arrow-clockwise me-2"></i> Actualizar Listas
-        </button>
+        <!-- 🔍 Sección de búsqueda y actualización -->
+        <div class="search-bar-background p-3 mb-4 shadow-sm">
+            <div class="row align-items-center g-3">
+
+                <!-- Ícono principal -->
+                <div class="col-auto">
+                    <MudIcon Icon="@Icons.Material.Filled.PersonSearch" Color="Color.Primary" Size="Size.Medium" />
+                </div>
+
+                <!-- 🧩 Tu componente BuscadorPaciente -->
+                <div class="col-md-7">
+                    <BuscadorPaciente OnPacienteEncontrado="FiltrarPorPaciente" />
+                </div>
+
+                <!-- Botón de actualizar -->
+                <div class="col-auto ms-auto">
+                    <button class="btn btn-outline-primary" @onclick="CargarSolicitudes">
+                        <MudIcon Icon="@Icons.Material.Filled.Update" Class="me-1" /> Actualizar
+                    </button>
+                </div>
+            </div>
+        </div>
 
         @if (_solicitudesPendientes == null || _solicitudesPriorizadas == null)
         {
@@ -28,12 +95,14 @@
         }
         else
         {
+            <!-- 🟡 TABLA DE SOLICITUDES PENDIENTES -->
             <div class="card shadow-sm mb-4">
-                <div class="card-header bg-light">
-                    <h5 class="mb-0">
-                        <i class="bi bi-clock-history me-2"></i>
-                        Solicitudes Pendientes de Priorización
-                    </h5>
+                <div class="card-header bg-light d-flex align-items-center justify-content-between">
+                    <div class="d-flex align-items-center">
+                        <MudIcon Icon="@Icons.Material.Filled.PendingActions" Class="me-2 text-primary" />
+                        <h5 class="mb-0">Solicitudes Pendientes de Priorización</h5>
+                    </div>
+                    <span class="badge bg-primary">Total: @_solicitudesPendientes.Count</span>
                 </div>
                 <div class="card-body p-0">
                     @if (!_solicitudesPendientes.Any())
@@ -43,8 +112,8 @@
                     else
                     {
                         <div class="table-responsive">
-                            <table class="table table-striped table-sm table-hover mb-0">
-                                <thead class="table-light">
+                            <table class="table table-hover table-bordered align-middle mb-0">
+                                <thead class="thead-hospital-light">
                                     <tr>
                                         <th>ID</th>
                                         <th>Rut Paciente</th>
@@ -56,21 +125,11 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    @foreach (var solicitud in _solicitudesPendientes)
+                                    @foreach (var solicitud in _solicitudesPendientesPagina)
                                     {
                                         <tr>
                                             <td><strong>@solicitud.Id</strong></td>
-                                            <td>
-                                                @if (solicitud.Paciente != null)
-                                                {
-                                                    <span>@solicitud.Paciente.rut-@solicitud.Paciente.dv</span>
-                                                }
-                                                else
-                                                {
-                                                    <span class="text-muted">N/A</span>
-                                                }
-
-                                            </td>
+                                            <td>@(solicitud.Paciente != null ? $"{solicitud.Paciente.rut}-{solicitud.Paciente.dv}" : "N/A")</td>
                                             <td>@solicitud.ProcedimientoPrincipal</td>
                                             <td>@solicitud.DiagnosticoPrincipal</td>
                                             <td>@solicitud.FechaCreacion.ToString("dd/MM/yy HH:mm")</td>
@@ -78,8 +137,8 @@
                                                 <span class="badge rounded-pill bg-warning text-dark">@solicitud.Estado</span>
                                             </td>
                                             <td>
-                                                <button class="btn btn-primary btn-sm" @onclick="() => VerDetalle(solicitud.Id)">
-                                                    <i class="bi bi-check-lg me-1"></i> Priorizar
+                                                <button class="btn btn-primary btn-sm" @onclick="() => IrADetalle(solicitud.Id)">
+                                                    <MudIcon Icon="@Icons.Material.Filled.CheckCircle" Class="me-1" /> Priorizar
                                                 </button>
                                             </td>
                                         </tr>
@@ -87,16 +146,57 @@
                                 </tbody>
                             </table>
                         </div>
+
+                        <!-- PAGINACIÓN PARA PENDIENTES -->
+                        @if (_totalPaginasPendientes > 1)
+                        {
+                            <div class="d-flex justify-content-between align-items-center p-3 border-top">
+                                <small class="text-muted">
+                                    Mostrando @_solicitudesPendientesPagina.Count de @_solicitudesPendientes.Count registros
+                                </small>
+                                <nav>
+                                    <ul class="pagination pagination-sm mb-0">
+                                        <li class="page-item @(_paginaActualPendientes == 1 ? "disabled" : "")">
+                                            <button class="page-link" @onclick="() => CambiarPaginaPendientes(1)" title="Primera página">
+                                                <MudIcon Icon="@Icons.Material.Filled.FirstPage" Size="Size.Small" />
+                                            </button>
+                                        </li>
+                                        <li class="page-item @(_paginaActualPendientes == 1 ? "disabled" : "")">
+                                            <button class="page-link" @onclick="() => CambiarPaginaPendientes(_paginaActualPendientes - 1)" title="Página anterior">
+                                                <MudIcon Icon="@Icons.Material.Filled.ChevronLeft" Size="Size.Small" />
+                                            </button>
+                                        </li>
+
+                                        <li class="page-item active">
+                                            <span class="page-link">@_paginaActualPendientes de @_totalPaginasPendientes</span>
+                                        </li>
+
+                                        <li class="page-item @(_paginaActualPendientes == _totalPaginasPendientes ? "disabled" : "")">
+                                            <button class="page-link" @onclick="() => CambiarPaginaPendientes(_paginaActualPendientes + 1)" title="Página siguiente">
+                                                <MudIcon Icon="@Icons.Material.Filled.ChevronRight" Size="Size.Small" />
+                                            </button>
+                                        </li>
+                                        <li class="page-item @(_paginaActualPendientes == _totalPaginasPendientes ? "disabled" : "")">
+                                            <button class="page-link" @onclick="() => CambiarPaginaPendientes(_totalPaginasPendientes)" title="Última página">
+                                                <MudIcon Icon="@Icons.Material.Filled.LastPage" Size="Size.Small" />
+                                            </button>
+                                        </li>
+                                    </ul>
+                                </nav>
+                            </div>
+                        }
                     }
                 </div>
             </div>
 
+            <!-- 🟢 TABLA DE SOLICITUDES PRIORIZADAS -->
             <div class="card shadow-sm mb-4">
-                <div class="card-header bg-light">
-                    <h5 class="mb-0">
-                        <i class="bi bi-list-check me-2"></i>
-                        Solicitudes Priorizadas
-                    </h5>
+                <div class="card-header bg-light d-flex align-items-center justify-content-between">
+                    <div class="d-flex align-items-center">
+                        <MudIcon Icon="@Icons.Material.Filled.Checklist" Class="me-2 text-success" />
+                        <h5 class="mb-0">Solicitudes Priorizadas</h5>
+                    </div>
+                    <span class="badge bg-success">Total: @_solicitudesPriorizadas.Count</span>
                 </div>
                 <div class="card-body p-0">
                     @if (!_solicitudesPriorizadas.Any())
@@ -106,8 +206,8 @@
                     else
                     {
                         <div class="table-responsive">
-                            <table class="table table-striped table-sm mb-0">
-                                <thead class="table-light">
+                            <table class="table table-hover table-bordered align-middle mb-0">
+                                <thead class="thead-hospital-light">
                                     <tr>
                                         <th>ID</th>
                                         <th>Rut Paciente</th>
@@ -120,53 +220,41 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    @foreach (var solicitud in _solicitudesPriorizadas)
+                                    @foreach (var solicitud in _solicitudesPriorizadasPagina)
                                     {
                                         <tr>
                                             <td><strong>@solicitud.Id</strong></td>
-                                            <td>
-                                                @if (solicitud.Paciente != null)
-                                                {
-                                                    <span>@solicitud.Paciente.rut-@solicitud.Paciente.dv</span>
-                                                }
-                                                else
-                                                {
-                                                    <span class="text-muted">N/A</span>
-                                                }
-
-                                            </td>
+                                            <td>@(solicitud.Paciente != null ? $"{solicitud.Paciente.rut}-{solicitud.Paciente.dv}" : "N/A")</td>
                                             <td>@solicitud.ProcedimientoPrincipal</td>
                                             <td>@solicitud.DiagnosticoPrincipal</td>
                                             <td>@solicitud.FechaCreacion.ToString("dd/MM/yy HH:mm")</td>
                                             <td>
-                                                @switch (solicitud.Estado)
+                                                @if (solicitud.Estado.Contains("Priorizada"))
                                                 {
-                                                    case "Priorizada":
-                                                    case "Priorizada (Manual)":
-                                                        <span class="badge rounded-pill bg-success">@solicitud.Estado</span>
-                                                        break;
-                                                    default:
-                                                        <span class="badge rounded-pill bg-secondary">@solicitud.Estado</span>
-                                                        break;
+                                                    <span class="badge rounded-pill bg-hospital-green">@solicitud.Estado</span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="badge rounded-pill bg-secondary">@solicitud.Estado</span>
                                                 }
                                             </td>
                                             <td>
                                                 @switch (solicitud.Prioridad)
                                                 {
                                                     case 1:
-                                                        <span class="badge rounded-pill bg-danger">P@(solicitud.Prioridad)</span>
+                                                        <span class="badge rounded-pill bg-danger">P1</span>
                                                         break;
                                                     case 2:
-                                                        <span class="badge rounded-pill bg-warning text-dark">P@(solicitud.Prioridad)</span>
+                                                        <span class="badge rounded-pill bg-warning text-dark">P2</span>
                                                         break;
                                                     default:
-                                                        <span class="badge rounded-pill bg-info text-dark">P@(solicitud.Prioridad)</span>
+                                                        <span class="badge rounded-pill bg-primary text-dark">P@(solicitud.Prioridad)</span>
                                                         break;
                                                 }
                                             </td>
                                             <td>
                                                 <button class="btn btn-outline-secondary btn-sm" @onclick="() => VerDetalle(solicitud.Id)">
-                                                    <i class="bi bi-eye me-1"></i> Ver/Editar
+                                                    <MudIcon Icon="@Icons.Material.Filled.Visibility" Class="me-1" /> Ver/Editar
                                                 </button>
                                             </td>
                                         </tr>
@@ -174,6 +262,45 @@
                                 </tbody>
                             </table>
                         </div>
+
+                        <!-- PAGINACIÓN PARA PRIORIZADAS -->
+                        @if (_totalPaginasPriorizadas > 1)
+                        {
+                            <div class="d-flex justify-content-between align-items-center p-3 border-top">
+                                <small class="text-muted">
+                                    Mostrando @_solicitudesPriorizadasPagina.Count de @_solicitudesPriorizadas.Count registros
+                                </small>
+                                <nav>
+                                    <ul class="pagination pagination-sm mb-0">
+                                        <li class="page-item @(_paginaActualPriorizadas == 1 ? "disabled" : "")">
+                                            <button class="page-link" @onclick="() => CambiarPaginaPriorizadas(1)" title="Primera página">
+                                                <MudIcon Icon="@Icons.Material.Filled.FirstPage" Size="Size.Small" />
+                                            </button>
+                                        </li>
+                                        <li class="page-item @(_paginaActualPriorizadas == 1 ? "disabled" : "")">
+                                            <button class="page-link" @onclick="() => CambiarPaginaPriorizadas(_paginaActualPriorizadas - 1)" title="Página anterior">
+                                                <MudIcon Icon="@Icons.Material.Filled.ChevronLeft" Size="Size.Small" />
+                                            </button>
+                                        </li>
+
+                                        <li class="page-item active">
+                                            <span class="page-link">@_paginaActualPriorizadas de @_totalPaginasPriorizadas</span>
+                                        </li>
+
+                                        <li class="page-item @(_paginaActualPriorizadas == _totalPaginasPriorizadas ? "disabled" : "")">
+                                            <button class="page-link" @onclick="() => CambiarPaginaPriorizadas(_paginaActualPriorizadas + 1)" title="Página siguiente">
+                                                <MudIcon Icon="@Icons.Material.Filled.ChevronRight" Size="Size.Small" />
+                                            </button>
+                                        </li>
+                                        <li class="page-item @(_paginaActualPriorizadas == _totalPaginasPriorizadas ? "disabled" : "")">
+                                            <button class="page-link" @onclick="() => CambiarPaginaPriorizadas(_totalPaginasPriorizadas)" title="Última página">
+                                                <MudIcon Icon="@Icons.Material.Filled.LastPage" Size="Size.Small" />
+                                            </button>
+                                        </li>
+                                    </ul>
+                                </nav>
+                            </div>
+                        }
                     }
                 </div>
             </div>
@@ -181,9 +308,10 @@
     }
     else
     {
+        <!-- 🔽 VISTA DETALLE COMPLETA (con priorización manual) -->
         <div class="mb-3">
             <button class="btn btn-outline-secondary" @onclick="VolverALista">
-                &larr; Volver a la lista
+                <MudIcon Icon="@Icons.Material.Filled.ArrowBack" Class="me-1" /> Volver a la lista
             </button>
         </div>
 
@@ -194,9 +322,13 @@
             <InfoPacienteCard Paciente="_solicitudSeleccionada.Paciente" />
         }
 
+        <!-- 📋 Detalles de la solicitud -->
         <div class="card shadow-sm mb-4">
             <div class="card-body">
-                <h5 class="card-title">Detalles de la Solicitud</h5>
+                <h5 class="card-title d-flex align-items-center">
+                    <MudIcon Icon="@Icons.Material.Filled.Description" Class="me-2 text-primary" />
+                    Detalles de la Solicitud
+                </h5>
                 <hr />
                 <div class="row">
                     <div class="col-md-6">
@@ -218,8 +350,10 @@
             </div>
         </div>
 
+        <!-- ✅ SUGERENCIA DEL SISTEMA -->
         <div class="card shadow-sm mb-4 border-success">
-            <div class="card-header bg-success text-white">
+            <div class="card-header bg-success text-white d-flex align-items-center">
+                <MudIcon Icon="@Icons.Material.Filled.AutoAwesome" Class="me-2" />
                 Sugerencia del Sistema
             </div>
             <div class="card-body">
@@ -227,48 +361,58 @@
                 <p><strong>Motivo:</strong> @_motivoSugerencia</p>
                 <hr />
                 <button class="btn btn-success btn-lg" @onclick="AceptarPrioridad">
-                    <i class="bi bi-check-circle me-2"></i> Aceptar y Guardar Prioridad
+                    <MudIcon Icon="@Icons.Material.Filled.CheckCircle" Class="me-2" /> Aceptar y Guardar Prioridad
                 </button>
             </div>
         </div>
 
-        <div class="card mb-4">
-            <div class="card-header bg-light">
-                <h5 class="mb-0">
-                    <i class="bi bi-list-check me-2"></i>
-                    Seleccionar Criterio de Priorización Manual
-                </h5>
+        <!-- 🔧 PRIORIZACIÓN MANUAL (COMPONENTE COMPLETO) -->
+        <div class="card mb-4 border-primary">
+            <div class="card-header bg-light d-flex align-items-center">
+                <MudIcon Icon="@Icons.Material.Filled.Tune" Class="me-2 text-primary" />
+                <h5 class="mb-0">Seleccionar Criterio de Priorización Manual</h5>
             </div>
             <div class="card-body">
-
+                <!-- Componente de criterios de priorización -->
                 <CriteriosPriorizacion @bind-CriterioSeleccionado="_criterioSeleccionado" />
 
                 <button class="btn btn-primary mt-3" @onclick="GuardarPrioridadManual"
                         disabled="@(string.IsNullOrEmpty(_criterioSeleccionado))">
-                    <i class="bi bi-save me-2"></i> Guardar Prioridad Manual
+                    <MudIcon Icon="@Icons.Material.Filled.Save" Class="me-2" />
+                    Guardar Prioridad Manual
                 </button>
-
             </div>
         </div>
     }
 </div>
 
 @code {
-    // --- CAMBIO 1: Dos listas separadas en lugar de una ---
+    // --- Variables para el buscador (solo visual, sin lógica) ---
+    private string _rutBusqueda;
+    private string _dvBusqueda;
+
+    // --- LÓGICA PRINCIPAL ---
     private List<SolicitudQuirurgica> _solicitudesPendientes;
     private List<SolicitudQuirurgica> _solicitudesPriorizadas;
 
-    // Variables para sistema de priorización (se mantienen igual)
+    // --- NUEVAS VARIABLES PARA PAGINACIÓN ---
+    private List<SolicitudQuirurgica> _solicitudesPendientesPagina;
+    private List<SolicitudQuirurgica> _solicitudesPriorizadasPagina;
+    private int _paginaActualPendientes = 1;
+    private int _paginaActualPriorizadas = 1;
+    private int _elementosPorPagina = 5;
+    private int _totalPaginasPendientes;
+    private int _totalPaginasPriorizadas;
+
     private SolicitudQuirurgica _solicitudSeleccionada;
     private int _prioridadSugerida = 3;
     private string _motivoSugerencia = "Prioridad base.";
+    private string _criterioSeleccionado = "";
 
     [Parameter] public int SolicitudId { get; set; }
 
     protected override async Task OnParametersSetAsync()
     {
-        // --- CAMBIO 2: Lógica para limpiar la selección ---
-        // (Esto arregla el error de que se quedaba pegado en el detalle)
         if (SolicitudId > 0)
         {
             await VerDetalle(SolicitudId);
@@ -284,42 +428,84 @@
     {
         try
         {
-            // --- CAMBIO 3: Lógica de carga modificada ---
-
-            // 1. Cargar las pendientes (Estado "Pendiente" o nulo/vacío)
+            // QUITAMOS EL .Take() PARA OBTENER TODOS LOS REGISTROS
             _solicitudesPendientes = await HospitalDb.SolicitudesQuirurgicas
                 .Include(s => s.Paciente)
                 .Where(s => s.Estado == "Pendiente" || string.IsNullOrEmpty(s.Estado))
-                .OrderByDescending(s => s.FechaCreacion) // Las más nuevas primero
-                .Take(10) // Máximo 10 filas
+                .OrderByDescending(s => s.FechaCreacion)
+                .AsNoTracking()
                 .ToListAsync();
 
-            // 2. Cargar las priorizadas (Cualquier estado que NO sea pendiente)
             _solicitudesPriorizadas = await HospitalDb.SolicitudesQuirurgicas
                 .Include(s => s.Paciente)
                 .Where(s => s.Estado == "Priorizada" || s.Estado == "Priorizada (Manual)")
-                .OrderBy(s => s.Prioridad) // P1, P2, P3...
-                .ThenByDescending(s => s.FechaPriorizacion) // Las priorizadas más recientes primero
-                .Take(10) // Máximo 10 filas
+                .OrderBy(s => s.Prioridad)
+                .ThenByDescending(s => s.FechaPriorizacion)
+                .AsNoTracking()
                 .ToListAsync();
+
+            // CALCULAR PAGINACIÓN INICIAL
+            CalcularPaginacion();
         }
         catch (Exception ex)
         {
             Console.WriteLine($"Error al cargar solicitudes: {ex.Message}");
             _solicitudesPendientes = new List<SolicitudQuirurgica>();
             _solicitudesPriorizadas = new List<SolicitudQuirurgica>();
+            CalcularPaginacion();
+        }
+    }
+
+    private void CalcularPaginacion()
+    {
+        // PAGINACIÓN PARA SOLICITUDES PENDIENTES
+        _totalPaginasPendientes = (int)Math.Ceiling(_solicitudesPendientes.Count / (double)_elementosPorPagina);
+        if (_totalPaginasPendientes == 0) _totalPaginasPendientes = 1;
+
+        _solicitudesPendientesPagina = _solicitudesPendientes
+            .Skip((_paginaActualPendientes - 1) * _elementosPorPagina)
+            .Take(_elementosPorPagina)
+            .ToList();
+
+        // PAGINACIÓN PARA SOLICITUDES PRIORIZADAS
+        _totalPaginasPriorizadas = (int)Math.Ceiling(_solicitudesPriorizadas.Count / (double)_elementosPorPagina);
+        if (_totalPaginasPriorizadas == 0) _totalPaginasPriorizadas = 1;
+
+        _solicitudesPriorizadasPagina = _solicitudesPriorizadas
+            .Skip((_paginaActualPriorizadas - 1) * _elementosPorPagina)
+            .Take(_elementosPorPagina)
+            .ToList();
+    }
+
+    private void CambiarPaginaPendientes(int nuevaPagina)
+    {
+        if (nuevaPagina >= 1 && nuevaPagina <= _totalPaginasPendientes)
+        {
+            _paginaActualPendientes = nuevaPagina;
+            CalcularPaginacion();
+            StateHasChanged();
+        }
+    }
+
+    private void CambiarPaginaPriorizadas(int nuevaPagina)
+    {
+        if (nuevaPagina >= 1 && nuevaPagina <= _totalPaginasPriorizadas)
+        {
+            _paginaActualPriorizadas = nuevaPagina;
+            CalcularPaginacion();
+            StateHasChanged();
         }
     }
 
     private async Task VerDetalle(int id)
     {
+        // Esta consulta SÍ rastrea la entidad, lo cual es correcto para editarla.
         _solicitudSeleccionada = await HospitalDb.SolicitudesQuirurgicas
             .Include(s => s.Paciente)
             .FirstOrDefaultAsync(s => s.Id == id);
 
         if (_solicitudSeleccionada != null)
         {
-            // (Tu lógica de sugerencia se mantiene igual)
             if (_solicitudSeleccionada.Procedencia == "Urgencia")
             {
                 _prioridadSugerida = 1;
@@ -344,13 +530,13 @@
         {
             _solicitudSeleccionada.Prioridad = _prioridadSugerida;
             _solicitudSeleccionada.Estado = "Priorizada";
-            _solicitudSeleccionada.FechaPriorizacion = DateTime.Now; // Guardar fecha
+            _solicitudSeleccionada.FechaPriorizacion = DateTime.Now;
 
             HospitalDb.SolicitudesQuirurgicas.Update(_solicitudSeleccionada);
             await HospitalDb.SaveChangesAsync();
 
             VolverALista();
-            await CargarSolicitudes(); // Recargar ambas listas
+            await CargarSolicitudes();
         }
         catch (Exception ex)
         {
@@ -361,12 +547,8 @@
     private void VolverALista()
     {
         _solicitudSeleccionada = null;
-        Navigation.NavigateTo("/priorizar-solicitudes"); // Navegar para limpiar URL
+        Navigation.NavigateTo("/priorizar-solicitudes");
     }
-
-
-    // --- Tu lógica de Priorización Manual (se mantiene igual) ---
-    private string _criterioSeleccionado = "";
 
     private async Task GuardarPrioridadManual()
     {
@@ -409,12 +591,59 @@
                 await HospitalDb.SaveChangesAsync();
 
                 VolverALista();
-                await CargarSolicitudes(); // Recargar ambas listas
+                await CargarSolicitudes();
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"Error al guardar prioridad manual: {ex.Message}");
             }
         }
+    }
+
+    private async Task FiltrarPorPaciente(PacienteHospital? paciente)
+    {
+        if (paciente == null)
+        {
+            // Si se limpió el buscador, volvemos a mostrar todo
+            await CargarSolicitudes();
+            return;
+        }
+
+        try
+        {
+            _solicitudesPendientes = await HospitalDb.SolicitudesQuirurgicas
+                .Include(s => s.Paciente)
+                .Where(s => s.Paciente.id == paciente.id && (s.Estado == "Pendiente" || string.IsNullOrEmpty(s.Estado)))
+                .OrderByDescending(s => s.FechaCreacion)
+                .AsNoTracking() // QUITAMOS EL .Take()
+                .ToListAsync();
+
+            _solicitudesPriorizadas = await HospitalDb.SolicitudesQuirurgicas
+                .Include(s => s.Paciente)
+                .Where(s => s.Paciente.id == paciente.id && (s.Estado == "Priorizada" || s.Estado == "Priorizada (Manual)"))
+                .OrderByDescending(s => s.FechaPriorizacion)
+                .AsNoTracking() // QUITAMOS EL .Take()
+                .ToListAsync();
+
+            // RESETEAR PAGINACIÓN AL FILTRAR
+            _paginaActualPendientes = 1;
+            _paginaActualPriorizadas = 1;
+            CalcularPaginacion();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error al filtrar por paciente: {ex.Message}");
+        }
+    }
+
+
+
+
+
+
+
+    private void IrADetalle(int id)
+    {
+        Navigation.NavigateTo($"/priorizar-solicitudes/{id}");
     }
 }
