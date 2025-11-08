@@ -1,6 +1,6 @@
+using Hospital.Api.Data;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using proyecto_hospital_version_1.Data;
 
 namespace Hospital.Api.Controllers
 {

@@ -1,9 +1,11 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Hospital.Api.Data;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using proyecto_hospital_version_1.Data;
-
+using Hospital.Api.Data.Entities;
 namespace Hospital.Api.Controllers
-{
+
+
+{using Hospital.Api.Data.Entities;
     [ApiController]
     [Route("api/[controller]")]
     public class EspecialidadController : ControllerBase

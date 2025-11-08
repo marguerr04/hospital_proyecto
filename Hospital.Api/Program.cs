@@ -1,5 +1,5 @@
+using Hospital.Api.Data;
 using Microsoft.EntityFrameworkCore;
-using proyecto_hospital_version_1.Data; // O ajusta el namespace si los modelos están compartidos
 
 var builder = WebApplication.CreateBuilder(args);
 
