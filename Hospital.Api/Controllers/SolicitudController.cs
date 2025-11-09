@@ -38,7 +38,9 @@ namespace Hospital.Api.Controllers
                     dto.EsGes,
                     dto.Comentarios,
                     dto.EspecialidadOrigen,
-                    dto.EspecialidadDestino
+                    dto.EspecialidadDestino,
+                    dto.Lateralidad,     
+                    dto.Extremidad
                 );
 
                 if (exito)
@@ -70,5 +72,8 @@ namespace Hospital.Api.Controllers
         public string? Comentarios { get; set; }
         public string? EspecialidadOrigen { get; set; }
         public string? EspecialidadDestino { get; set; }
+
+        public string? Lateralidad { get; set; }
+        public string? Extremidad { get; set; }
     }
 }

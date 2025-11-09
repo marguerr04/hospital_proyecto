@@ -27,7 +27,10 @@ namespace  Hospital.Api.Data.Services
     bool esGes,
     string? comentarios,
     string? especialidadOrigen,
-    string? especialidadDestino)
+    string? especialidadDestino,
+    string? lateralidad,   // izq, der2 parámetros
+    string? extremidad // superior, inferior
+            )
         {
             using var transaction = await _context.Database.BeginTransactionAsync();
 
@@ -59,6 +62,20 @@ namespace  Hospital.Api.Data.Services
                     .Select(t => t.Id)
                     .FirstOrDefaultAsync();
 
+
+                var lateralidadId = await _context.LATERALIDAD
+                   .Where(l => l.Nombre == lateralidad)
+                   .Select(l => l.Id)
+                   .FirstOrDefaultAsync();
+
+                var extremidadId = await _context.EXTREMIDAD
+                    .Where(e => e.Nombre == extremidad)
+                    .Select(e => e.Id)
+                    .FirstOrDefaultAsync();
+
+
+
+
                 // Validar si existen (evita insertar basura)
                 if (diagnosticoId == 0 || procedimientoId == 0 || procedenciaId == 0)
                 {
@@ -71,8 +88,8 @@ namespace  Hospital.Api.Data.Services
                 {
                     FechaGeneracion = DateTime.Now,
                     Estado = true,
-                    LateralidadId = 1, // se puede conectar con tu _lateralidadSeleccionada más adelante
-                    ExtremidadId = 1,
+                    LateralidadId = lateralidadId,
+                    ExtremidadId = extremidadId,
                     ProcedimientoId = procedimientoId,
                     PacienteId = pacienteId,
                     Observacion = comentarios
