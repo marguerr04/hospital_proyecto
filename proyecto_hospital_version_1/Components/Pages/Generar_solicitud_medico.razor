@@ -450,57 +450,53 @@
         // Si llegamos aquí, todas las validaciones pasaron
         try
         {
+            // CREAR OBJETO PARA LA API (con los nombres correctos)
             var nuevaSolicitud = new SolicitudQuirurgica
                 {
-                    // OBLIGATORIOS
+                    // DATOS OBLIGATORIOS PARA LA API
                     PacienteId = _pacienteSeleccionado.id,
                     DiagnosticoPrincipal = _diagnosticoPrincipal,
                     ProcedimientoPrincipal = _procedimientoSeleccionado,
                     Procedencia = _procedenciaSeleccionada,
-                    SalaOperaciones = _salaOperaciones,
 
-                    // CON VALORES POR DEFECTO (convertir nullable a no-nullable)
-                    Peso = _peso.Value,                          // ✅ .Value para convertir decimal? a decimal
-                    Talla = _talla.Value,                        // ✅ .Value para convertir decimal? a decimal
-                    IMC = _imc ?? 0,                            // ✅ Usar 0 si es null
-                    TiempoEstimado = _tiempoEstimado.Value,      // ✅ .Value para convertir int? a int
+                    // DATOS NUMÉRICOS (convertir nullable a no-nullable)
+                    Peso = _peso.Value,
+                    Talla = _talla.Value,
+                    IMC = _imc ?? 0,
+                    TiempoEstimado = _tiempoEstimado.Value,
 
-                    // OPCIONALES
-                    CodigoCie = _codigoAsociado,
-                    EsGes = _esGes,
-                    EspecialidadOrigen = _especialidadOrigen,
-                    EspecialidadDestino = _especialidadDestino,
-                    EquiposRequeridos = string.Join(";", _equiposSeleccionados),
-                    TipoMesa = _tipoMesaSeleccionado,
+                    // DATOS BOOLEANOS Y STRINGS
                     EvaluacionAnestesica = _evaluacionAnestesica,
-                    Transfusiones = _transfusiones,
-                    Comorbilidades = string.Join(";", _comorbilidadesSeleccionadas),
-                    ComentariosAdicionales = _comentariosAdicionales,
-                    CreadoPor = "Sistema",  // ✅ Valor fijo
-
-                    // METADATOS
-                    FechaCreacion = DateTime.Now,
-                    Estado = "Pendiente",
-                    Prioridad = 0
+                    Transfusiones = _transfusiones, //  Se mapea automáticamente a "EvaluacionTransfusion"
+                    EsGes = _esGes,
+                    ComentariosAdicionales = _comentariosAdicionales, //  Se mapea automáticamente a "Comentarios"
+                    EspecialidadOrigen = _especialidadOrigen,
+                    EspecialidadDestino = _especialidadDestino
                 };
 
-            HospitalDb.SolicitudesQuirurgicas.Add(nuevaSolicitud);
-            await HospitalDb.SaveChangesAsync();
+            // ✅ ENVIAR A LA API REAL (en lugar de guardar localmente)
+            var exito = await SolicitudApiService.CrearSolicitudAsync(nuevaSolicitud);
 
-            await JsRuntime.InvokeVoidAsync("alert", "¡Solicitud guardada con éxito!");
-            ResetFormulario();
-            _pasoActual = 1;
-            StateHasChanged();
+            if (exito)
+            {
+                await JsRuntime.InvokeVoidAsync("alert", "✅ Solicitud guardada correctamente en la base real.");
+                ResetFormulario();
+                _pasoActual = 1;
+                StateHasChanged();
+            }
+            else
+            {
+                await JsRuntime.InvokeVoidAsync("alert", "❌ Error al enviar la solicitud a la API.");
+            }
         }
         catch (Exception ex)
         {
-            // ERROR DETALLADO
             var errorDetails = $"Error: {ex.Message}";
             if (ex.InnerException != null)
                 errorDetails += $"\nDetalles: {ex.InnerException.Message}";
 
-            Console.WriteLine($"ERROR BD: {errorDetails}");
-            await JsRuntime.InvokeVoidAsync("alert", $"Error al guardar: {errorDetails}");
+            Console.WriteLine($"ERROR API: {errorDetails}");
+            await JsRuntime.InvokeVoidAsync("alert", $"Error al enviar a API: {errorDetails}");
         }
     }
 

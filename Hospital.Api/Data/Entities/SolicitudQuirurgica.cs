@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
 using System.ComponentModel.DataAnnotations;
+
 // referencia a solicitudes quirurgicas
 namespace Hospital.Api.Data.Entities
 {

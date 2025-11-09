@@ -1,11 +1,11 @@
 ﻿using System.Net.Http.Json;
-using System.Text.Json;
+using proyecto_hospital_version_1.Data._Legacy;  // para usar tu modelo existente
 
 namespace proyecto_hospital_version_1.Services
 {
     public interface ISolicitudQuirurgicaApiService
     {
-        Task<bool> CrearSolicitudAsync(SolicitudCrearDto dto);
+        Task<bool> CrearSolicitudAsync(SolicitudQuirurgica solicitud);
     }
 
     public class SolicitudQuirurgicaApiService : ISolicitudQuirurgicaApiService
@@ -17,42 +17,30 @@ namespace proyecto_hospital_version_1.Services
             _http = http;
         }
 
-        public async Task<bool> CrearSolicitudAsync(SolicitudCrearDto dto)
+        public async Task<bool> CrearSolicitudAsync(SolicitudQuirurgica solicitud)
         {
             try
             {
-                var response = await _http.PostAsJsonAsync("api/solicitud/crear", dto);
-                if (response.IsSuccessStatusCode)
-                    return true;
+                // Enviamos el mismo modelo al endpoint de la API
+                var response = await _http.PostAsJsonAsync("api/solicitud/crear", solicitud);
 
-                var msg = await response.Content.ReadAsStringAsync();
-                Console.WriteLine($"Error API: {msg}");
-                return false;
+                if (response.IsSuccessStatusCode)
+                {
+                    Console.WriteLine("Solicitud enviada correctamente a la API.");
+                    return true;
+                }
+                else
+                {
+                    var msg = await response.Content.ReadAsStringAsync();
+                    Console.WriteLine($" Error al crear solicitud: {msg}");
+                    return false;
+                }
             }
             catch (Exception ex)
             {
-                Console.WriteLine($" Error al conectar con la API: {ex.Message}");
+                Console.WriteLine($"⚠️ Error al conectar con la API: {ex.Message}");
                 return false;
             }
         }
-    }
-
-    // Este DTO debe coincidir con el que usa tu API
-    public class SolicitudCrearDto
-    {
-        public int PacienteId { get; set; }
-        public string DiagnosticoPrincipal { get; set; } = string.Empty;
-        public string ProcedimientoPrincipal { get; set; } = string.Empty;
-        public string Procedencia { get; set; } = "Ambulatorio";
-        public decimal Peso { get; set; }
-        public decimal Talla { get; set; }
-        public decimal IMC { get; set; }
-        public int TiempoEstimado { get; set; }
-        public bool EvaluacionAnestesica { get; set; }
-        public bool EvaluacionTransfusion { get; set; }
-        public bool EsGes { get; set; }
-        public string? Comentarios { get; set; }
-        public string? EspecialidadOrigen { get; set; }
-        public string? EspecialidadDestino { get; set; }
     }
 }

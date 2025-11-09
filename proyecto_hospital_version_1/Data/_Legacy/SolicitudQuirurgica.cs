@@ -2,6 +2,7 @@
 using System.ComponentModel.DataAnnotations;
 // comentado temporal   using proyecto_hospital_version_1.Data.Hospital;
 using proyecto_hospital_version_1.Models; // Asegúrate de tener este using
+using System.Text.Json.Serialization;
 namespace proyecto_hospital_version_1.Data._Legacy
 {
     public class SolicitudQuirurgica
@@ -34,13 +35,16 @@ namespace proyecto_hospital_version_1.Data._Legacy
         public string? EquiposRequeridos { get; set; }
         public string? TipoMesa { get; set; }
         public bool EvaluacionAnestesica { get; set; }
+        [JsonPropertyName("EvaluacionTransfusion")] // mapeo a la api
         public bool Transfusiones { get; set; }
 
         [Required]
+        [JsonIgnore] // de momento en la bd no estaria 
         public string SalaOperaciones { get; set; } = string.Empty;
 
         public int TiempoEstimado { get; set; }
         public string? Comorbilidades { get; set; }
+        [JsonPropertyName("Comentarios")]
         public string? ComentariosAdicionales { get; set; }
 
         public DateTime FechaCreacion { get; set; } = DateTime.Now;
