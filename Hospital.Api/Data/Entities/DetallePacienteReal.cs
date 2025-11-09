@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace proyecto_hospital_version_1.Data.Entities
 {
-    [Table("DETALLE_PACIENTE_REAL")]
+    [Table("DETALLE_PACIENTE")]
     public class DetallePacienteReal
     {
         [Key]

@@ -1,5 +1,7 @@
 using Hospital.Api.Data;
 using Microsoft.EntityFrameworkCore;
+using Hospital.Api.Data.Services;
+
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -15,6 +17,10 @@ builder.Services.AddControllers();
 // 2 lineas agregada para testear el MVC y crear endpoints
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+
+// para el serviceio
+builder.Services.AddScoped<SolicitudQuirurgicaRealService>();
+
 
 
 builder.Services.AddCors(options =>

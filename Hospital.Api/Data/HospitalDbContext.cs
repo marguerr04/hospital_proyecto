@@ -16,14 +16,14 @@ namespace Hospital.Api.Data
 
         // Tablas principales
         public DbSet<Paciente> PACIENTE { get; set; }
-        public DbSet<SolicitudQuirurgica> SOLICITUD_QUIRURGICA { get; set; }
-        public DbSet<ConsentimientoInformado> CONSENTIMIENTO_INFORMADO { get; set; }
+        // temporal public DbSet<SolicitudQuirurgica> SOLICITUD_QUIRURGICA { get; set; }
+        // temporal public DbSet<ConsentimientoInformado> CONSENTIMIENTO_INFORMADO { get; set; }
         public DbSet<Prevision> PREVISION { get; set; }
         public DbSet<PrevisionPaciente> PREVISION_PACIENTE { get; set; }
         public DbSet<Ubicacion> UBICACION { get; set; }
         public DbSet<EstadoSolicitud> ESTADO_SOLICITUD { get; set; }
-        public DbSet<DetallePaciente> DETALLE_PACIENTE { get; set; }
-        public DbSet<DetalleClinico> DETALLE_CLINICO { get; set; }
+        // temporal public DbSet<DetallePaciente> DETALLE_PACIENTE { get; set; }
+        // temporal public DbSet<DetalleClinico> DETALLE_CLINICO { get; set; }
 
         public DbSet<Solicitud> SOLICITUDES { get; set; } = null!;
 
@@ -48,10 +48,10 @@ namespace Hospital.Api.Data
         // Para la integracion
 
 
-        public DbSet<SolicitudQuirurgicaReal> SOLICITUD_QUIRURGICA_REAL { get; set; }
-        public DbSet<ConsentimientoInformadoReal> CONSENTIMIENTO_INFORMADO_REAL { get; set; }
-        public DbSet<DetalleClinicoReal> DETALLE_CLINICO_REAL { get; set; }
-        public DbSet<DetallePacienteReal> DETALLE_PACIENTE_REAL { get; set; }
+        public DbSet<SolicitudQuirurgicaReal> SOLICITUD_QUIRURGICA { get; set; } // ahora reemplazara  el original contolador
+        public DbSet<ConsentimientoInformadoReal> CONSENTIMIENTO_INFORMADO { get; set; } // ahora reemplazara  el original contolador
+        public DbSet<DetalleClinicoReal> DETALLE_CLINICO { get; set; } // ahora reemplazara  el original contolador
+        public DbSet<DetallePacienteReal> DETALLE_PACIENTE { get; set; } // ahora reemplazara  el original contolador
         public DbSet<Procedencia> PROCEDENCIA { get; set; }
         public DbSet<TipoPrestacion> TIPO_PRESTACION { get; set; }
 

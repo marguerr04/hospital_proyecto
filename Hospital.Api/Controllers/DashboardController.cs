@@ -19,8 +19,9 @@ namespace Hospital.Api.Controllers
         [HttpGet("percentil75")]
         public async Task<ActionResult<double>> GetPercentil75()
         {
-            var lista = await _context.SOLICITUD_QUIRURGICA
-                .GroupBy(s => s.PacienteId)
+            var lista = await _context.SOLICITUD_QUIRURGICA // ahora debe pasar po CI para saber idpaciente
+                .Include(s => s.Consentimiento)
+                .GroupBy(s => s.Consentimiento.PacienteId)
                 .Select(g => g.Count())
                 .ToListAsync();
 

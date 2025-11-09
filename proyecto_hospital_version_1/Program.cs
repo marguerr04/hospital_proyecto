@@ -7,6 +7,7 @@ using MudBlazor.Services;
 using proyecto_hospital_version_1.Data._Legacy; // NUEVO: Agregado para MudBlazor (Dashboard)
 using MudBlazor.Services;
 
+
 var builder = WebApplication.CreateBuilder(args);
 
 // --- SECCIÓN DE SERVICIOS (builder.Services) ---
@@ -59,11 +60,21 @@ builder.Services.AddScoped<IEspecialidadService, EspecialidadService>();
 
 
 
+
+
+
+
+
+
 // NUEVOS SERVICIOS (de tu compañero para el Dashboard)
 // builder.Services.AddMudServices(); // Para los componentes del Dashboard, de moento parece qeu dme dan problemas, lo dejo comentado
 // builder.Services.AddScoped<DashboardService>(); , deberia verlo en el commit de dashboard si es posible integrarlo
 builder.Services.AddRazorPages(); // Necesario para MapFallbackToPage
 builder.Services.AddServerSideBlazor(); // Necesario para MapBlazorHub
+
+
+
+
 
 
 // --- FIN DE SERVICIOS ---

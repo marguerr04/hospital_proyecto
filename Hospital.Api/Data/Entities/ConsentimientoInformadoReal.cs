@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace proyecto_hospital_version_1.Data.Entities
 {
-    [Table("CONSENTIMIENTO_INFORMADO_REAL")]
+    [Table("CONSENTIMIENTO_INFORMADO")]
     public class ConsentimientoInformadoReal
     {
         [Key]
