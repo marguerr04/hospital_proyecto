@@ -86,6 +86,17 @@ namespace  Hospital.Api.Data.Services
                 await _context.SaveChangesAsync();
 
                 await transaction.CommitAsync();
+
+                //  Validar si ya existe solicitud para ese consentimiento
+                bool existe = await _context.SOLICITUD_QUIRURGICA
+                    .AnyAsync(s => s.ConsentimientoId == consentimiento.Id);
+
+                if (existe)
+                {
+                    Console.WriteLine($"⚠️ Ya existe una solicitud para el consentimiento {consentimiento.Id}");
+                    return false;
+                }
+
                 return true;
             }
             catch (Exception ex)

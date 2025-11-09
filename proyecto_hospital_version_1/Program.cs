@@ -73,7 +73,8 @@ builder.Services.AddRazorPages(); // Necesario para MapFallbackToPage
 builder.Services.AddServerSideBlazor(); // Necesario para MapBlazorHub
 
 
-
+// servicio api
+builder.Services.AddScoped<ISolicitudQuirurgicaApiService, SolicitudQuirurgicaApiService>();
 
 
 
