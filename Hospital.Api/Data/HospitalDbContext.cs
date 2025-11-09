@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Hospital.Api.Data.Entities;
+using proyecto_hospital_version_1.Data.Entities;
 
 
 namespace Hospital.Api.Data
@@ -36,14 +37,23 @@ namespace Hospital.Api.Data
 
 
         // en proceso de reemplazo de procedimientos
-
+        /* da conflicto, y en la bd no existe procedimientos como tal
         public DbSet<Procedimiento> Procedimientos { get; set; } = null!;
-
+        */
         public DbSet<Procedimiento> PROCEDIMIENTO { get; set; } = null!;
         public DbSet<TipoProcedimiento> TIPO_PROCEDIMIENTO { get; set; } = null!;
 
         public DbSet<Especialidad> ESPECIALIDAD { get; set; } = null!;
 
+        // Para la integracion
+
+
+        public DbSet<SolicitudQuirurgicaReal> SOLICITUD_QUIRURGICA_REAL { get; set; }
+        public DbSet<ConsentimientoInformadoReal> CONSENTIMIENTO_INFORMADO_REAL { get; set; }
+        public DbSet<DetalleClinicoReal> DETALLE_CLINICO_REAL { get; set; }
+        public DbSet<DetallePacienteReal> DETALLE_PACIENTE_REAL { get; set; }
+        public DbSet<Procedencia> PROCEDENCIA { get; set; }
+        public DbSet<TipoPrestacion> TIPO_PRESTACION { get; set; }
 
 
 
@@ -110,8 +120,19 @@ namespace Hospital.Api.Data
                 entity.Property(e => e.IMC).HasPrecision(5, 2);
             });
 
+            // detalle clinico en la base de datos no tiene llave primaria, sjuj lalve primaria es relacion 1 a 1 con solicitud
+            // ademas de que es llave primaria compuesta
+            modelBuilder.Entity<DetalleClinicoReal>()
+                .HasKey(d => new { d.SolicitudConsentimientoId, d.SolicitudId });
 
-            base.OnModelCreating(modelBuilder);
+            modelBuilder.Entity<DetalleClinicoReal>()
+                .HasOne(d => d.Solicitud)
+                .WithOne(s => s.DetalleClinico)
+                .HasForeignKey<DetalleClinicoReal>(d => d.SolicitudId)  
+                .HasPrincipalKey<SolicitudQuirurgicaReal>(s => s.IdSolicitud);
+
+
+
 
             modelBuilder.Entity<Procedimiento>().ToTable("PROCEDIMIENTO");
             modelBuilder.Entity<TipoProcedimiento>().ToTable("TIPO_PROCEDIMIENTO");
@@ -120,8 +141,24 @@ namespace Hospital.Api.Data
             modelBuilder.Entity<Especialidad>().ToTable("ESPECIALIDAD");
 
 
+            // cambios para la llave
+            modelBuilder.Entity<DetallePacienteReal>()
+                .HasKey(dp => new { dp.Id, dp.SolicitudConsentimientoId, dp.SolicitudId });
 
 
+            modelBuilder.Entity<DetallePacienteReal>()
+                .HasOne(dp => dp.Solicitud)
+                .WithMany(sq => sq.DetallesPaciente)
+                .HasForeignKey(dp => dp.SolicitudId)  
+                .HasPrincipalKey(sq => sq.IdSolicitud);
+
+
+            // para 2 consentimientos informados
+            
+
+
+
+            base.OnModelCreating(modelBuilder);
         }
     }
 

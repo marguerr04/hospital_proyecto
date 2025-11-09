@@ -23,7 +23,7 @@ namespace Hospital.Api.Data.Entities
         [Column("TIPO_PROCEDIMIENTO_ID")]
         public int TipoProcedimientoId { get; set; }
 
-        // 🔹 FK opcional: crea relación si existe la tabla TIPO_PROCEDIMIENTO
+        // FK opcional: crea relación si existe la tabla TIPO_PROCEDIMIENTO
         [ForeignKey("TipoProcedimientoId")]
         public TipoProcedimiento? TipoProcedimiento { get; set; }
     }
