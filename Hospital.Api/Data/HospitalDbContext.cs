@@ -55,6 +55,15 @@ namespace Hospital.Api.Data
         public DbSet<Procedencia> PROCEDENCIA { get; set; }
         public DbSet<TipoPrestacion> TIPO_PRESTACION { get; set; }
 
+       // public DbSet<PriorizacionSolicitud> PRIORIZACION_SOLICITUD { get; set; }
+
+        //public DbSet<CriterioPriorizacion> CRITERIO_PRIORIZACION { get; set; }
+
+        //public DbSet<ProgramacionQuirurgica> PROGRAMACION_QUIRURGICA { get; set; }
+
+        //public DbSet<Cirugia> CIRUGIA { get; set; }
+
+        //public DbSet<EstadoProgramacion> ESTADO_PROGRAMACION { get; set; }
 
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)

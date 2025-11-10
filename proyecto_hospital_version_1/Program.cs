@@ -23,7 +23,7 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 // Tu DbContext para 'HospitalV4' (ahora con las nuevas tablas), esto es para la integracion actual
 // Comentario para integracion actual 
 /*
-builder.Services.AddDbContext<HospitalDbContext>(options =>
+builder.Services.AddDbContext<HospitalDbContext>(options =>a
     options.UseSqlServer(builder.Configuration.GetConnectionString("HospitalV4")));
 */
 builder.Services.AddMudServices(config =>
