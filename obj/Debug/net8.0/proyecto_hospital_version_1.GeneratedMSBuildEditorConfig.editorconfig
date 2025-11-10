@@ -1,0 +1,326 @@
+is_global = true
+build_property.MudDebugAnalyzer = 
+build_property.MudAllowedAttributePattern = 
+build_property.MudAllowedAttributeList = 
+build_property.TargetFramework = net8.0
+build_property.TargetFramework = net8.0
+build_property.TargetPlatformMinVersion = 
+build_property.TargetPlatformMinVersion = 
+build_property.UsingMicrosoftNETSdkWeb = true
+build_property.UsingMicrosoftNETSdkWeb = true
+build_property.ProjectTypeGuids = 
+build_property.ProjectTypeGuids = 
+build_property.InvariantGlobalization = 
+build_property.InvariantGlobalization = 
+build_property.PlatformNeutralAssembly = 
+build_property.PlatformNeutralAssembly = 
+build_property.EnforceExtendedAnalyzerRules = 
+build_property.EnforceExtendedAnalyzerRules = 
+build_property._SupportedPlatformList = Linux,macOS,Windows
+build_property._SupportedPlatformList = Linux,macOS,Windows
+build_property.RootNamespace = proyecto_hospital_version_1
+build_property.RootNamespace = proyecto_hospital_version_1
+build_property.ProjectDir = C:\Users\Usuario\Desktop\repo-equipo\hospital_proyecto\
+build_property.EnableComHosting = 
+build_property.EnableGeneratedComInterfaceComImportInterop = 
+build_property.RazorLangVersion = 8.0
+build_property.SupportLocalizedComponentNames = 
+build_property.GenerateRazorMetadataSourceChecksumAttributes = 
+build_property.MSBuildProjectDirectory = C:\Users\Usuario\Desktop\repo-equipo\hospital_proyecto
+build_property._RazorSourceGeneratorDebug = 
+
+[C:/Users/Usuario/Desktop/repo-equipo/hospital_proyecto/Components/App.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xBcHAucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Usuario/Desktop/repo-equipo/hospital_proyecto/Components/Layout/NavMedico.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xMYXlvdXRcTmF2TWVkaWNvLnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Usuario/Desktop/repo-equipo/hospital_proyecto/Components/Layout/RazorVacio.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xMYXlvdXRcUmF6b3JWYWNpby5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Usuario/Desktop/repo-equipo/hospital_proyecto/Components/Pages/Counter.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xQYWdlc1xDb3VudGVyLnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Usuario/Desktop/repo-equipo/hospital_proyecto/Components/Pages/Dashboard.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xQYWdlc1xEYXNoYm9hcmQucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Usuario/Desktop/repo-equipo/hospital_proyecto/Components/Pages/Dashboard_verdadero.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xQYWdlc1xEYXNoYm9hcmRfdmVyZGFkZXJvLnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Usuario/Desktop/repo-equipo/hospital_proyecto/Components/Pages/Error.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xQYWdlc1xFcnJvci5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Usuario/Desktop/repo-equipo/hospital_proyecto/Components/Pages/Generar_solicitud_medico.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xQYWdlc1xHZW5lcmFyX3NvbGljaXR1ZF9tZWRpY28ucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Usuario/Desktop/repo-equipo/hospital_proyecto/Components/Pages/Home.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xQYWdlc1xIb21lLnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Usuario/Desktop/repo-equipo/hospital_proyecto/Components/Pages/HomeMedico.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xQYWdlc1xIb21lTWVkaWNvLnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Usuario/Desktop/repo-equipo/hospital_proyecto/Components/Pages/HospitalProbe.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xQYWdlc1xIb3NwaXRhbFByb2JlLnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Usuario/Desktop/repo-equipo/hospital_proyecto/Components/Pages/Login.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xQYWdlc1xMb2dpbi5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Usuario/Desktop/repo-equipo/hospital_proyecto/Components/Pages/MisSolicitudesMedico.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xQYWdlc1xNaXNTb2xpY2l0dWRlc01lZGljby5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Usuario/Desktop/repo-equipo/hospital_proyecto/Components/Pages/Panel.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xQYWdlc1xQYW5lbC5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Usuario/Desktop/repo-equipo/hospital_proyecto/Components/Pages/Prelogin.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xQYWdlc1xQcmVsb2dpbi5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Usuario/Desktop/repo-equipo/hospital_proyecto/Components/Pages/PriorizarSolicitud.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xQYWdlc1xQcmlvcml6YXJTb2xpY2l0dWQucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Usuario/Desktop/repo-equipo/hospital_proyecto/Components/Pages/PriorizarSolicitudDetalle.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xQYWdlc1xQcmlvcml6YXJTb2xpY2l0dWREZXRhbGxlLnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Usuario/Desktop/repo-equipo/hospital_proyecto/Components/Pages/PriorizarSolicitudOriginal.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xQYWdlc1xQcmlvcml6YXJTb2xpY2l0dWRPcmlnaW5hbC5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Usuario/Desktop/repo-equipo/hospital_proyecto/Components/Pages/RedirectToLogin.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xQYWdlc1xSZWRpcmVjdFRvTG9naW4ucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Usuario/Desktop/repo-equipo/hospital_proyecto/Components/Pages/SolicitudForm.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xQYWdlc1xTb2xpY2l0dWRGb3JtLnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Usuario/Desktop/repo-equipo/hospital_proyecto/Components/Routes.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xSb3V0ZXMucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Usuario/Desktop/repo-equipo/hospital_proyecto/Components/Shared/AlertasClinicasCard.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xTaGFyZWRcQWxlcnRhc0NsaW5pY2FzQ2FyZC5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Usuario/Desktop/repo-equipo/hospital_proyecto/Components/Shared/BuscadorPaciente.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xTaGFyZWRcQnVzY2Fkb3JQYWNpZW50ZS5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Usuario/Desktop/repo-equipo/hospital_proyecto/Components/Shared/ConsentimientoPDF.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xTaGFyZWRcQ29uc2VudGltaWVudG9QREYucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Usuario/Desktop/repo-equipo/hospital_proyecto/Components/Shared/InfoPacienteCard.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xTaGFyZWRcSW5mb1BhY2llbnRlQ2FyZC5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Usuario/Desktop/repo-equipo/hospital_proyecto/Components/Shared/ListaSolicitudesCard.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xTaGFyZWRcTGlzdGFTb2xpY2l0dWRlc0NhcmQucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Usuario/Desktop/repo-equipo/hospital_proyecto/Components/Shared/Paso2RequerimientosCard.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xTaGFyZWRcUGFzbzJSZXF1ZXJpbWllbnRvc0NhcmQucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Usuario/Desktop/repo-equipo/hospital_proyecto/Components/Shared/Paso3GenerarSolicitudCard.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xTaGFyZWRcUGFzbzNHZW5lcmFyU29saWNpdHVkQ2FyZC5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Usuario/Desktop/repo-equipo/hospital_proyecto/Components/Shared/ProcedimientosCard.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xTaGFyZWRcUHJvY2VkaW1pZW50b3NDYXJkLnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Usuario/Desktop/repo-equipo/hospital_proyecto/Components/Shared/SelectorEquipos.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xTaGFyZWRcU2VsZWN0b3JFcXVpcG9zLnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Usuario/Desktop/repo-equipo/hospital_proyecto/Components/Shared/Weather.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xTaGFyZWRcV2VhdGhlci5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Usuario/Desktop/repo-equipo/hospital_proyecto/Components/_Imports.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xfSW1wb3J0cy5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Usuario/Desktop/repo-equipo/hospital_proyecto/proyecto_hospital_version_1/Components/App.razor]
+build_metadata.AdditionalFiles.TargetPath = cHJveWVjdG9faG9zcGl0YWxfdmVyc2lvbl8xXENvbXBvbmVudHNcQXBwLnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Usuario/Desktop/repo-equipo/hospital_proyecto/proyecto_hospital_version_1/Components/Layout/NavMedico.razor]
+build_metadata.AdditionalFiles.TargetPath = cHJveWVjdG9faG9zcGl0YWxfdmVyc2lvbl8xXENvbXBvbmVudHNcTGF5b3V0XE5hdk1lZGljby5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Usuario/Desktop/repo-equipo/hospital_proyecto/proyecto_hospital_version_1/Components/Layout/RazorVacio.razor]
+build_metadata.AdditionalFiles.TargetPath = cHJveWVjdG9faG9zcGl0YWxfdmVyc2lvbl8xXENvbXBvbmVudHNcTGF5b3V0XFJhem9yVmFjaW8ucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Usuario/Desktop/repo-equipo/hospital_proyecto/proyecto_hospital_version_1/Components/Pages/Counter.razor]
+build_metadata.AdditionalFiles.TargetPath = cHJveWVjdG9faG9zcGl0YWxfdmVyc2lvbl8xXENvbXBvbmVudHNcUGFnZXNcQ291bnRlci5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Usuario/Desktop/repo-equipo/hospital_proyecto/proyecto_hospital_version_1/Components/Pages/Dashboard.razor]
+build_metadata.AdditionalFiles.TargetPath = cHJveWVjdG9faG9zcGl0YWxfdmVyc2lvbl8xXENvbXBvbmVudHNcUGFnZXNcRGFzaGJvYXJkLnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Usuario/Desktop/repo-equipo/hospital_proyecto/proyecto_hospital_version_1/Components/Pages/Dashboard_verdadero.razor]
+build_metadata.AdditionalFiles.TargetPath = cHJveWVjdG9faG9zcGl0YWxfdmVyc2lvbl8xXENvbXBvbmVudHNcUGFnZXNcRGFzaGJvYXJkX3ZlcmRhZGVyby5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Usuario/Desktop/repo-equipo/hospital_proyecto/proyecto_hospital_version_1/Components/Pages/Error.razor]
+build_metadata.AdditionalFiles.TargetPath = cHJveWVjdG9faG9zcGl0YWxfdmVyc2lvbl8xXENvbXBvbmVudHNcUGFnZXNcRXJyb3IucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Usuario/Desktop/repo-equipo/hospital_proyecto/proyecto_hospital_version_1/Components/Pages/Generar_solicitud_medico.razor]
+build_metadata.AdditionalFiles.TargetPath = cHJveWVjdG9faG9zcGl0YWxfdmVyc2lvbl8xXENvbXBvbmVudHNcUGFnZXNcR2VuZXJhcl9zb2xpY2l0dWRfbWVkaWNvLnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Usuario/Desktop/repo-equipo/hospital_proyecto/proyecto_hospital_version_1/Components/Pages/Home.razor]
+build_metadata.AdditionalFiles.TargetPath = cHJveWVjdG9faG9zcGl0YWxfdmVyc2lvbl8xXENvbXBvbmVudHNcUGFnZXNcSG9tZS5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Usuario/Desktop/repo-equipo/hospital_proyecto/proyecto_hospital_version_1/Components/Pages/HomeMedico.razor]
+build_metadata.AdditionalFiles.TargetPath = cHJveWVjdG9faG9zcGl0YWxfdmVyc2lvbl8xXENvbXBvbmVudHNcUGFnZXNcSG9tZU1lZGljby5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Usuario/Desktop/repo-equipo/hospital_proyecto/proyecto_hospital_version_1/Components/Pages/Login.razor]
+build_metadata.AdditionalFiles.TargetPath = cHJveWVjdG9faG9zcGl0YWxfdmVyc2lvbl8xXENvbXBvbmVudHNcUGFnZXNcTG9naW4ucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Usuario/Desktop/repo-equipo/hospital_proyecto/proyecto_hospital_version_1/Components/Pages/MisSolicitudesMedico.razor]
+build_metadata.AdditionalFiles.TargetPath = cHJveWVjdG9faG9zcGl0YWxfdmVyc2lvbl8xXENvbXBvbmVudHNcUGFnZXNcTWlzU29saWNpdHVkZXNNZWRpY28ucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Usuario/Desktop/repo-equipo/hospital_proyecto/proyecto_hospital_version_1/Components/Pages/Panel.razor]
+build_metadata.AdditionalFiles.TargetPath = cHJveWVjdG9faG9zcGl0YWxfdmVyc2lvbl8xXENvbXBvbmVudHNcUGFnZXNcUGFuZWwucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Usuario/Desktop/repo-equipo/hospital_proyecto/proyecto_hospital_version_1/Components/Pages/Prelogin.razor]
+build_metadata.AdditionalFiles.TargetPath = cHJveWVjdG9faG9zcGl0YWxfdmVyc2lvbl8xXENvbXBvbmVudHNcUGFnZXNcUHJlbG9naW4ucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Usuario/Desktop/repo-equipo/hospital_proyecto/proyecto_hospital_version_1/Components/Pages/PriorizarSolicitud.razor]
+build_metadata.AdditionalFiles.TargetPath = cHJveWVjdG9faG9zcGl0YWxfdmVyc2lvbl8xXENvbXBvbmVudHNcUGFnZXNcUHJpb3JpemFyU29saWNpdHVkLnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Usuario/Desktop/repo-equipo/hospital_proyecto/proyecto_hospital_version_1/Components/Pages/PriorizarSolicitudDetalle.razor]
+build_metadata.AdditionalFiles.TargetPath = cHJveWVjdG9faG9zcGl0YWxfdmVyc2lvbl8xXENvbXBvbmVudHNcUGFnZXNcUHJpb3JpemFyU29saWNpdHVkRGV0YWxsZS5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Usuario/Desktop/repo-equipo/hospital_proyecto/proyecto_hospital_version_1/Components/Pages/PriorizarSolicitudOriginal.razor]
+build_metadata.AdditionalFiles.TargetPath = cHJveWVjdG9faG9zcGl0YWxfdmVyc2lvbl8xXENvbXBvbmVudHNcUGFnZXNcUHJpb3JpemFyU29saWNpdHVkT3JpZ2luYWwucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Usuario/Desktop/repo-equipo/hospital_proyecto/proyecto_hospital_version_1/Components/Pages/RedirectToLogin.razor]
+build_metadata.AdditionalFiles.TargetPath = cHJveWVjdG9faG9zcGl0YWxfdmVyc2lvbl8xXENvbXBvbmVudHNcUGFnZXNcUmVkaXJlY3RUb0xvZ2luLnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Usuario/Desktop/repo-equipo/hospital_proyecto/proyecto_hospital_version_1/Components/Pages/SolicitudForm.razor]
+build_metadata.AdditionalFiles.TargetPath = cHJveWVjdG9faG9zcGl0YWxfdmVyc2lvbl8xXENvbXBvbmVudHNcUGFnZXNcU29saWNpdHVkRm9ybS5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Usuario/Desktop/repo-equipo/hospital_proyecto/proyecto_hospital_version_1/Components/Routes.razor]
+build_metadata.AdditionalFiles.TargetPath = cHJveWVjdG9faG9zcGl0YWxfdmVyc2lvbl8xXENvbXBvbmVudHNcUm91dGVzLnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Usuario/Desktop/repo-equipo/hospital_proyecto/proyecto_hospital_version_1/Components/Shared/AlertasClinicasCard.razor]
+build_metadata.AdditionalFiles.TargetPath = cHJveWVjdG9faG9zcGl0YWxfdmVyc2lvbl8xXENvbXBvbmVudHNcU2hhcmVkXEFsZXJ0YXNDbGluaWNhc0NhcmQucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Usuario/Desktop/repo-equipo/hospital_proyecto/proyecto_hospital_version_1/Components/Shared/BuscadorPaciente.razor]
+build_metadata.AdditionalFiles.TargetPath = cHJveWVjdG9faG9zcGl0YWxfdmVyc2lvbl8xXENvbXBvbmVudHNcU2hhcmVkXEJ1c2NhZG9yUGFjaWVudGUucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Usuario/Desktop/repo-equipo/hospital_proyecto/proyecto_hospital_version_1/Components/Shared/ConsentimientoPDF.razor]
+build_metadata.AdditionalFiles.TargetPath = cHJveWVjdG9faG9zcGl0YWxfdmVyc2lvbl8xXENvbXBvbmVudHNcU2hhcmVkXENvbnNlbnRpbWllbnRvUERGLnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Usuario/Desktop/repo-equipo/hospital_proyecto/proyecto_hospital_version_1/Components/Shared/InfoPacienteCard.razor]
+build_metadata.AdditionalFiles.TargetPath = cHJveWVjdG9faG9zcGl0YWxfdmVyc2lvbl8xXENvbXBvbmVudHNcU2hhcmVkXEluZm9QYWNpZW50ZUNhcmQucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Usuario/Desktop/repo-equipo/hospital_proyecto/proyecto_hospital_version_1/Components/Shared/ListaSolicitudesCard.razor]
+build_metadata.AdditionalFiles.TargetPath = cHJveWVjdG9faG9zcGl0YWxfdmVyc2lvbl8xXENvbXBvbmVudHNcU2hhcmVkXExpc3RhU29saWNpdHVkZXNDYXJkLnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Usuario/Desktop/repo-equipo/hospital_proyecto/proyecto_hospital_version_1/Components/Shared/Paso1ContextoCard.razor]
+build_metadata.AdditionalFiles.TargetPath = cHJveWVjdG9faG9zcGl0YWxfdmVyc2lvbl8xXENvbXBvbmVudHNcU2hhcmVkXFBhc28xQ29udGV4dG9DYXJkLnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Usuario/Desktop/repo-equipo/hospital_proyecto/proyecto_hospital_version_1/Components/Shared/Paso2RequerimientosCard.razor]
+build_metadata.AdditionalFiles.TargetPath = cHJveWVjdG9faG9zcGl0YWxfdmVyc2lvbl8xXENvbXBvbmVudHNcU2hhcmVkXFBhc28yUmVxdWVyaW1pZW50b3NDYXJkLnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Usuario/Desktop/repo-equipo/hospital_proyecto/proyecto_hospital_version_1/Components/Shared/Paso3GenerarSolicitudCard.razor]
+build_metadata.AdditionalFiles.TargetPath = cHJveWVjdG9faG9zcGl0YWxfdmVyc2lvbl8xXENvbXBvbmVudHNcU2hhcmVkXFBhc28zR2VuZXJhclNvbGljaXR1ZENhcmQucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Usuario/Desktop/repo-equipo/hospital_proyecto/proyecto_hospital_version_1/Components/Shared/ProcedimientosCard.razor]
+build_metadata.AdditionalFiles.TargetPath = cHJveWVjdG9faG9zcGl0YWxfdmVyc2lvbl8xXENvbXBvbmVudHNcU2hhcmVkXFByb2NlZGltaWVudG9zQ2FyZC5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Usuario/Desktop/repo-equipo/hospital_proyecto/proyecto_hospital_version_1/Components/Shared/SelectorEquipos.razor]
+build_metadata.AdditionalFiles.TargetPath = cHJveWVjdG9faG9zcGl0YWxfdmVyc2lvbl8xXENvbXBvbmVudHNcU2hhcmVkXFNlbGVjdG9yRXF1aXBvcy5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Usuario/Desktop/repo-equipo/hospital_proyecto/proyecto_hospital_version_1/Components/Shared/Weather.razor]
+build_metadata.AdditionalFiles.TargetPath = cHJveWVjdG9faG9zcGl0YWxfdmVyc2lvbl8xXENvbXBvbmVudHNcU2hhcmVkXFdlYXRoZXIucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Usuario/Desktop/repo-equipo/hospital_proyecto/proyecto_hospital_version_1/Components/_Imports.razor]
+build_metadata.AdditionalFiles.TargetPath = cHJveWVjdG9faG9zcGl0YWxfdmVyc2lvbl8xXENvbXBvbmVudHNcX0ltcG9ydHMucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Usuario/Desktop/repo-equipo/hospital_proyecto/Components/Layout/MainLayout.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xMYXlvdXRcTWFpbkxheW91dC5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = b-jda586ftce
+
+[C:/Users/Usuario/Desktop/repo-equipo/hospital_proyecto/Components/Layout/MainLayoutMedico.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xMYXlvdXRcTWFpbkxheW91dE1lZGljby5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = b-1r12l08qqd
+
+[C:/Users/Usuario/Desktop/repo-equipo/hospital_proyecto/Components/Layout/NavMenu.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xMYXlvdXRcTmF2TWVudS5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = b-2jw485rfog
+
+[C:/Users/Usuario/Desktop/repo-equipo/hospital_proyecto/Components/Layout/NavMenuMedico.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xMYXlvdXRcTmF2TWVudU1lZGljby5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = b-248lzv5cc0
+
+[C:/Users/Usuario/Desktop/repo-equipo/hospital_proyecto/Components/Shared/CriteriosPriorizacion.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xTaGFyZWRcQ3JpdGVyaW9zUHJpb3JpemFjaW9uLnJhem9y
+build_metadata.AdditionalFiles.CssScope = b-csz3ywijwe
+
+[C:/Users/Usuario/Desktop/repo-equipo/hospital_proyecto/proyecto_hospital_version_1/Components/Layout/MainLayout.razor]
+build_metadata.AdditionalFiles.TargetPath = cHJveWVjdG9faG9zcGl0YWxfdmVyc2lvbl8xXENvbXBvbmVudHNcTGF5b3V0XE1haW5MYXlvdXQucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = b-t9zfku0oi9
+
+[C:/Users/Usuario/Desktop/repo-equipo/hospital_proyecto/proyecto_hospital_version_1/Components/Layout/MainLayoutMedico.razor]
+build_metadata.AdditionalFiles.TargetPath = cHJveWVjdG9faG9zcGl0YWxfdmVyc2lvbl8xXENvbXBvbmVudHNcTGF5b3V0XE1haW5MYXlvdXRNZWRpY28ucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = b-pg1x18whu6
+
+[C:/Users/Usuario/Desktop/repo-equipo/hospital_proyecto/proyecto_hospital_version_1/Components/Layout/NavMenu.razor]
+build_metadata.AdditionalFiles.TargetPath = cHJveWVjdG9faG9zcGl0YWxfdmVyc2lvbl8xXENvbXBvbmVudHNcTGF5b3V0XE5hdk1lbnUucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = b-m58a6xhkem
+
+[C:/Users/Usuario/Desktop/repo-equipo/hospital_proyecto/proyecto_hospital_version_1/Components/Layout/NavMenuMedico.razor]
+build_metadata.AdditionalFiles.TargetPath = cHJveWVjdG9faG9zcGl0YWxfdmVyc2lvbl8xXENvbXBvbmVudHNcTGF5b3V0XE5hdk1lbnVNZWRpY28ucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = b-tc5mhijv2o
+
+[C:/Users/Usuario/Desktop/repo-equipo/hospital_proyecto/proyecto_hospital_version_1/Components/Shared/CriteriosPriorizacion.razor]
+build_metadata.AdditionalFiles.TargetPath = cHJveWVjdG9faG9zcGl0YWxfdmVyc2lvbl8xXENvbXBvbmVudHNcU2hhcmVkXENyaXRlcmlvc1ByaW9yaXphY2lvbi5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = b-gyzeh9h4d4

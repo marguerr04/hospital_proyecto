@@ -54,32 +54,50 @@ namespace proyecto_hospital_version_1.Data
             }
         }
 
-        public async Task<Dictionary<string, double>> ObtenerPorcentajeContactoAsync()
+        public async Task<Dictionary<string, int>> ObtenerProcedimientosPorTipoAsync(DateTime? desde = null, DateTime? hasta = null)
         {
-            try
-            {
-                var result = await _http.GetFromJsonAsync<Dictionary<string, double>>("api/dashboard/contactabilidad");
-                return result ?? new Dictionary<string, double>();
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error en ObtenerPorcentajeContactoAsync: {ex.Message}");
-                return new Dictionary<string, double>();
-            }
+            var query = "";
+            if (desde.HasValue) query += $"desde={desde.Value:yyyy-MM-dd}&";
+            if (hasta.HasValue) query += $"hasta={hasta.Value:yyyy-MM-dd}";
+            
+            var result = await _http.GetFromJsonAsync<Dictionary<string, int>>($"{BaseUrl}/api/dashboard/procedimientos?{query}");
+            return result ?? new Dictionary<string, int>();
         }
 
-        public async Task<Dictionary<string, int>> ObtenerProcedimientosPorTipoAsync()
+        public async Task<Dictionary<string, double>> ObtenerContactabilidadAsync(DateTime? desde = null, DateTime? hasta = null)
         {
-            try
-            {
-                var result = await _http.GetFromJsonAsync<Dictionary<string, int>>("api/dashboard/procedimientos");
-                return result ?? new Dictionary<string, int>();
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error en ObtenerProcedimientosPorTipoAsync: {ex.Message}");
-                return new Dictionary<string, int>();
-            }
+            var query = "";
+            if (desde.HasValue) query += $"desde={desde.Value:yyyy-MM-dd}&";
+            if (hasta.HasValue) query += $"hasta={hasta.Value:yyyy-MM-dd}";
+
+            var result = await _http.GetFromJsonAsync<Dictionary<string, double>>($"{BaseUrl}/api/dashboard/contactabilidad?{query}");
+            return result ?? new Dictionary<string, double>();
         }
+
+        public async Task<List<EvolucionPercentil>> ObtenerEvolucionPercentilAsync(DateTime? desde = null, DateTime? hasta = null)
+        {
+            var query = "";
+            if (desde.HasValue) query += $"desde={desde.Value:yyyy-MM-dd}&";
+            if (hasta.HasValue) query += $"hasta={hasta.Value:yyyy-MM-dd}";
+
+            var result = await _http.GetFromJsonAsync<List<EvolucionPercentil>>($"{BaseUrl}/api/dashboard/evolucion-percentil?{query}");
+            return result ?? new List<EvolucionPercentil>();
+        }
+
+        public async Task<Dictionary<string, int>> ObtenerCausalEgresoAsync(DateTime? desde = null, DateTime? hasta = null)
+        {
+            var query = "";
+            if (desde.HasValue) query += $"desde={desde.Value:yyyy-MM-dd}&";
+            if (hasta.HasValue) query += $"hasta={hasta.Value:yyyy-MM-dd}";
+
+            var result = await _http.GetFromJsonAsync<Dictionary<string, int>>($"{BaseUrl}/api/dashboard/causal-egreso?{query}");
+            return result ?? new Dictionary<string, int>();
+        }
+    }
+
+    public class EvolucionPercentil
+    {
+        public string Mes { get; set; } = "";
+        public int Valor { get; set; }
     }
 }

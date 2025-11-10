@@ -16,7 +16,14 @@
     <MudText Typo="Typo.subtitle1" Align="Align.Center" Class="mb-6 text-secondary">
         Unidad de Control de Gestión · @DateTime.Now:dd/MM/yyyy
     </MudText>
-
+    <MudGrid>
+        <MudItem xs="12">
+            <MudPaper Class="pa-4">
+                <MudDateRangePicker @bind-DateRange="dateRange" Label="Filtrar por fecha" />
+                <MudButton Color="Color.Primary" OnClick="ActualizarDatos" Class="ml-2">Actualizar</MudButton>
+            </MudPaper>
+        </MudItem>
+    </MudGrid>
     <!-- Tarjetas superiores -->
     <MudGrid Justify="Justify.Center" Spacing="3">
         <MudItem xs="12" sm="6" md="4">
@@ -58,6 +65,20 @@
                 <canvas id="chartContacto"></canvas>
             </MudPaper>
         </MudItem>
+
+        <MudItem xs="12" md="6">
+            <MudPaper Class="pa-4">
+                <MudText Typo="Typo.h6">Evolución Percentil 75</MudText>
+                <canvas id="chartEvolucion"></canvas>
+            </MudPaper>
+        </MudItem>
+        
+        <MudItem xs="12" md="6">
+            <MudPaper Class="pa-4">
+                <MudText Typo="Typo.h6">Causal de Egreso</MudText>
+                <canvas id="chartEgreso"></canvas>
+            </MudPaper>
+        </MudItem>
     </MudGrid>
 </MudContainer>
 
@@ -65,7 +86,7 @@
     private int Percentil75;
     private int Reduccion;
     private int Pendientes;
-
+    private DateRange dateRange = new DateRange(DateTime.Today.AddMonths(-6), DateTime.Today);
     private string[] EstadoLabels = Array.Empty<string>();
     private string[] EstadoColors = Array.Empty<string>();
     private List<ChartSeries> EstadoSeries = new();
@@ -75,10 +96,6 @@
     private List<ChartSeries> ContactoSeries = new();
 
     private bool _isLoaded = false;
-
-    // claves para forzar re-render de cada MudChart (separadas)
-    private string _chartKeyEstado = Guid.NewGuid().ToString();
-    private string _chartKeyContacto = Guid.NewGuid().ToString();
 
     private string[] GenerarColores(int cantidad)
     {
@@ -100,45 +117,89 @@
     private string NormalizarNombre(string nombre)
     {
         if (string.IsNullOrEmpty(nombre)) return nombre;
-        var normalized = nombre.Normalize(NormalizationForm.FormD);
-        var sb = new StringBuilder();
+        var normalized = nombre.Normalize(System.Text.NormalizationForm.FormD);
+        var sb = new System.Text.StringBuilder();
         foreach (var c in normalized)
         {
-            if (CharUnicodeInfo.GetUnicodeCategory(c) != UnicodeCategory.NonSpacingMark)
+            if (System.Globalization.CharUnicodeInfo.GetUnicodeCategory(c) != System.Globalization.UnicodeCategory.NonSpacingMark)
                 sb.Append(c);
         }
-        return sb.ToString().Normalize(NormalizationForm.FormC);
+        return sb.ToString().Normalize(System.Text.NormalizationForm.FormC);
     }
 
     protected override async Task OnInitializedAsync()
     {
+        await ActualizarDatos();
+    }
+
+    // método accesible desde el botón y OnInitializedAsync
+    private async Task ActualizarDatos()
+    {
+        await LoadData();
+    }
+
+    // rutina de carga (método al nivel de la clase, no anidado)
+    private async Task LoadData()
+    {
         try
         {
+            _isLoaded = false;
+
             // Cargar datos básicos
             Percentil75 = await dashboard.ObtenerPercentil75Async();
             Reduccion = await dashboard.ObtenerReduccionAsync();
             Pendientes = await dashboard.ObtenerPendientesAsync();
 
-            // Cargar datos para gráficos
-            var estadoDic = await dashboard.ObtenerProcedimientosPorTipoAsync();
-            var contactoDic = await dashboard.ObtenerPorcentajeContactoAsync();
+            var desde = dateRange.Start;
+            var hasta = dateRange.End;
 
-            // Actualizar gráfico de estados
-            if (estadoDic?.Any() == true)
+            // Cargar datos para gráficos
+            var procedimientos = await dashboard.ObtenerProcedimientosPorTipoAsync(desde, hasta);
+            var contactabilidad = await dashboard.ObtenerContactabilidadAsync(desde, hasta);
+            var evolucion = await dashboard.ObtenerEvolucionPercentilAsync(desde, hasta);
+            var causales = await dashboard.ObtenerCausalEgresoAsync(desde, hasta);
+
+            // imprimir en la consola del servidor (terminal)
+            Console.WriteLine($"procedimientos count={procedimientos?.Count ?? 0}");
+            Console.WriteLine($"contactabilidad count={contactabilidad?.Count ?? 0}");
+            Console.WriteLine($"evolucion count={evolucion?.Count ?? 0}");
+            Console.WriteLine($"causales count={causales?.Count ?? 0}");
+
+            // Forzar render del DOM para que los <canvas> existan
+            await InvokeAsync(StateHasChanged);
+            await Task.Delay(50);
+
+            // También loguear en la consola del navegador antes de dibujar
+            if (procedimientos?.Any() == true)
             {
-                var labels = estadoDic.Keys.ToArray();
-                var data = estadoDic.Values.Select(v => (double)v).ToArray();
-                var colors = GenerarColores(labels.Length);
-                await JS.InvokeVoidAsync("dashboardCharts.renderBar", "chartEstado", labels, data, colors);
+                var labels = procedimientos.Keys.ToArray();
+                var data = procedimientos.Values.Select(v => (double)v).ToArray();
+                await JS.InvokeVoidAsync("console.log", "invoke renderBar", labels, data);
+                await JS.InvokeVoidAsync("dashboardCharts.renderBar", "chartEstado", labels, data, GenerarColores(procedimientos.Count));
             }
 
-            // Actualizar gráfico de contactabilidad
-            if (contactoDic?.Any() == true)
+            if (contactabilidad?.Any() == true)
             {
-                var labels = contactoDic.Keys.ToArray();
-                var data = contactoDic.Values.ToArray();
-                var colors = GenerarColores(labels.Length);
-                await JS.InvokeVoidAsync("dashboardCharts.renderDonut", "chartContacto", labels, data, colors);
+                var labels = contactabilidad.Keys.ToArray();
+                var data = contactabilidad.Values.ToArray();
+                await JS.InvokeVoidAsync("console.log", "invoke renderDonut", labels, data);
+                await JS.InvokeVoidAsync("dashboardCharts.renderDonut", "chartContacto", labels, data, GenerarColores(contactabilidad.Count));
+            }
+
+            if (evolucion?.Any() == true)
+            {
+                var labels = evolucion.Select(e => e.Mes).ToArray();
+                var data = evolucion.Select(e => e.Valor).ToArray();
+                await JS.InvokeVoidAsync("console.log", "invoke renderLine", labels, data);
+                await JS.InvokeVoidAsync("dashboardCharts.renderLine", "chartEvolucion", labels, data, new { label = "Percentil 75" });
+            }
+
+            if (causales?.Any() == true)
+            {
+                var labels = causales.Keys.ToArray();
+                var data = causales.Values.Select(v => (double)v).ToArray();
+                await JS.InvokeVoidAsync("console.log", "invoke renderPie", labels, data);
+                await JS.InvokeVoidAsync("dashboardCharts.renderPie", "chartEgreso", labels, data, GenerarColores(causales.Count));
             }
 
             _isLoaded = true;
@@ -146,7 +207,9 @@
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Error cargando dashboard: {ex.Message}");
+            Console.WriteLine($"Error actualizando datos: {ex.Message}");
+            _isLoaded = true;
+            StateHasChanged();
         }
     }
 }
