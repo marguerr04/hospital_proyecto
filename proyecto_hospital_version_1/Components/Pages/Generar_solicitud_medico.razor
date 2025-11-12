@@ -9,7 +9,7 @@
 @using Microsoft.EntityFrameworkCore
 @using System.Linq
 @using Hospital.Api.Data.DTOs
-
+@using proyecto_hospital_version_1.Helpers
 @using ApiEntities = Hospital.Api.Data.Entities;
 
 
@@ -19,7 +19,7 @@
 @inject IConsentimientoInformadoService ConsentimientoService
 @inject IJSRuntime JsRuntime // Para posibles alertas o interacciones JS
 @inject HttpClient Http // para http
-
+@inject SweetAlertHelper SweetAlert
 
 <PageTitle>Nueva Solicitud Quirúrgica</PageTitle>
 
@@ -312,35 +312,24 @@
 
         // Se llama a ActualizarDatosPDF para que Blazor re-evalúe los parámetros del componente hijo.
         // Esto es crucial para que el componente ConsentimientoPDF vea los datos actualizados.
-        if (_consentimientoPdfRef != null)
+        if (_consentimientoPdfRef is null)
         {
-            // Forzar la re-asignación de los parámetros para asegurar que Blazor los actualice.
-            // Aunque se hace vía binding, a veces es útil forzar la referencia.
-            // (La línea original en tu código ya hacía esto: _consentimientoPdfRef.Paciente = _pacienteSeleccionado;)
-            // Aquí no necesitamos re-asignarlos manualmente porque ya están como Parameters.
-            // El `StateHasChanged()` de este componente padre, o la llamada al método hijo,
-            // debería provocar la actualización de los parámetros del hijo.
-        }
-        else
-        {
-            Console.Error.WriteLine("[Generar_Solicitud_Medico] ERROR: _consentimientoPdfRef es NULL. El componente ConsentimientoPDF no se ha renderizado o asignado correctamente.");
-            await JsRuntime.InvokeVoidAsync("alert", "Error interno: El componente de generación de PDF no está disponible. Contacte a soporte.");
+            await SweetAlert.Error("Error interno", "El componente de generación de PDF no está disponible. Contacte a soporte.");
             return;
         }
 
         if (PuedeGenerarPDF)
         {
-            Console.WriteLine("[Generar_Solicitud_Medico] Llamando a _consentimientoPdfRef.GenerarPdf()...");
             await _consentimientoPdfRef.GenerarPdf();
         }
         else
         {
-            Console.WriteLine("[Generar_Solicitud_Medico] No se cumplen las condiciones para generar el PDF.");
-            string mensaje = "No se puede generar el PDF. Asegúrese de:\n" +
-                             "1. Haber seleccionado un paciente.\n" +
-                             "2. Haber seleccionado un procedimiento principal.\n" +
-                             "3. Haber marcado la casilla de consentimiento.";
-            await JsRuntime.InvokeVoidAsync("alert", mensaje);
+            var faltantes = new List<string>();
+            if (_pacienteSeleccionado is null) faltantes.Add("• Seleccionar un paciente");
+            if (string.IsNullOrEmpty(_procedimientoSeleccionado)) faltantes.Add("• Seleccionar un procedimiento principal");
+            if (!_consentimientoAceptado) faltantes.Add("• Marcar la casilla de consentimiento");
+
+            await SweetAlert.ValidationError("No se puede generar el PDF", faltantes);
         }
     }
 
@@ -624,27 +613,27 @@
         // Validaciones del Paso 1
         if (_pacienteSeleccionado == null)
         {
-            await JsRuntime.InvokeVoidAsync("alert", "Debe seleccionar un paciente para continuar.");
+                await SweetAlert.Warning("Validación requerida", "Debe seleccionar un paciente para continuar.");
             return;
         }
         if (string.IsNullOrEmpty(_procedimientoSeleccionado))
         {
-            await JsRuntime.InvokeVoidAsync("alert", "Debe seleccionar un Procedimiento Principal.");
+                await SweetAlert.Warning("Procedimiento requerido", "Debe seleccionar un Procedimiento Principal.");
             return;
         }
         if (!_consentimientoAceptado)
         {
-            await JsRuntime.InvokeVoidAsync("alert", "Debe aceptar el consentimiento informado para continuar.");
+                await SweetAlert.Warning("Consentimiento requerido", "Debe aceptar el consentimiento informado para continuar.");
             return;
         }
         if (string.IsNullOrWhiteSpace(_lateralidadSeleccionada) || !_lateralidades.ContainsKey(_lateralidadSeleccionada))
         {
-            await JsRuntime.InvokeVoidAsync("alert", "Debe seleccionar una Lateralidad válida.");
+                await SweetAlert.Warning("Lateralidad inválida", "Debe seleccionar una Lateralidad válida.");
             return;
         }
         if (string.IsNullOrWhiteSpace(_extremidadSeleccionada) || !_extremidades.ContainsKey(_extremidadSeleccionada))
         {
-            await JsRuntime.InvokeVoidAsync("alert", "Debe seleccionar una Extremidad válida.");
+                await SweetAlert.Warning("Extremidad inválida", "Debe seleccionar una Extremidad válida.");
             return;
         }
 
@@ -721,18 +710,18 @@
         // Validaciones del Paso 2
         if (string.IsNullOrEmpty(_diagnosticoPrincipal))
         {
-            await JsRuntime.InvokeVoidAsync("alert", "Debe ingresar un diagnóstico principal en el Paso 2.");
+                await SweetAlert.Warning("Diagnóstico requerido", "Debe ingresar un diagnóstico principal en el Paso 2.");
             return;
         }
         // Puedes agregar más validaciones para Peso, Talla, etc. aquí si lo deseas antes de avanzar
         if (!_peso.HasValue || _peso <= 0)
         {
-            await JsRuntime.InvokeVoidAsync("alert", "Debe ingresar un Peso válido en el Paso 2.");
+                await SweetAlert.Warning("Peso inválido", "Debe ingresar un Peso válido en el Paso 2.");
             return;
         }
         if (!_talla.HasValue || _talla <= 0)
         {
-            await JsRuntime.InvokeVoidAsync("alert", "Debe ingresar una Talla válida en el Paso 2.");
+                await SweetAlert.Warning("Talla inválida", "Debe ingresar una Talla válida en el Paso 2.");
             return;
         }
     } // Fin del if (_pasoActual == 2)

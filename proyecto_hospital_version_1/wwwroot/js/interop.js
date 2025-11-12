@@ -50,14 +50,9 @@
     }
 };
 
-
 window.descargarArchivo = function (fileName, contentType, base64Content) {
     console.log(`[JS][descargarArchivo] Intentando descargar archivo: ${fileName}, Tipo: ${contentType}`);
     try {
-        // Tu código anterior usaba "data:..." URL directamente, lo cual tiene límites de tamaño.
-        // La implementación con Blob y URL.createObjectURL es más robusta para PDFs más grandes.
-        // Usaremos la versión con Blob, que es la que te di en el código anterior.
-
         const byteCharacters = atob(base64Content);
         const byteNumbers = new Array(byteCharacters.length);
         for (let i = 0; i < byteCharacters.length; i++) {
@@ -71,14 +66,75 @@ window.descargarArchivo = function (fileName, contentType, base64Content) {
         const a = document.createElement('a');
         a.href = url;
         a.download = fileName;
-        document.body.appendChild(a); // Es bueno añadirlo al DOM para algunos navegadores
+        document.body.appendChild(a);
         a.click();
-        document.body.removeChild(a); // Limpiar
-        URL.revokeObjectURL(url); // Liberar recursos
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
         console.log(`[JS][descargarArchivo] Descarga de archivo '${fileName}' iniciada con éxito.`);
     } catch (e) {
         console.error(`[JS][descargarArchivo] ERROR al descargar el archivo '${fileName}':`, e);
-        // Muestra una alerta con el error completo en el navegador
-        alert(`Error al descargar el archivo: ${e.message}\nRevise la consola del navegador para más detalles.`);
+        // ✅ CAMBIO: Usar SweetAlert en lugar de alert nativo
+        Swal.fire({
+            icon: 'error',
+            title: 'Error al descargar',
+            text: `Error al descargar el archivo: ${e.message}`,
+            confirmButtonColor: '#d33'
+        });
+    }
+};
+
+// ========== SWEET ALERT FUNCTIONS ==========
+window.sweetAlert = {
+    success: function (title, message) {
+        return Swal.fire({
+            icon: 'success',
+            title: title,
+            text: message,
+            timer: 3000,
+            showConfirmButton: false
+        });
+    },
+
+    error: function (title, message) {
+        return Swal.fire({
+            icon: 'error',
+            title: title,
+            text: message,
+            confirmButtonColor: '#d33'
+        });
+    },
+
+    warning: function (title, message) {
+        return Swal.fire({
+            icon: 'warning',
+            title: title,
+            text: message,
+            confirmButtonColor: '#f39c12'
+        });
+    },
+
+    info: function (title, message) {
+        return Swal.fire({
+            icon: 'info',
+            title: title,
+            text: message,
+            confirmButtonColor: '#3498db'
+        });
+    },
+
+    validationError: function (title, errors) {
+        let htmlContent = '<div class="text-start"><ul class="mb-0">';
+        errors.forEach(error => {
+            htmlContent += `<li>${error}</li>`;
+        });
+        htmlContent += '</ul></div>';
+
+        return Swal.fire({
+            icon: 'error',
+            title: title,
+            html: htmlContent,
+            confirmButtonColor: '#d33',
+            width: '600px'
+        });
     }
 };

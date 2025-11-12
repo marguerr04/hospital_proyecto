@@ -39,126 +39,108 @@
         </div>
     </div>
 
-    <!-- 2) TABLA SIMPLIFICADA -->
-    <div class="card shadow-sm border-0 mt-4">
-        <div class="card-header bg-light d-flex align-items-center justify-content-between">
-            <div class="d-flex align-items-center">
-                <MudIcon Icon="@Icons.Material.Filled.List" Class="me-2 text-primary" />
-                <h5 class="mb-0">Solicitudes del Médico</h5>
-            </div>
-            <small class="text-muted">Mostrando @Resumen.Count registros</small>
-        </div>
-        <div class="card-body p-0">
-            @if (Resumen.Count == 0)
-            {
-                <div class="p-3 text-muted">No hay solicitudes para mostrar.</div>
-            }
-            else
-            {
-                <div class="table-responsive">
-                    <table class="table table-hover align-middle mb-0">
-                        <thead class="thead-hospital-light">
-                            <tr>
-                                <th>Paciente</th>
-                                <th>Dx / Proc.</th>
-                                <th>Estado</th>
-                                <th>Fecha prog.</th>
-                                <th class="text-center">Días</th>
-                                <th style="min-width:180px">SLA</th>
-                                <th>Contacto</th>
-                                <th class="text-end">Acciones</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach (var s in Resumen)
-                            {
-                                var pct = GetSlaPct(s);
-                                var barra = GetSlaCss(pct, s.DiasRestantes);
-
-                                <tr>
-                                    <td>
-                                        <div class="fw-semibold">@s.NombrePaciente</div>
-                                        <small class="text-muted">RUT @s.Rut</small>
-                                    </td>
-                                    <td>
-                                        <div>@s.Procedimiento</div>
-                                        <small class="text-muted">@s.Diagnostico</small>
-                                    </td>
-                                    <td>
-                                        @if (s.Estado.Contains("Priorizada"))
-                                        {
-                                            <span class="badge rounded-pill bg-success">Priorizada</span>
-                                        }
-                                        else
-                                        {
-                                            <span class="badge rounded-pill bg-warning text-dark">Pendiente</span>
-                                        }
-                                    </td>
-                                    <td>
-                                        @if (s.FechaProgramada.HasValue)
-                                        {
-                                            <span>@s.FechaProgramada.Value.ToString("dd/MM/yyyy")</span>
-                                        }
-                                        else
-                                        {
-                                            <span class="text-muted">—</span>
-                                        }
-                                    </td>
-                                    <td class="text-center">
-                                        @if (s.DiasRestantes.HasValue)
-                                        {
-                                            <span class="fw-semibold">@s.DiasRestantes</span>
-                                        }
-                                        else
-                                        {
-                                            <span class="text-muted">—</span>
-                                        }
-                                    </td>
-                                    <td style="min-width:180px">
-                                        @if (s.DiasRestantes.HasValue)
-                                        {
-                                            <div class="progress progress-sla">
-                                                <div class="progress-bar @barra"
-                                                     style="width:@pct%">
-                                                    @pct%
-                                                </div>
-                                            </div>
-                                        }
-                                        else
-                                        {
-                                            <span class="text-muted">Sin programación</span>
-                                        }
-                                    </td>
-                                    <td>
-                                        @switch (s.Contactabilidad)
-                                        {
-                                            case "Contactado":
-                                                <span class="badge bg-info"><i class="bi bi-telephone-outbound me-1"></i> Contactado</span>
-                                                break;
-                                            case "Sin Respuesta":
-                                                <span class="badge bg-secondary"><i class="bi bi-telephone-x me-1"></i> Sin respuesta</span>
-                                                break;
-                                            default:
-                                                <span class="badge bg-light text-dark"><i class="bi bi-telephone me-1"></i> Por contactar</span>
-                                                break;
-                                        }
-                                    </td>
-                                    <td class="text-end">
-                                        <a class="btn btn-sm btn-outline-primary" href="/priorizar-solicitudes/@s.Id">
-                                            Ver / Editar
-                                        </a>
-                                    </td>
-                                </tr>
-                            }
-                        </tbody>
-                    </table>
+    <!-- 2) BLOQUES PARALELOS: Priorizadas (izquierda) / Programadas (derecha) -->
+    <div class="row g-4 mt-1">
+        <!-- IZQ: Solicitudes Priorizadas -->
+        <div class="col-12 col-lg-7">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-light d-flex align-items-center justify-content-between">
+                    <div class="d-flex align-items-center">
+                        <MudIcon Icon="@Icons.Material.Filled.Checklist" Class="me-2 text-success" />
+                        <h5 class="mb-0">Solicitudes Priorizadas</h5>
+                    </div>
+                    <span class="badge bg-success">Total: @Priorizadas.Count</span>
                 </div>
-            }
+                <div class="card-body p-0">
+                    @if (Priorizadas.Count == 0)
+                    {
+                        <div class="p-3 text-muted">No hay solicitudes priorizadas.</div>
+                    }
+                    else
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle mb-0">
+                                <thead class="thead-hospital-light">
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Paciente</th>
+                                        <th>Dx / Proc.</th>
+                                        <th class="text-end">Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var s in Priorizadas)
+                                    {
+                                        <tr>
+                                            <td class="fw-semibold">@s.Id</td>
+                                            <td>
+                                                <div class="fw-semibold">@s.NombrePaciente</div>
+                                                <small class="text-muted">RUT @s.Rut</small>
+                                            </td>
+                                            <td>
+                                                <div>@s.Procedimiento</div>
+                                                <small class="text-muted">@s.Diagnostico</small>
+                                            </td>
+                                            <td class="text-end">
+                                                <a class="btn btn-sm btn-outline-primary" href="/priorizar-solicitudes/@s.Id">
+                                                    Ver / Editar
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <!-- DER: Solicitudes Programadas (con barra de progreso UN COLOR) -->
+        <div class="col-12 col-lg-5">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-light d-flex align-items-center justify-content-between">
+                    <div class="d-flex align-items-center">
+                        <MudIcon Icon="@Icons.Material.Filled.Event" Class="me-2 text-primary" />
+                        <h5 class="mb-0">Solicitudes Programadas</h5>
+                    </div>
+                    <span class="badge bg-primary">Total: @Programadas.Count</span>
+                </div>
+
+                <div class="list-group list-group-flush">
+                    @if (Programadas.Count == 0)
+                    {
+                        <div class="p-3 text-muted">Sin fechas programadas.</div>
+                    }
+                    else
+                    {
+                        @foreach (var p in Programadas)
+                        {
+                            var pct = GetSlaPctProgramada(p);      // 0-100
+                            var dias = p.DiasRestantes ?? 0;
+
+                            <div class="list-group-item">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <div>
+                                        <div class="fw-semibold">#@p.Id — @p.NombrePaciente</div>
+                                        <small class="text-muted d-block">Fecha: @p.FechaProgramada?.ToString("dd/MM/yyyy")</small>
+                                    </div>
+                                    <span class="badge bg-secondary">Días: @dias</span>
+                                </div>
+
+                                <!-- Barra de progreso: un solo color -->
+                                <div class="progress progress-sla mt-2" title="Progreso hacia la cirugía">
+                                    <div class="progress-bar bg-primary" style="width:@pct%">
+                                        @pct%
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    }
+                </div>
+            </div>
         </div>
     </div>
-
-    <!-- 3) Columna derecha opcional (deja tu bloque actual si lo prefieres) -->
-    @* Puedes mantener tu columna de “Próximas Fechas Programadas” como estaba *@
 
 </div>
 
@@ -208,12 +190,12 @@
     }
 
     .progress-sla {
-        height: 18px;
+        height: 14px;
         background: #eef2f6;
     }
 
         .progress-sla .progress-bar {
-            font-size: .75rem;
+            font-size: .70rem;
             font-weight: 700;
         }
 
@@ -230,3 +212,115 @@
         background: #dc3545;
     }
 </style>
+
+@code {
+    // ===== ViewModel mínimo para la tabla =====
+    public class SolicitudResumenVM
+    {
+        public int Id { get; set; }
+        public string NombrePaciente { get; set; } = "";
+        public string Rut { get; set; } = "";
+        public string Diagnostico { get; set; } = "";
+        public string Procedimiento { get; set; } = "";
+        public string Estado { get; set; } = "Pendiente";
+        public DateTime FechaCreacion { get; set; } = DateTime.Now.AddDays(-10);
+
+        // Dummies:
+        public DateTime? FechaProgramada { get; set; }   // fecha target
+        public int? DiasRestantes { get; set; }          // FechaProgramada - Hoy
+        public string Contactabilidad { get; set; } = "Por Contactar"; // Contactado | Sin Respuesta | Por Contactar
+    }
+
+    // ===== Datos de demo (luego lo reemplazas por tu consulta) =====
+    private List<SolicitudResumenVM> Resumen = new();
+
+    // Particiones para las 2 vistas
+    private List<SolicitudResumenVM> Priorizadas = new();
+    private List<SolicitudResumenVM> Programadas = new();
+
+    // KPIs
+    private int KpiTotal => Resumen.Count;
+    private int KpiPendientes => Resumen.Count(s => !s.Estado.Contains("Priorizada"));
+    private int KpiPriorizadas => Resumen.Count(s => s.Estado.Contains("Priorizada"));
+
+    protected override void OnInitialized()
+    {
+        // Simulación rápida: toma 8 registros de ejemplo (puedes mapear desde tu lista real)
+        Resumen = new List<SolicitudResumenVM>{
+            new(){ Id=101, NombrePaciente="María González Pérez", Rut="12.345.678-9", Diagnostico="Fractura de cadera", Procedimiento="Osteosíntesis", Estado="Priorizada", FechaCreacion=DateTime.Now.AddDays(-8) },
+            new(){ Id=102, NombrePaciente="Jorge Contreras", Rut="8.765.432-1", Diagnostico="Urgencia diferida", Procedimiento="Evaluación CI", Estado="Pendiente", FechaCreacion=DateTime.Now.AddDays(-5) },
+            new(){ Id=103, NombrePaciente="Juan Soto", Rut="5.678.601-2", Diagnostico="Ambulatorio / CRS", Procedimiento="Artroscopía", Estado="Pendiente", FechaCreacion=DateTime.Now.AddDays(-12) },
+            new(){ Id=104, NombrePaciente="Ana Torres", Rut="3.456.789-0", Diagnostico="Rechazo de mano", Procedimiento="Revisión", Estado="Pendiente", FechaCreacion=DateTime.Now.AddDays(-15) },
+            new(){ Id=105, NombrePaciente="Carlos Ramírez", Rut="98.765.432-1", Diagnostico="Menisco rodilla izq.", Procedimiento="Artroscopía", Estado="Priorizada (Manual)", FechaCreacion=DateTime.Now.AddDays(-7) },
+            new(){ Id=106, NombrePaciente="Martín Ramos", Rut="17.654.321-0", Diagnostico="Artroscopía rodilla", Procedimiento="Artroscopía", Estado="Pendiente", FechaCreacion=DateTime.Now.AddDays(-2) },
+            new(){ Id=107, NombrePaciente="Ana María P.", Rut="9.111.222-3", Diagnostico="Hernia", Procedimiento="Hernioplastía", Estado="Pendiente", FechaCreacion=DateTime.Now.AddDays(-20) },
+            new(){ Id=108, NombrePaciente="Pedro Ruiz", Rut="7.555.111-9", Diagnostico="Cataratas", Procedimiento="Facoemulsificación", Estado="Pendiente", FechaCreacion=DateTime.Now.AddDays(-30) },
+        };
+
+        // Asignar fechas dummy y contactabilidad
+        SeedFechasYContacto();
+
+        // Particionar los datos
+        Priorizadas = Resumen.Where(s => s.Estado.Contains("Priorizada")).ToList();
+        Programadas = Resumen.Where(s => s.FechaProgramada.HasValue).OrderBy(s => s.FechaProgramada).ToList();
+    }
+
+    private void SeedFechasYContacto()
+    {
+        // Regla simple: programo algunos a 7, 14, 30 días desde hoy
+        var hoy = DateTime.Today;
+        var turnos = new[] { 7, 14, 30, 45, 60 };
+        var contactos = new[] { "Contactado", "Sin Respuesta", "Por Contactar" };
+        int i = 0;
+
+        foreach (var s in Resumen)
+        {
+            // Sólo algunos tienen fecha
+            if (i % 2 == 0)
+            {
+                var plus = turnos[i % turnos.Length];
+                s.FechaProgramada = hoy.AddDays(plus);
+                s.DiasRestantes = (int)(s.FechaProgramada.Value - hoy).TotalDays;
+            }
+            else
+            {
+                s.FechaProgramada = null;
+                s.DiasRestantes = null;
+            }
+
+            s.Contactabilidad = contactos[i % contactos.Length];
+            i++;
+        }
+    }
+
+    // ===== SLA helpers =====
+    // Define tu "ventana" objetivo para SLA (p.ej., 60 días)
+    private const int SLA_DIAS = 60;
+
+    private int GetSlaPct(SolicitudResumenVM s)
+    {
+        if (!s.DiasRestantes.HasValue) return 0;
+        var restantes = Math.Clamp(s.DiasRestantes.Value, 0, SLA_DIAS);
+        // porcentaje "consumido" (entre 0 y 100, redondeado)
+        var pct = (int)Math.Round((double)(SLA_DIAS - restantes) / SLA_DIAS * 100);
+        return Math.Clamp(pct, 0, 100);
+    }
+
+    private string GetSlaCss(int pct, int? diasRestantes)
+    {
+        // Verde si quedan >30 días, Amarillo 10–30, Rojo <10
+        if (!diasRestantes.HasValue) return "bg-secondary";
+        if (diasRestantes.Value > 30) return "sla-ok";
+        if (diasRestantes.Value > 10) return "sla-warn";
+        return "sla-bad";
+    }
+
+    // === NUEVO: Progreso uniforme para programadas ===
+    private int GetSlaPctProgramada(SolicitudResumenVM s)
+    {
+        if (!s.DiasRestantes.HasValue) return 0;
+        var restantes = Math.Clamp(s.DiasRestantes.Value, 0, SLA_DIAS);
+        var pct = (int)Math.Round((double)(SLA_DIAS - restantes) / SLA_DIAS * 100);
+        return Math.Clamp(pct, 0, 100);
+    }
+}

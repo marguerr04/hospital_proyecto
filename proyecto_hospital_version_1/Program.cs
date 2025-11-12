@@ -3,6 +3,7 @@ using proyecto_hospital_version_1.Components;
 using proyecto_hospital_version_1.Data;
 using proyecto_hospital_version_1.Models;
 using proyecto_hospital_version_1.Services;
+using proyecto_hospital_version_1.Helpers;
 using MudBlazor.Services;
 using proyecto_hospital_version_1.Data._Legacy; // NUEVO: Agregado para MudBlazor (Dashboard)
 using MudBlazor.Services;
@@ -26,6 +27,7 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 builder.Services.AddDbContext<HospitalDbContext>(options =>a
     options.UseSqlServer(builder.Configuration.GetConnectionString("HospitalV4")));
 */
+
 builder.Services.AddMudServices(config =>
 {
     config.SnackbarConfiguration.PositionClass = MudBlazor.Defaults.Classes.Position.BottomRight;
@@ -63,6 +65,8 @@ builder.Services.AddScoped<IConsentimientoInformadoService, ConsentimientoInform
 
 
 
+// sweet alerts
+builder.Services.AddScoped<SweetAlertHelper>();
 
 
 
