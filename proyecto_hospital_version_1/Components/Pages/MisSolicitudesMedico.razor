@@ -1,126 +1,232 @@
 ﻿@page "/mis-solicitudes-medico"
 @layout Components.Layout.MainLayoutMedico
+@using MudBlazor
 
 <PageTitle>Mis Solicitudes - Médico</PageTitle>
 
 <div class="container-fluid mt-4">
+
+    <!-- Título -->
     <div class="row">
         <div class="col-12">
-            <h2 class="fw-bold mb-4">Mis Solicitudes</h2>
+            <h2 class="fw-bold mb-1">Mis Solicitudes</h2>
+            <p class="text-muted mb-4">Resumen rápido del estado de tus solicitudes y próximas fechas.</p>
         </div>
     </div>
 
-    <div class="row">
-        <!-- Solicitudes recientes -->
-        <div class="col-lg-7">
-            <h5 class="mb-3 text-muted">Solicitudes Recientes</h5>
-
-            <!-- Solicitud -->
-            <div class="card mb-3 shadow-sm border-0 solicitud-card">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-start">
-                        <div>
-                            <h6 class="fw-bold mb-0">María González Pérez</h6>
-                            <small class="text-muted">RUT 12.345.678-9</small>
-                        </div>
-                        <span class="badge bg-success">Prioritaria</span>
-                    </div>
-                    <div class="mt-2">
-                        <span class="badge bg-danger me-2">Paciente GES</span>
-                        <span>Fractura de cadera</span>
-                        <div class="text-muted small mt-1">Hace 8 días</div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="card mb-3 shadow-sm border-0 solicitud-card">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-start">
-                        <div>
-                            <h6 class="fw-bold mb-0">Jorge Contreras</h6>
-                            <small class="text-muted">RUT 8.765.432-1</small>
-                        </div>
-                        <span class="badge bg-secondary">No GES</span>
-                    </div>
-                    <div class="mt-2">
-                        <span>Urgencia diferida</span>
-                        <div class="text-muted small mt-1">Hace 5 días</div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="card mb-3 shadow-sm border-0 solicitud-card">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-start">
-                        <div>
-                            <h6 class="fw-bold mb-0">Juan Soto</h6>
-                            <small class="text-muted">RUT 5.678.601-2</small>
-                        </div>
-                        <span class="badge bg-warning text-dark">Intermedia</span>
-                    </div>
-                    <div class="mt-2">
-                        <span>Ambulatorio / CRS</span>
-                        <div class="text-muted small mt-1">Hace 12 días</div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="card mb-3 shadow-sm border-0 solicitud-card">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-start">
-                        <div>
-                            <h6 class="fw-bold mb-0">Ana Torres</h6>
-                            <small class="text-muted">RUT 3.456.789-0</small>
-                        </div>
-                        <span class="badge bg-primary text-white">Pendiente</span>
-                    </div>
-                    <div class="mt-2">
-                        <span>Rechazo de mano</span>
-                        <div class="text-muted small mt-1">Hace 15 días</div>
-                    </div>
-                </div>
+    <!-- 1) KPI CARDS -->
+    <div class="row g-3 kpi-row">
+        <div class="col-12 col-md-4">
+            <div class="kpi-card">
+                <div class="kpi-label">Total del Médico</div>
+                <div class="kpi-value">@KpiTotal</div>
+                <div class="kpi-foot"><i class="bi bi-person-badge"></i> Dr. Gabriel Picand</div>
             </div>
         </div>
-
-        <!-- Columna derecha: Próximas fechas programadas, se puede agregar calendario para comodidad y visualización-->
-        <div class="col-lg-5">
-            <h5 class="mb-3 text-muted">Próximas Fechas Programadas</h5>
-
-            <div class="card mb-3 shadow-sm border-0">
-                <div class="card-body">
-                    <h6 class="fw-bold mb-1">28 mayo de 2024</h6>
-                    <p class="mb-0">María González Pérez</p>
-                    <small class="text-muted d-block">Paciente cadera</small>
-                    <span class="badge bg-success mt-2">Paciente GES</span>
-                    <div class="text-muted small mt-2">
-                        <i class="bi bi-clock me-1"></i> 10:00 · Pabellón 3
-                    </div>
-                </div>
+        <div class="col-6 col-md-4">
+            <div class="kpi-card kpi-warn">
+                <div class="kpi-label">Pendientes</div>
+                <div class="kpi-value">@KpiPendientes</div>
+                <div class="kpi-foot"><i class="bi bi-hourglass-split"></i> En espera de priorización</div>
             </div>
-
-            <div class="card mb-3 shadow-sm border-0">
-                <div class="card-body">
-                    <h6 class="fw-bold mb-1">5 junio de 2024</h6>
-                    <p class="mb-0">Martín Ramos</p>
-                    <small class="text-muted d-block">Artroscopía de rodilla</small>
-                    <span class="badge bg-secondary mt-2">No GES</span>
-                    <div class="text-muted small mt-2">
-                        <i class="bi bi-clock me-1"></i> 14:00 · Pabellón 1
-                    </div>
-                </div>
+        </div>
+        <div class="col-6 col-md-4">
+            <div class="kpi-card kpi-ok">
+                <div class="kpi-label">Priorizadas</div>
+                <div class="kpi-value">@KpiPriorizadas</div>
+                <div class="kpi-foot"><i class="bi bi-check2-circle"></i> Últimas 2 semanas</div>
             </div>
         </div>
     </div>
+
+    <!-- 2) TABLA SIMPLIFICADA -->
+    <div class="card shadow-sm border-0 mt-4">
+        <div class="card-header bg-light d-flex align-items-center justify-content-between">
+            <div class="d-flex align-items-center">
+                <MudIcon Icon="@Icons.Material.Filled.List" Class="me-2 text-primary" />
+                <h5 class="mb-0">Solicitudes del Médico</h5>
+            </div>
+            <small class="text-muted">Mostrando @Resumen.Count registros</small>
+        </div>
+        <div class="card-body p-0">
+            @if (Resumen.Count == 0)
+            {
+                <div class="p-3 text-muted">No hay solicitudes para mostrar.</div>
+            }
+            else
+            {
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="thead-hospital-light">
+                            <tr>
+                                <th>Paciente</th>
+                                <th>Dx / Proc.</th>
+                                <th>Estado</th>
+                                <th>Fecha prog.</th>
+                                <th class="text-center">Días</th>
+                                <th style="min-width:180px">SLA</th>
+                                <th>Contacto</th>
+                                <th class="text-end">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var s in Resumen)
+                            {
+                                var pct = GetSlaPct(s);
+                                var barra = GetSlaCss(pct, s.DiasRestantes);
+
+                                <tr>
+                                    <td>
+                                        <div class="fw-semibold">@s.NombrePaciente</div>
+                                        <small class="text-muted">RUT @s.Rut</small>
+                                    </td>
+                                    <td>
+                                        <div>@s.Procedimiento</div>
+                                        <small class="text-muted">@s.Diagnostico</small>
+                                    </td>
+                                    <td>
+                                        @if (s.Estado.Contains("Priorizada"))
+                                        {
+                                            <span class="badge rounded-pill bg-success">Priorizada</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge rounded-pill bg-warning text-dark">Pendiente</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        @if (s.FechaProgramada.HasValue)
+                                        {
+                                            <span>@s.FechaProgramada.Value.ToString("dd/MM/yyyy")</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">—</span>
+                                        }
+                                    </td>
+                                    <td class="text-center">
+                                        @if (s.DiasRestantes.HasValue)
+                                        {
+                                            <span class="fw-semibold">@s.DiasRestantes</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">—</span>
+                                        }
+                                    </td>
+                                    <td style="min-width:180px">
+                                        @if (s.DiasRestantes.HasValue)
+                                        {
+                                            <div class="progress progress-sla">
+                                                <div class="progress-bar @barra"
+                                                     style="width:@pct%">
+                                                    @pct%
+                                                </div>
+                                            </div>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">Sin programación</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        @switch (s.Contactabilidad)
+                                        {
+                                            case "Contactado":
+                                                <span class="badge bg-info"><i class="bi bi-telephone-outbound me-1"></i> Contactado</span>
+                                                break;
+                                            case "Sin Respuesta":
+                                                <span class="badge bg-secondary"><i class="bi bi-telephone-x me-1"></i> Sin respuesta</span>
+                                                break;
+                                            default:
+                                                <span class="badge bg-light text-dark"><i class="bi bi-telephone me-1"></i> Por contactar</span>
+                                                break;
+                                        }
+                                    </td>
+                                    <td class="text-end">
+                                        <a class="btn btn-sm btn-outline-primary" href="/priorizar-solicitudes/@s.Id">
+                                            Ver / Editar
+                                        </a>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>
+    </div>
+
+    <!-- 3) Columna derecha opcional (deja tu bloque actual si lo prefieres) -->
+    @* Puedes mantener tu columna de “Próximas Fechas Programadas” como estaba *@
+
 </div>
 
 <style>
-    .solicitud-card:hover {
-        transform: translateY(-2px);
-        transition: all 0.2s ease-in-out;
-        background-color: #f8f9fa;
+    .kpi-row .kpi-card {
+        background: #fff;
+        border: 1px solid #e9ecef;
+        border-radius: .75rem;
+        padding: 1rem 1.25rem;
+        box-shadow: 0 6px 18px rgba(0,0,0,.06)
+    }
+
+    .kpi-label {
+        font-size: .9rem;
+        color: #6c757d;
+    }
+
+    .kpi-value {
+        font-size: 1.8rem;
+        font-weight: 800;
+        line-height: 1;
+        margin: .25rem 0 .35rem;
+    }
+
+    .kpi-foot {
+        font-size: .8rem;
+        color: #6c757d;
+    }
+
+    .kpi-warn .kpi-value {
+        color: #d39e00;
+    }
+
+    .kpi-ok .kpi-value {
+        color: #198754;
+    }
+
+    .thead-hospital-light {
+        background-color: #e9f2ff;
+        border-bottom: 2px solid #0d6efd;
+        color: #052c65;
+        font-weight: 600;
+    }
+
+    .table-hover tbody tr:hover {
+        background: #f8fbff;
+    }
+
+    .progress-sla {
+        height: 18px;
+        background: #eef2f6;
+    }
+
+        .progress-sla .progress-bar {
+            font-size: .75rem;
+            font-weight: 700;
+        }
+
+    .sla-ok {
+        background: #198754;
+    }
+
+    .sla-warn {
+        background: #ffc107;
+        color: #212529;
+    }
+
+    .sla-bad {
+        background: #dc3545;
     }
 </style>
-
-@code {
-    // Aquí luego puedes agregar lógica dinámica con listas o consultas al backend
-}

@@ -1,0 +1,78 @@
+﻿.top-navbar {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+    padding: 0.5rem 0;
+    /* margin-left: 260px; */
+    /* width: calc(100% - 260px); */
+    width: 100%; /* ← Agregar esto */
+}
+
+.navbar-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+/* IZQUIERDA - Logo */
+.navbar-left {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.navbar-logo {
+    height: 40px; /* Redimensionado de 754px */
+    width: auto;
+}
+
+.hospital-short {
+    font-weight: 700;
+    color: #2c3e50;
+    font-size: 1.2rem;
+}
+
+/* CENTRO - Título */
+.navbar-center {
+    text-align: center;
+}
+
+.main-title {
+    font-weight: 600;
+    color: #2c3e50;
+    font-size: 1.1rem;
+}
+
+.subtitle {
+    color: var(--color-primario, #005A87);
+    font-size: 0.9rem;
+}
+
+/* DERECHA - Reloj */
+.navbar-right {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.clock-icon {
+    color: var(--color-primario, #005A87) !important;
+}
+
+.current-time {
+    font-family: 'Courier New', monospace;
+    font-weight: 600;
+    color: #2c3e50;
+    font-size: 1rem;
+}
+
+/* Responsive */
+@media (max-width: 767.98px) {
+    .top-navbar {
+        margin-left: 0 !important;
+        width: 100% !important;
+    }
+}

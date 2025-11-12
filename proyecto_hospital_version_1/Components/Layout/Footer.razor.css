@@ -1,0 +1,119 @@
+﻿.app-footer {
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    background: #2c3e50;
+    color: white;
+    font-size: 0.80rem;
+    /* ELIMINAR ESTAS DOS LÍNEAS: */
+    /* margin-left: 260px; */
+    /* width: calc(100% - 260px); */
+    width: 100%; /* ← Agregar esto */
+}
+
+.footer-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 1rem 1.5rem;
+}
+
+.footer-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 2rem;
+    margin-bottom: 1rem;
+}
+
+.footer-section {
+    flex: 1;
+    min-width: 200px;
+}
+
+.footer-title {
+    font-weight: 600;
+    color: #8ecaff;
+    margin-bottom: 0.5rem;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.footer-content div {
+    margin-bottom: 0.3rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.footer-link {
+    text-decoration: none;
+    color: #8ecaff;
+    transition: color 0.2s;
+}
+
+    .footer-link:hover {
+        text-decoration: underline;
+        color: white;
+    }
+
+.footer-bottom {
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    padding-top: 0.8rem;
+    margin-bottom: 0;
+    align-items: center;
+}
+
+.footer-copyright {
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.footer-links {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.sep {
+    opacity: 0.5;
+    color: rgba(255, 255, 255, 0.6);
+}
+
+/* Íconos */
+.app-footer .bi {
+    font-size: 0.9rem;
+    width: 16px;
+    text-align: center;
+}
+
+/* EN MÓVIL */
+@media (max-width: 767.98px) {
+    .app-footer {
+        margin-left: 0 !important;
+        width: 100% !important;
+    }
+
+    .footer-row {
+        flex-direction: column;
+        gap: 1.5rem;
+    }
+
+    .footer-bottom {
+        flex-direction: column;
+        gap: 0.8rem;
+        text-align: center;
+    }
+
+    .footer-container {
+        padding: 1rem;
+    }
+}
+
+/* Para tablets */
+@media (max-width: 1024px) {
+    .footer-row {
+        flex-wrap: wrap;
+    }
+
+    .footer-section {
+        min-width: 180px;
+        flex: 1 1 calc(50% - 1rem);
+    }
+}

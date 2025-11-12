@@ -1,0 +1,49 @@
+﻿@using MudBlazor
+
+
+<nav class="top-navbar">
+    <div class="navbar-container">
+        <!-- IZQUIERDA: Logo -->
+        <div class="navbar-left">
+            <img src="/img/logo_login.png" alt="Hospital Padre Hurtado" class="navbar-logo" />
+            <span class="hospital-short">HPH</span>
+        </div>
+        
+        <!-- CENTRO: Título -->
+        <div class="navbar-center">
+            <div class="main-title">Análisis y gestión LEQ</div>
+            <div class="subtitle">- Hospital Padre Hurtado</div>
+        </div>
+        
+        <!-- DERECHA: Reloj -->
+        <div class="navbar-right">
+            <MudIcon Icon="@Icons.Material.Filled.AccessTime" Class="clock-icon" />
+            <span class="current-time">@currentTime</span>
+        </div>
+    </div>
+</nav>
+
+
+
+
+
+@code {
+    private string currentTime = "Cargando...";
+    private Timer timer;
+
+    protected override void OnInitialized()
+    {
+        timer = new Timer(UpdateTime, null, 0, 1000);
+    }
+
+    private void UpdateTime(object state)
+    {
+        currentTime = DateTime.Now.ToString("HH:mm:ss");
+        InvokeAsync(StateHasChanged);
+    }
+
+    public void Dispose()
+    {
+        timer?.Dispose();
+    }
+}
