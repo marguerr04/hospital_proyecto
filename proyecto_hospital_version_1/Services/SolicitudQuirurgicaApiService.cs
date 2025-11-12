@@ -1,11 +1,13 @@
 ﻿using System.Net.Http.Json;
-using proyecto_hospital_version_1.Data._Legacy;  // para usar tu modelo existente
+using Hospital.Api.Data.DTOs;  // ✅ Para usar el DTO correcto
+using proyecto_hospital_version_1.Data._Legacy;
 
 namespace proyecto_hospital_version_1.Services
 {
     public interface ISolicitudQuirurgicaApiService
     {
-        Task<bool> CrearSolicitudAsync(SolicitudQuirurgica solicitud);
+        // ✅ CAMBIADO: Ahora acepta SolicitudCrearDto
+        Task<bool> CrearSolicitudAsync(SolicitudCrearDto solicitudDto);
     }
 
     public class SolicitudQuirurgicaApiService : ISolicitudQuirurgicaApiService
@@ -17,28 +19,35 @@ namespace proyecto_hospital_version_1.Services
             _http = http;
         }
 
-        public async Task<bool> CrearSolicitudAsync(SolicitudQuirurgica solicitud)
+        public async Task<bool> CrearSolicitudAsync(SolicitudCrearDto solicitudDto)
         {
             try
             {
-                // Enviamos el mismo modelo al endpoint de la API
-                var response = await _http.PostAsJsonAsync("api/solicitud/crear", solicitud);
+                Console.WriteLine($"[SolicitudService] Enviando solicitud con ConsentimientoId: {solicitudDto.ConsentimientoId}");
+                Console.WriteLine($"[SolicitudService] Diagnóstico: {solicitudDto.DiagnosticoPrincipal}");
+                Console.WriteLine($"[SolicitudService] EspecialidadDestino: {solicitudDto.EspecialidadDestino}");
+
+                // ✅ Endpoint CORRECTO (respeta mayúsculas/minúsculas)
+                var response = await _http.PostAsJsonAsync("api/Solicitud/crear", solicitudDto);
+
+                Console.WriteLine($"[SolicitudService] Respuesta HTTP: {response.StatusCode}");
 
                 if (response.IsSuccessStatusCode)
                 {
-                    Console.WriteLine("Solicitud enviada correctamente a la API.");
+                    Console.WriteLine("✅ Solicitud enviada correctamente a la API.");
                     return true;
                 }
                 else
                 {
-                    var msg = await response.Content.ReadAsStringAsync();
-                    Console.WriteLine($" Error al crear solicitud: {msg}");
+                    var errorContent = await response.Content.ReadAsStringAsync();
+                    Console.WriteLine($"❌ Error HTTP {response.StatusCode}: {errorContent}");
                     return false;
                 }
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"⚠️ Error al conectar con la API: {ex.Message}");
+                Console.WriteLine($"💥 Error al conectar con la API: {ex.Message}");
+                Console.WriteLine($"💥 StackTrace: {ex.StackTrace}");
                 return false;
             }
         }

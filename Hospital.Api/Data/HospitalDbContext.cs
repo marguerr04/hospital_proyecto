@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Hospital.Api.Data.Entities;
-using proyecto_hospital_version_1.Data.Entities;
 
 
 namespace Hospital.Api.Data
@@ -87,11 +86,13 @@ namespace Hospital.Api.Data
             modelBuilder.Entity<Ubicacion>()
                 .HasKey(u => u.IdDomicilio);
 
-            // Relaciones
-            modelBuilder.Entity<ConsentimientoInformado>()
+            
+
+            modelBuilder.Entity<ConsentimientoInformadoReal>() // <--- ¡Asegúrate de que sea REAL aquí!
                 .HasOne(c => c.Paciente)
                 .WithMany(p => p.Consentimientos)
                 .HasForeignKey(c => c.PacienteId);
+
 
             modelBuilder.Entity<PrevisionPaciente>()
                 .HasOne(pp => pp.Paciente)

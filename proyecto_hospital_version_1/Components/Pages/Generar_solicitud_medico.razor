@@ -1,20 +1,25 @@
 ﻿@page "/generar_solicitud_medico"
 @layout Components.Layout.MainLayoutMedico
+
+
+
 @using proyecto_hospital_version_1.Data._Legacy
+@using proyecto_hospital_version_1.Services
+@using proyecto_hospital_version_1.Components.Shared
+@using Microsoft.EntityFrameworkCore
+@using System.Linq
+@using Hospital.Api.Data.DTOs
+
+@using ApiEntities = Hospital.Api.Data.Entities;
+
 
 @inject HospitalDbContextLegacy HospitalDb
 @inject IProcedimientoService ProcedimientoService
 @inject ISolicitudQuirurgicaApiService SolicitudApiService
-
-@using proyecto_hospital_version_1.Components.Shared
-@using Microsoft.EntityFrameworkCore
-@using proyecto_hospital_version_1.Services
-
-
-
-
-
+@inject IConsentimientoInformadoService ConsentimientoService
 @inject IJSRuntime JsRuntime // Para posibles alertas o interacciones JS
+@inject HttpClient Http // para http
+
 
 <PageTitle>Nueva Solicitud Quirúrgica</PageTitle>
 
@@ -231,6 +236,16 @@
     private decimal? _talla; // ahora se guardara en cm
     // Correcion de fomrmula para que acepte cm en vez de metros
     private decimal? _imc
+
+
+    // variables para el id del consentimiento de la api
+
+    
+
+
+
+
+
     {
         get
         {
@@ -253,6 +268,29 @@
     private int? _tiempoEstimado;
     private List<string> _comorbilidadesSeleccionadas = new List<string>();
     private string _comentariosAdicionales = "";
+
+
+
+    // --- NUEVAS VARIABLES PARA LA API ---
+    private int _consentimientoInformadoApiId = 0;
+    private int _solicitudQuirurgicaApiId = 0;
+
+    // Diccionarios para Lateralidad y Extremidad
+    private Dictionary<string, int> _lateralidades = new()
+    {
+        {"Derecha", 1},
+        {"Izquierda", 2},
+        {"No Aplica", 3}
+    };
+
+    private Dictionary<string, int> _extremidades = new()
+    {
+        {"Superior", 1},
+        {"Inferior", 2},
+        {"No Aplica", 3}
+    };
+
+
 
 
     private bool _mostrarPDF = false;
@@ -405,9 +443,6 @@
     }
 
 
-    // metodo para la generación de soliocitudes
-
-
     private async Task GuardarSolicitud()
     {
         if (_pasoActual != 3) return;
@@ -420,9 +455,6 @@
 
         if (string.IsNullOrWhiteSpace(_diagnosticoPrincipal))
             errores.Add("• Diagnóstico principal vacío");
-
-        if (string.IsNullOrWhiteSpace(_procedimientoSeleccionado))
-            errores.Add("• Procedimiento principal vacío");
 
         if (string.IsNullOrWhiteSpace(_salaOperaciones))
             errores.Add("• Sala de operaciones no especificada");
@@ -440,6 +472,10 @@
         if (!_talla.HasValue || _talla <= 0)
             errores.Add("• Talla no válida");
 
+        // ✅ VALIDACIÓN CRÍTICA NUEVA - Consentimiento
+        if (_consentimientoInformadoApiId == 0)
+            errores.Add("• No se ha generado el consentimiento informado. Complete el Paso 1 correctamente.");
+
         if (errores.Any())
         {
             var mensajeError = "Faltan los siguientes datos esenciales:\n" + string.Join("\n", errores);
@@ -447,38 +483,56 @@
             return;
         }
 
-        // Si llegamos aquí, todas las validaciones pasaron
         try
         {
-            // CREAR OBJETO PARA LA API (con los nombres correctos)
-            var nuevaSolicitud = new SolicitudQuirurgica
-                {
-                    // DATOS OBLIGATORIOS PARA LA API
-                    PacienteId = _pacienteSeleccionado.id,
-                    DiagnosticoPrincipal = _diagnosticoPrincipal,
-                    ProcedimientoPrincipal = _procedimientoSeleccionado,
-                    Procedencia = _procedenciaSeleccionada,
+            Console.WriteLine("🔍 === ENVIANDO SOLICITUD A API ===");
+            Console.WriteLine($"   - ConsentimientoId: {_consentimientoInformadoApiId}");
+            Console.WriteLine($"   - PacienteId: {_pacienteSeleccionado.id}");
 
-                    // DATOS NUMÉRICOS (convertir nullable a no-nullable)
-                    Peso = _peso.Value,
-                    Talla = _talla.Value,
-                    IMC = _imc ?? 0,
-                    TiempoEstimado = _tiempoEstimado.Value,
+            // ✅ CREAR DTO CORRECTO para la nueva API
+            var solicitudDto = new SolicitudCrearDto
+            {
+                // ✅ CAMPOS CRÍTICOS para FKs
+                ConsentimientoId = _consentimientoInformadoApiId,
+                PacienteId = _pacienteSeleccionado.id,
+                DiagnosticoPrincipal = _diagnosticoPrincipal,
+                Procedencia = _procedenciaSeleccionada,
+                EspecialidadDestino = string.IsNullOrWhiteSpace(_especialidadDestino)
+                ? "Cirugía Urgencia" // 
+                : _especialidadDestino, // Valor por defecto
 
-                    // DATOS BOOLEANOS Y STRINGS
-                    EvaluacionAnestesica = _evaluacionAnestesica,
-                    Transfusiones = _transfusiones, //  Se mapea automáticamente a "EvaluacionTransfusion"
-                    EsGes = _esGes,
-                    ComentariosAdicionales = _comentariosAdicionales, //  Se mapea automáticamente a "Comentarios"
-                    EspecialidadOrigen = _especialidadOrigen,
-                    EspecialidadDestino = _especialidadDestino
-                };
+                // ✅ CAMPOS CLÍNICOS
+                Peso = _peso.Value,
+                Talla = _talla.Value,
+                IMC = _imc ?? 0,
+                TiempoEstimado = _tiempoEstimado.Value,
 
-            // ✅ ENVIAR A LA API REAL (en lugar de guardar localmente)
-            var exito = await SolicitudApiService.CrearSolicitudAsync(nuevaSolicitud);
+                // ✅ CAMPOS DE EVALUACIÓN
+                EvaluacionAnestesica = _evaluacionAnestesica,
+                EvaluacionTransfusion = _transfusiones,
+                EsGes = _esGes,
+
+                // ✅ CAMPOS ADICIONALES
+                Comentarios = _comentariosAdicionales,
+                EspecialidadOrigen = _especialidadOrigen,
+
+                // ❌ CAMPOS QUE NO SE USAN (pero se envían por compatibilidad)
+                ProcedimientoPrincipal = _procedimientoSeleccionado, // No se usa en el service
+                Lateralidad = _lateralidadSeleccionada, // No se usa en el service
+                Extremidad = _extremidadSeleccionada // No se usa en el service
+            };
+
+            Console.WriteLine("📦 DTO creado para enviar a API:");
+            Console.WriteLine($"   - ConsentimientoId: {solicitudDto.ConsentimientoId}");
+            Console.WriteLine($"   - DiagnosticoPrincipal: {solicitudDto.DiagnosticoPrincipal}");
+            Console.WriteLine($"   - EspecialidadDestino: {solicitudDto.EspecialidadDestino}");
+
+            // ✅ ENVIAR A LA NUEVA API
+            var exito = await SolicitudApiService.CrearSolicitudAsync(solicitudDto);
 
             if (exito)
             {
+                Console.WriteLine("✅ Solicitud guardada exitosamente");
                 await JsRuntime.InvokeVoidAsync("alert", "✅ Solicitud guardada correctamente en la base real.");
                 ResetFormulario();
                 _pasoActual = 1;
@@ -486,17 +540,15 @@
             }
             else
             {
+                Console.WriteLine("❌ Falló CrearSolicitudAsync");
                 await JsRuntime.InvokeVoidAsync("alert", "❌ Error al enviar la solicitud a la API.");
             }
         }
         catch (Exception ex)
         {
-            var errorDetails = $"Error: {ex.Message}";
-            if (ex.InnerException != null)
-                errorDetails += $"\nDetalles: {ex.InnerException.Message}";
-
-            Console.WriteLine($"ERROR API: {errorDetails}");
-            await JsRuntime.InvokeVoidAsync("alert", $"Error al enviar a API: {errorDetails}");
+            Console.WriteLine($"💥 EXCEPCIÓN en GuardarSolicitud: {ex.Message}");
+            Console.WriteLine($"💥 StackTrace: {ex.StackTrace}");
+            await JsRuntime.InvokeVoidAsync("alert", $"Error al enviar a API: {ex.Message}");
         }
     }
 
@@ -564,49 +616,138 @@
 
 
 
-    private void GoNextStep()
+    private async Task GoNextStep() // Es importante que sea async para poder usar await
+{
+    // === PASO 1 ===
+    if (_pasoActual == 1)
     {
-        if (_pasoActual == 1)
+        // Validaciones del Paso 1
+        if (_pacienteSeleccionado == null)
         {
-            if (_pacienteSeleccionado == null)
-            {
-                JsRuntime.InvokeVoidAsync("alert", "Debe seleccionar un paciente para continuar.");
-                return;
-            }
-            if (string.IsNullOrEmpty(_procedimientoSeleccionado))
-            {
-                JsRuntime.InvokeVoidAsync("alert", "Debe seleccionar un Procedimiento Principal.");
-                return;
-            }
-            if (!_consentimientoAceptado)
-            {
-                JsRuntime.InvokeVoidAsync("alert", "Debe aceptar el consentimiento informado para continuar.");
-                return;
-            }
+            await JsRuntime.InvokeVoidAsync("alert", "Debe seleccionar un paciente para continuar.");
+            return;
+        }
+        if (string.IsNullOrEmpty(_procedimientoSeleccionado))
+        {
+            await JsRuntime.InvokeVoidAsync("alert", "Debe seleccionar un Procedimiento Principal.");
+            return;
+        }
+        if (!_consentimientoAceptado)
+        {
+            await JsRuntime.InvokeVoidAsync("alert", "Debe aceptar el consentimiento informado para continuar.");
+            return;
+        }
+        if (string.IsNullOrWhiteSpace(_lateralidadSeleccionada) || !_lateralidades.ContainsKey(_lateralidadSeleccionada))
+        {
+            await JsRuntime.InvokeVoidAsync("alert", "Debe seleccionar una Lateralidad válida.");
+            return;
+        }
+        if (string.IsNullOrWhiteSpace(_extremidadSeleccionada) || !_extremidades.ContainsKey(_extremidadSeleccionada))
+        {
+            await JsRuntime.InvokeVoidAsync("alert", "Debe seleccionar una Extremidad válida.");
+            return;
         }
 
-        if (_pasoActual == 2)
+        // --- LÓGICA DE ESCRITURA DUAL: Crear ConsentimientoInformadoReal en la API ---
+        // Esto ocurre justo ANTES de pasar al Paso 2, una vez que el Paso 1 está validado.
+
+        // 🔍 DEBUG CRÍTICO - ANTES DE ENVIAR A LA API
+        Console.WriteLine("🔍 === DEBUG CRÍTICO - VERIFICACIÓN DE IDs ===");
+
+        // 1. Verificar diccionarios
+        Console.WriteLine($"📚 DICCIONARIOS ACTUALES:");
+        Console.WriteLine($"   - Lateralidades: {string.Join(", ", _lateralidades.Select(kv => $"{kv.Key}={kv.Value}"))}");
+        Console.WriteLine($"   - Extremidades: {string.Join(", ", _extremidades.Select(kv => $"{kv.Key}={kv.Value}"))}");
+
+        // 2. Verificar selecciones actuales
+        Console.WriteLine($"🎯 SELECCIONES ACTUALES:");
+        Console.WriteLine($"   - Lateralidad seleccionada: '{_lateralidadSeleccionada}'");
+        Console.WriteLine($"   - Extremidad seleccionada: '{_extremidadSeleccionada}'");
+
+        // 3. Obtener IDs
+        var lateralidadApiId = _lateralidades[_lateralidadSeleccionada];
+        var extremidadApiId = _extremidades[_extremidadSeleccionada];
+
+        Console.WriteLine($"🔢 IDs CALCULADOS:");
+        Console.WriteLine($"   - LateralidadId: {lateralidadApiId}");
+        Console.WriteLine($"   - ExtremidadId: {extremidadApiId}");
+        // Obtener el ID del procedimiento. Asumimos que ProcedimientoDto.Id es el que necesita la API.
+        var procedimientoApiId = _listaProcedimientos.FirstOrDefault(p => p.Nombre == _procedimientoSeleccionado)?.Id ?? 0;
+
+        if (procedimientoApiId == 0)
         {
-            if (string.IsNullOrEmpty(_diagnosticoPrincipal))
-            {
-                JsRuntime.InvokeVoidAsync("alert", "Debe ingresar un diagnóstico principal en el Paso 2.");
-                return;
-            }
+            await JsRuntime.InvokeVoidAsync("alert", "Error: No se pudo encontrar el ID del Procedimiento Principal seleccionado para la API. Contacte a soporte.");
+            return;
         }
 
-        // CAMBIO IMPORTANTE: Permitir avanzar al Paso 3 sin validaciones estrictas
-        if (_pasoActual < 3)
+        // Crear el objeto ConsentimientoInformadoReal para la API
+        var nuevoConsentimientoApi = new ApiEntities.ConsentimientoInformadoReal
         {
-            _pasoActual++;
-            StateHasChanged();
-        }
-        else if (_pasoActual == 3)
+            FechaGeneracion = DateTime.Now,
+            Estado = true, // O el estado inicial que desees
+            Observacion = _comentariosAdicionales, // Si tienes algún comentario relacionado con el consentimiento
+            PacienteId = _pacienteSeleccionado.id, // ¡Importante! Asegúrate que es '.id' o '.Id' según tu PacienteHospital legacy
+            ProcedimientoId = procedimientoApiId,
+            LateralidadId = lateralidadApiId,
+            ExtremidadId = extremidadApiId,
+        };
+
+        try
         {
-            // Cuando esté en Paso 3 y haga clic en "Siguiente", guardar la solicitud
-            GuardarSolicitud();
+            // Llama al servicio para crear el consentimiento en la API
+            _consentimientoInformadoApiId = await ConsentimientoService.CrearConsentimientoAsync(nuevoConsentimientoApi);
+
+            if (_consentimientoInformadoApiId == 0)
+            {
+                await JsRuntime.InvokeVoidAsync("alert", "Error al generar el Consentimiento Informado en la API. No se pudo obtener un ID. No se puede continuar.");
+                return;
+            }
+            else
+            {
+                Console.WriteLine($"Consentimiento Informado API creado con ID: {_consentimientoInformadoApiId}");
+            }
         }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"ERROR al crear Consentimiento API: {ex.Message}. Inner: {ex.InnerException?.Message}");
+            await JsRuntime.InvokeVoidAsync("alert", $"Error al crear Consentimiento en la API: {ex.Message}. Detalles: {ex.InnerException?.Message}");
+            return; // No avanzar si falla la creación del consentimiento en la API
+        }
+    } // Fin del if (_pasoActual == 1)
+
+    // === PASO 2 ===
+    if (_pasoActual == 2)
+    {
+        // Validaciones del Paso 2
+        if (string.IsNullOrEmpty(_diagnosticoPrincipal))
+        {
+            await JsRuntime.InvokeVoidAsync("alert", "Debe ingresar un diagnóstico principal en el Paso 2.");
+            return;
+        }
+        // Puedes agregar más validaciones para Peso, Talla, etc. aquí si lo deseas antes de avanzar
+        if (!_peso.HasValue || _peso <= 0)
+        {
+            await JsRuntime.InvokeVoidAsync("alert", "Debe ingresar un Peso válido en el Paso 2.");
+            return;
+        }
+        if (!_talla.HasValue || _talla <= 0)
+        {
+            await JsRuntime.InvokeVoidAsync("alert", "Debe ingresar una Talla válida en el Paso 2.");
+            return;
+        }
+    } // Fin del if (_pasoActual == 2)
+
+
+    // === LÓGICA PARA AVANZAR AL SIGUIENTE PASO ===
+    // Solo avanza si no hay problemas y no estamos ya en el último paso (Paso 3)
+    if (_pasoActual < 3)
+    {
+        _pasoActual++;
+        StateHasChanged(); // Forzar el renderizado del componente
     }
-
+    // Si estamos en el paso 3 y se intenta "avanzar" (lo cual no debería ocurrir con el botón "Siguiente"),
+    // la acción de guardar la solicitud se maneja por el botón "Guardar Solicitud".
+}
 
 
 

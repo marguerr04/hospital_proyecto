@@ -16,7 +16,7 @@
         public bool? PRAIS { get; set; }
         public string TelefonoFijo { get; set; } = string.Empty;
 
-        public ICollection<ConsentimientoInformado> Consentimientos { get; set; } = new List<ConsentimientoInformado>();
+        public ICollection<ConsentimientoInformadoReal> Consentimientos { get; set; } = new List<ConsentimientoInformadoReal>();
         public ICollection<PrevisionPaciente> Previsiones { get; set; } = new List<PrevisionPaciente>();
         public ICollection<Ubicacion> Ubicaciones { get; set; } = new List<Ubicacion>();
         public ICollection<Solicitud> Solicitudes { get; set; } = new List<Solicitud>();

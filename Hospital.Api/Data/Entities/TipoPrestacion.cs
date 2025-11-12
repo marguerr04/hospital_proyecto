@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace proyecto_hospital_version_1.Data.Entities
+namespace Hospital.Api.Data.Entities
 {
     [Table("TIPO_PRESTACION")]
     public class TipoPrestacion

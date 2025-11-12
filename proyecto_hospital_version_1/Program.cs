@@ -57,7 +57,8 @@ builder.Services.AddScoped<ISolicitudQuirurgicaService, SolicitudQuirurgicaServi
 builder.Services.AddScoped<IProcedimientoService, ProcedimientoService>();
 // Service nuevo
 builder.Services.AddScoped<IEspecialidadService, EspecialidadService>();
-
+// Consentimiento informado
+builder.Services.AddScoped<IConsentimientoInformadoService, ConsentimientoInformadoService>();
 
 
 
@@ -75,7 +76,10 @@ builder.Services.AddServerSideBlazor(); // Necesario para MapBlazorHub
 
 // servicio api
 builder.Services.AddScoped<ISolicitudQuirurgicaApiService, SolicitudQuirurgicaApiService>();
-
+builder.Services.AddHttpClient<ISolicitudQuirurgicaApiService, SolicitudQuirurgicaApiService>(client =>
+{
+    client.BaseAddress = new Uri("https://localhost:7032"); // Ajusta según tu API
+});
 
 
 

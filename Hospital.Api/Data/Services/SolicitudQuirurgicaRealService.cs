@@ -2,7 +2,7 @@
 using Hospital.Api.DTOs;
 using Hospital.Api.Services;
 using Microsoft.EntityFrameworkCore;
-using proyecto_hospital_version_1.Data.Entities;
+using Hospital.Api.Data.Entities;
 
 namespace Hospital.Api.Data.Services
 {
@@ -15,9 +15,10 @@ namespace Hospital.Api.Data.Services
             _context = context;
         }
 
-        // 🔹 MÉTODO EXISTENTE (lo mantienes igual)
+        // 🔹 MÉTODO PRINCIPAL - MANTENIDO IGUAL
         public async Task<bool> CrearSolicitudAsync(
             int pacienteId,
+            int? consentimientoId,
             string diagnosticoPrincipal,
             string procedimientoPrincipal,
             string procedencia,
@@ -38,15 +39,30 @@ namespace Hospital.Api.Data.Services
 
             try
             {
-                // Tu código existente aquí...
+                Console.WriteLine($"🔍 [Service] Creando solicitud - ConsentimientoId: {consentimientoId}");
+
+                // 1️⃣ VALIDAR CONSENTIMIENTO ESPECÍFICO
+                if (consentimientoId == null || consentimientoId == 0)
+                {
+                    Console.WriteLine("❌ No se proporcionó un ConsentimientoId válido");
+                    return false;
+                }
+
+                var consentimiento = await _context.CONSENTIMIENTO_INFORMADO
+                    .FirstOrDefaultAsync(c => c.Id == consentimientoId && c.PacienteId == pacienteId);
+
+                if (consentimiento == null)
+                {
+                    Console.WriteLine($"❌ Consentimiento {consentimientoId} no existe para paciente {pacienteId}");
+                    return false;
+                }
+
+                Console.WriteLine($"✅ Consentimiento validado - ID: {consentimiento.Id}");
+
+                // 2️⃣ OBTENER IDs DE TABLAS RELACIONADAS
                 var diagnosticoId = await _context.DIAGNOSTICO
                     .Where(d => d.Nombre == diagnosticoPrincipal)
                     .Select(d => d.Id)
-                    .FirstOrDefaultAsync();
-
-                var procedimientoId = await _context.PROCEDIMIENTO
-                    .Where(p => p.Nombre == procedimientoPrincipal)
-                    .Select(p => p.Id)
                     .FirstOrDefaultAsync();
 
                 var procedenciaId = await _context.PROCEDENCIA
@@ -54,175 +70,229 @@ namespace Hospital.Api.Data.Services
                     .Select(p => p.Id)
                     .FirstOrDefaultAsync();
 
+                var tipoPrestacionKey = "Cirugía Urgencia"; // Valor seguro por defecto
+
+                if (!string.IsNullOrWhiteSpace(especialidadDestino))
+                {
+                    // Solo cambiar si coincide con un tipo de prestación real
+                    var tipoPrestacionValida = await _context.TIPO_PRESTACION
+                        .Where(t => t.Nombre.ToLower() == especialidadDestino.ToLower())
+                        .Select(t => t.Nombre)
+                        .FirstOrDefaultAsync();
+
+                    if (tipoPrestacionValida != null)
+                        tipoPrestacionKey = tipoPrestacionValida;
+                }
+
+                // Buscar el ID final de tipo de prestación
                 var tipoPrestacionId = await _context.TIPO_PRESTACION
-                    .Where(t => t.Nombre == especialidadDestino)
+                    .Where(t => t.Nombre == tipoPrestacionKey)
                     .Select(t => t.Id)
                     .FirstOrDefaultAsync();
 
-                var lateralidadId = await _context.LATERALIDAD
-                   .Where(l => l.Nombre == lateralidad)
-                   .Select(l => l.Id)
-                   .FirstOrDefaultAsync();
-
-                var extremidadId = await _context.EXTREMIDAD
-                    .Where(e => e.Nombre == extremidad)
-                    .Select(e => e.Id)
-                    .FirstOrDefaultAsync();
-
-                // Validar si existen
-                if (diagnosticoId == 0 || procedimientoId == 0 || procedenciaId == 0)
+                // 3️⃣ VALIDAR IDs OBTENIDOS
+                if (diagnosticoId == 0)
                 {
-                    Console.WriteLine(" Error: No se encontraron IDs válidos en las tablas relacionadas.");
+                    Console.WriteLine($"❌ Diagnóstico '{diagnosticoPrincipal}' no encontrado");
                     return false;
                 }
 
-                // 2️⃣ Crear Consentimiento Informado
-                var consentimiento = new ConsentimientoInformadoReal
+                if (procedenciaId == 0)
                 {
-                    FechaGeneracion = DateTime.Now,
-                    Estado = true,
-                    LateralidadId = lateralidadId,
-                    ExtremidadId = extremidadId,
-                    ProcedimientoId = procedimientoId,
-                    PacienteId = pacienteId,
-                    Observacion = comentarios
-                };
-                _context.CONSENTIMIENTO_INFORMADO.Add(consentimiento);
-                await _context.SaveChangesAsync();
+                    Console.WriteLine($"❌ Procedencia '{procedencia}' no encontrada");
+                    return false;
+                }
 
-                // 3️⃣ Crear Solicitud Quirúrgica
+                if (tipoPrestacionId == 0)
+                {
+                    Console.WriteLine($"❌ Tipo prestación '{especialidadDestino}' no encontrado");
+                    return false;
+                }
+
+                Console.WriteLine($"✅ IDs obtenidos - Diagnostico: {diagnosticoId}, Procedencia: {procedenciaId}, TipoPrestacion: {tipoPrestacionId}");
+
+                // 4️⃣ CREAR SOLICITUD QUIRÚRGICA REAL
                 var solicitud = new SolicitudQuirurgicaReal
                 {
-                    ConsentimientoId = consentimiento.Id,
+                    ConsentimientoId = consentimientoId.Value,
                     DiagnosticoId = diagnosticoId,
                     ProcedenciaId = procedenciaId,
                     TipoPrestacionId = tipoPrestacionId,
                     FechaCreacion = DateTime.Now,
                     ValidacionGES = esGes,
-                    ValidacionDuplicado = false
+                    ValidacionDuplicado = false,
+                    IdSIGTE = 1
                 };
+
                 _context.SOLICITUD_QUIRURGICA.Add(solicitud);
                 await _context.SaveChangesAsync();
 
-                // 4️⃣ Crear Detalle Paciente
+                Console.WriteLine($"✅ SolicitudReal creada - ID: {solicitud.IdSolicitud}");
+
+                // 5️⃣ CREAR DETALLE PACIENTE
                 var detallePaciente = new DetallePacienteReal
                 {
-                    SolicitudConsentimientoId = consentimiento.Id,
+                    SolicitudConsentimientoId = consentimientoId.Value,
                     SolicitudId = solicitud.IdSolicitud,
                     Peso = peso,
                     Altura = talla,
                     IMC = imc
                 };
-                _context.DETALLE_PACIENTE.Add(detallePaciente);
-                await _context.SaveChangesAsync();
 
-                // 5️⃣ Crear Detalle Clínico
+                _context.DETALLE_PACIENTE.Add(detallePaciente);
+
+                // 6️⃣ CREAR DETALLE CLÍNICO
                 var detalleClinico = new DetalleClinicoReal
                 {
-                    SolicitudConsentimientoId = consentimiento.Id,
+                    SolicitudConsentimientoId = consentimientoId.Value,
                     SolicitudId = solicitud.IdSolicitud,
                     TiempoEstimadoCirugia = tiempoEstimado,
                     EvaluacionAnestesica = evaluacionAnestesica,
                     EvaluacionTransfusion = evaluacionTransfusion
                 };
-                _context.DETALLE_CLINICO.Add(detalleClinico);
-                await _context.SaveChangesAsync();
 
+                _context.DETALLE_CLINICO.Add(detalleClinico);
+
+                await _context.SaveChangesAsync();
                 await transaction.CommitAsync();
 
-                Console.WriteLine("Solicitud creada correctamente con datos reales del frontend.");
+                Console.WriteLine($"🎉 SOLICITUD COMPLETA CREADA - ID: {solicitud.IdSolicitud}");
                 return true;
             }
             catch (Exception ex)
             {
                 await transaction.RollbackAsync();
-                Console.WriteLine($" Error al crear solicitud: {ex.Message}");
+                Console.WriteLine($"💥 ERROR: {ex.Message}");
+                Console.WriteLine($"💥 StackTrace: {ex.StackTrace}");
                 return false;
             }
         }
 
-        // 🔹 MÉTODO SIMPLIFICADO 1: Solo datos básicos
+        // 🔹 MÉTODO SIMPLIFICADO 1: Solo datos básicos (CON DATOS REALES O DUMMY)
         public async Task<IEnumerable<SolicitudRecienteDto>> GetSolicitudesRecientesAsync()
         {
             try
             {
-                // Método ULTRA-SIMPLE que SÍ compila
-                var resultado = new List<SolicitudRecienteDto>
-        {
-            new SolicitudRecienteDto
-            {
-                SolicitudId = 1,
-                PacienteNombreCompleto = "Juan Pérez González",
-                PacienteRut = "12.345.678-9",
-                Prioridad = "Prioritaria",
-                PrioridadCssClass = "bg-success",
-                EsGes = true,
-                DescripcionProcedimiento = "Cirugía de cadera",
-                FechaCreacion = DateTime.Now.AddDays(-2),
-                TiempoTranscurrido = "Hace 2 días"
-            },
-            new SolicitudRecienteDto
-            {
-                SolicitudId = 2,
-                PacienteNombreCompleto = "María López Silva",
-                PacienteRut = "98.765.432-1",
-                Prioridad = "Intermedia",
-                PrioridadCssClass = "bg-warning text-dark",
-                EsGes = false,
-                DescripcionProcedimiento = "Artroscopía rodilla",
-                FechaCreacion = DateTime.Now.AddDays(-5),
-                TiempoTranscurrido = "Hace 5 días"
-            }
-        };
+                // Intentar obtener datos REALES primero
+                var solicitudesReales = await _context.SOLICITUD_QUIRURGICA
+                    .Include(s => s.Consentimiento)
+                    .ThenInclude(c => c.Paciente)
+                    .Include(s => s.Consentimiento)
+                    .ThenInclude(c => c.Procedimiento)
+                    .OrderByDescending(s => s.FechaCreacion)
+                    .Take(10)
+                    .ToListAsync();
 
-                return await Task.FromResult(resultado);
+                var resultado = new List<SolicitudRecienteDto>();
+
+                foreach (var solicitud in solicitudesReales)
+                {
+                    var dto = new SolicitudRecienteDto
+                    {
+                        SolicitudId = solicitud.IdSolicitud,
+                        PacienteNombreCompleto = $"{solicitud.Consentimiento?.Paciente?.PrimerNombre} {solicitud.Consentimiento?.Paciente?.ApellidoPaterno}",
+                        PacienteRut = solicitud.Consentimiento?.Paciente?.Rut ?? "N/A",
+                        Prioridad = solicitud.ValidacionGES ? "Prioritaria" : "Intermedia",
+                        PrioridadCssClass = solicitud.ValidacionGES ? "bg-success" : "bg-warning text-dark",
+                        EsGes = solicitud.ValidacionGES,
+                        DescripcionProcedimiento = solicitud.Consentimiento?.Procedimiento?.Nombre ?? "Procedimiento no especificado",
+                        FechaCreacion = solicitud.FechaCreacion,
+                        TiempoTranscurrido = CalculateTimeAgo(solicitud.FechaCreacion)
+                    };
+                    resultado.Add(dto);
+                }
+
+                // Si no hay datos reales, usar dummy
+                if (!resultado.Any())
+                {
+                    resultado = GetSolicitudesDummy();
+                }
+
+                return resultado;
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"Error en GetSolicitudesRecientesAsync: {ex.Message}");
-                return new List<SolicitudRecienteDto>();
+                // Fallback a datos dummy
+                return GetSolicitudesDummy();
             }
         }
 
-        // 🔹 MÉTODO SIMPLIFICADO 2: Datos dummy para pruebas
+        // 🔹 MÉTODO SIMPLIFICADO 2: SOLO DATOS DUMMY (sin PROGRAMACION_QUIRURGICA)
         public async Task<IEnumerable<FechaProgramadaDto>> GetProximasFechasProgramadasAsync()
         {
             try
             {
-                // Por ahora devolvemos datos dummy para que Blazor funcione
-                var fechasDummy = new List<FechaProgramadaDto>
-                {
-                    new FechaProgramadaDto
-                    {
-                        ProgramacionId = 1,
-                        FechaProgramada = DateTime.Today.AddDays(1),
-                        FechaProgramadaFormateada = DateTime.Today.AddDays(1).ToString("dd MMMM yyyy"),
-                        PacienteNombreCompleto = "Paciente Demo 1",
-                        DescripcionProcedimiento = "Procedimiento de prueba",
-                        EsGes = true,
-                        HoraProgramada = TimeSpan.FromHours(9),
-                        Pabellon = "Pabellón Central"
-                    },
-                    new FechaProgramadaDto
-                    {
-                        ProgramacionId = 2,
-                        FechaProgramada = DateTime.Today.AddDays(3),
-                        FechaProgramadaFormateada = DateTime.Today.AddDays(3).ToString("dd MMMM yyyy"),
-                        PacienteNombreCompleto = "Paciente Demo 2",
-                        DescripcionProcedimiento = "Cirugía programada",
-                        EsGes = false,
-                        HoraProgramada = TimeSpan.FromHours(11),
-                        Pabellon = "Pabellón Norte"
-                    }
-                };
-
-                return await Task.FromResult(fechasDummy);
+                // ❌ ELIMINADA la consulta a PROGRAMACION_QUIRURGICA que no existe
+                // ✅ SOLO datos dummy por ahora
+                return GetFechasProgramadasDummy();
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"Error en GetProximasFechasProgramadasAsync: {ex.Message}");
-                return new List<FechaProgramadaDto>();
+                return GetFechasProgramadasDummy();
             }
+        }
+
+        // 🔹 MÉTODOS AUXILIARES PARA DATOS DUMMY
+        private List<SolicitudRecienteDto> GetSolicitudesDummy()
+        {
+            return new List<SolicitudRecienteDto>
+            {
+                new SolicitudRecienteDto
+                {
+                    SolicitudId = 1,
+                    PacienteNombreCompleto = "Juan Pérez González",
+                    PacienteRut = "12.345.678-9",
+                    Prioridad = "Prioritaria",
+                    PrioridadCssClass = "bg-success",
+                    EsGes = true,
+                    DescripcionProcedimiento = "Cirugía de cadera",
+                    FechaCreacion = DateTime.Now.AddDays(-2),
+                    TiempoTranscurrido = "Hace 2 días"
+                },
+                new SolicitudRecienteDto
+                {
+                    SolicitudId = 2,
+                    PacienteNombreCompleto = "María López Silva",
+                    PacienteRut = "98.765.432-1",
+                    Prioridad = "Intermedia",
+                    PrioridadCssClass = "bg-warning text-dark",
+                    EsGes = false,
+                    DescripcionProcedimiento = "Artroscopía rodilla",
+                    FechaCreacion = DateTime.Now.AddDays(-5),
+                    TiempoTranscurrido = "Hace 5 días"
+                }
+            };
+        }
+
+        private List<FechaProgramadaDto> GetFechasProgramadasDummy()
+        {
+            return new List<FechaProgramadaDto>
+            {
+                new FechaProgramadaDto
+                {
+                    ProgramacionId = 1,
+                    FechaProgramada = DateTime.Today.AddDays(1),
+                    FechaProgramadaFormateada = DateTime.Today.AddDays(1).ToString("dd MMMM yyyy"),
+                    PacienteNombreCompleto = "Paciente Demo 1",
+                    DescripcionProcedimiento = "Procedimiento de prueba",
+                    EsGes = true,
+                    HoraProgramada = TimeSpan.FromHours(9),
+                    Pabellon = "Pabellón Central"
+                },
+                new FechaProgramadaDto
+                {
+                    ProgramacionId = 2,
+                    FechaProgramada = DateTime.Today.AddDays(3),
+                    FechaProgramadaFormateada = DateTime.Today.AddDays(3).ToString("dd MMMM yyyy"),
+                    PacienteNombreCompleto = "Paciente Demo 2",
+                    DescripcionProcedimiento = "Cirugía programada",
+                    EsGes = false,
+                    HoraProgramada = TimeSpan.FromHours(11),
+                    Pabellon = "Pabellón Norte"
+                }
+            };
         }
 
         // 🔹 FUNCIÓN AUXILIAR

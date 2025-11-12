@@ -2,7 +2,7 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace proyecto_hospital_version_1.Data.Entities
+namespace Hospital.Api.Data.Entities
 {
     [Table("SOLICITUD_QUIRURGICA")]
     public class SolicitudQuirurgicaReal
@@ -12,7 +12,7 @@ namespace proyecto_hospital_version_1.Data.Entities
         public int IdSolicitud { get; set; }
 
         [Column("idSIGTE")]
-        public bool? IdSIGTE { get; set; }
+        public int? IdSIGTE { get; set; }
 
         [Column("CONSENTIMIENTO_INFORMADO_id")]
         public int ConsentimientoId { get; set; }
