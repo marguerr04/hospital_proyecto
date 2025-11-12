@@ -1,14 +1,85 @@
 ﻿@inherits LayoutComponentBase
+@using MudBlazor
 
-<div class="page">
-    <NavMenu />
+<div class="layout-root">
+    <!-- SIDEBAR FIJO IZQUIERDO -->
+    <div class="sidebar-wrapper">
+  <NavMenu />
+    </div>
 
-    <main>
+    <!-- CONTENIDO PRINCIPAL (navbar superior + contenido + footer) -->
+    <div class="main-content-wrapper">
+        <!-- NAVBAR SUPERIOR -->
+  <nav class="top-navbar">
+         <div class="navbar-container">
+     <!-- IZQUIERDA: Logo -->
+   <div class="navbar-left">
+            <img src="/img/logo_login.png" alt="Hospital Padre Hurtado" class="navbar-logo" />
+          <span class="hospital-short">HPH</span>
+       </div>
+         
+       <!-- CENTRO: Título -->
+    <div class="navbar-center">
+  <div class="main-title">Análisis y gestión LEQ</div>
+       <div class="subtitle">- Hospital Padre Hurtado</div>
+    </div>
+   
+        <!-- DERECHA: Reloj -->
+       <div class="navbar-right">
+  <MudIcon Icon="@Icons.Material.Filled.AccessTime" Class="clock-icon" />
+      <span class="current-time">@currentTime</span>
+                </div>
+      </div>
+        </nav>
 
-        <article class="content px-4">
-            @Body
-        </article>
-    </main>
+  <!-- CONTENIDO PRINCIPAL -->
+        <main>
+      <article class="content px-4">
+         @Body
+            </article>
+        </main>
+
+    <!-- FOOTER -->
+    <footer class="app-footer">
+            <div class="footer-container">
+            <!-- Primera fila: Información de contacto -->
+ <div class="footer-row">
+     <div class="footer-section">
+                <div class="footer-title">Contacto Hospital</div>
+     <div class="footer-content">
+     <div><i class="bi bi-telephone"></i> Urgencias: <strong>+56 2 2345 6789</strong></div>
+          <div><i class="bi bi-telephone"></i> Central: <strong>+56 2 2345 6000</strong></div>
+        <div><i class="bi bi-whatsapp"></i> WhatsApp: <strong>+56 9 8765 4321</strong></div>
+               </div>
+            </div>
+
+  <div class="footer-section">
+         <div class="footer-title">Soporte Técnico</div>
+         <div class="footer-content">
+      <div><i class="bi bi-envelope"></i> universidadsoporte@udd.cl</div>
+      <div><i class="bi bi-envelope"></i> sistemahph@gmail.com</div>
+          <div><i class="bi bi-clock"></i> Lunes a Viernes: 8:00 - 18:00 hrs</div>
+         </div>
+       </div>
+
+        <div class="footer-section">
+           <div class="footer-title">Ubicación</div>
+      <div class="footer-content">
+   <div><i class="bi bi-geo-alt"></i> Av. Presidente Kennedy 1501, Puente Alto</div>
+            <div><i class="bi bi-geo"></i> Región Metropolitana, Chile</div>
+   </div>
+         </div>
+        </div>
+
+         <!-- Segunda fila: Copyright -->
+                <div class="footer-row footer-bottom">
+  <div class="footer-copyright">
+  © @DateTime.Now.Year — Hospital Padre Hurtado - LEQ
+         </div>
+          </div>
+            </div>
+        </footer>
+    </div>
 </div>
 
 <div id="blazor-error-ui">
@@ -17,6 +88,26 @@
     <a class="dismiss">🗙</a>
 </div>
 
-
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="js/dashboard-charts.js"></script>
+
+@code {
+    private string currentTime = "Cargando...";
+    private Timer? timer;
+
+    protected override void OnInitialized()
+    {
+        timer = new Timer(UpdateTime, null, 0, 1000);
+    }
+
+    private void UpdateTime(object? state)
+    {
+      currentTime = DateTime.Now.ToString("HH:mm:ss");
+     InvokeAsync(StateHasChanged);
+    }
+
+ public void Dispose()
+    {
+   timer?.Dispose();
+    }
+}
