@@ -73,47 +73,86 @@ namespace Hospital.Api.Controllers
         }
 
         //  ✅ PROCEDIMIENTOS CON DATOS VARIABLES - Cuenta por Solicitudes Quirúrgicas
+        //  ✅ PROCEDIMIENTOS CON DEBUGGING MEJORADO
         [HttpGet("procedimientos")]
         public async Task<ActionResult<Dictionary<string, int>>> GetProcedimientosPorTipo()
         {
-            // Obtener procedimientos únicos desde las solicitudes quirúrgicas reales
+            // 🔍 PASO 1: Verificar cuántas solicitudes hay
+            var totalSolicitudes = await _context.SOLICITUD_QUIRURGICA.CountAsync();
+            Console.WriteLine($"[DEBUG] Total solicitudes: {totalSolicitudes}");
+
+            // 🔍 PASO 2: Verificar cuántas tienen ConsentimientoId válido
+            var solicitudesConConsentimiento = await _context.SOLICITUD_QUIRURGICA
+                .Where(s => s.ConsentimientoId > 0)
+                .CountAsync();
+            Console.WriteLine($"[DEBUG] Solicitudes con ConsentimientoId > 0: {solicitudesConConsentimiento}");
+
+            // 🔍 PASO 3: Intentar navegar a Consentimiento
+            var solicitudesConNavegacion = await _context.SOLICITUD_QUIRURGICA
+                .Include(s => s.Consentimiento)
+                .Where(s => s.Consentimiento != null)
+                .CountAsync();
+            Console.WriteLine($"[DEBUG] Solicitudes con navegación exitosa a Consentimiento: {solicitudesConNavegacion}");
+
+            // 🔍 PASO 4: Verificar si los consentimientos tienen ProcedimientoId
+            var consentimientosConProcedimiento = await _context.CONSENTIMIENTO_INFORMADO
+                .Where(c => c.ProcedimientoId > 0)
+                .CountAsync();
+            Console.WriteLine($"[DEBUG] Consentimientos con ProcedimientoId > 0: {consentimientosConProcedimiento}");
+
+            // 🔍 PASO 5: Intentar query completo
             var procedimientosSolicitudes = await _context.SOLICITUD_QUIRURGICA
                 .Include(s => s.Consentimiento)
-                    .ThenInclude(c => c.Procedimiento) // Navegar al procedimiento
+                    .ThenInclude(c => c.Procedimiento)
                 .Where(s => s.Consentimiento != null && s.Consentimiento.Procedimiento != null)
-                .GroupBy(s => s.Consentimiento.Procedimiento.Nombre)
-                .Select(g => new { NombreProcedimiento = g.Key, Count = g.Count() })
-                .OrderByDescending(x => x.Count)
-                .Take(20) // Limitar a los 20 procedimientos más frecuentes
-                .ToDictionaryAsync(x => x.NombreProcedimiento ?? "Sin nombre", x => x.Count);
-
-            // Si no hay datos en solicitudes, obtener de catálogo de procedimientos
-            if (!procedimientosSolicitudes.Any())
-            {
-                var procedimientosCatalogo = await _context.PROCEDIMIENTO
-                    .GroupBy(p => p.Nombre)
-                    .Select(g => new { g.Key, Count = g.Count() })
-                    .Take(20)
-                    .ToDictionaryAsync(x => x.Key ?? "Sin nombre", x => x.Count);
-
-                // Si tampoco hay en catálogo, devolver datos de ejemplo
-                if (!procedimientosCatalogo.Any())
+                .Select(s => new
                 {
-                    return Ok(new Dictionary<string, int>
-                    {
-                        { "Colecistectomía", 15 },
-                        { "Apendicectomía", 12 },
-                        { "Hernioplastía", 10 },
-                        { "Prótesis Cadera", 8 },
-                        { "Cesárea", 18 },
-                        { "Histerectomía", 6 }
-                    });
-                }
+                    SolicitudId = s.IdSolicitud,
+                    ConsentimientoId = s.ConsentimientoId,
+                    ProcedimientoId = s.Consentimiento.ProcedimientoId,
+                    ProcedimientoNombre = s.Consentimiento.Procedimiento.Nombre
+                })
+                .ToListAsync();
 
-                return Ok(procedimientosCatalogo);
+            Console.WriteLine($"[DEBUG] Solicitudes con procedimiento completo: {procedimientosSolicitudes.Count}");
+
+            if (procedimientosSolicitudes.Any())
+            {
+                foreach (var item in procedimientosSolicitudes.Take(5))
+                {
+                    Console.WriteLine($"[DEBUG] - Solicitud {item.SolicitudId}: {item.ProcedimientoNombre}");
+                }
             }
 
-            return Ok(procedimientosSolicitudes);
+            // 🔍 PASO 6: Agrupar y contar
+            var resultado = procedimientosSolicitudes
+                .GroupBy(x => x.ProcedimientoNombre)
+                .Select(g => new { Nombre = g.Key, Count = g.Count() })
+                .OrderByDescending(x => x.Count)
+                .Take(20)
+                .ToDictionary(x => x.Nombre ?? "Sin nombre", x => x.Count);
+
+            if (resultado.Any())
+            {
+                Console.WriteLine($"[DEBUG] ✅ Resultado final: {resultado.Count} procedimientos únicos");
+                return Ok(resultado);
+            }
+
+            // ❌ FALLBACK: Si no hay datos, devolver sintéticos
+            Console.WriteLine("[DEBUG] ❌ No se encontraron datos - Devolviendo sintéticos");
+
+            var random = new Random();
+            return Ok(new Dictionary<string, int>
+    {
+        { "Colecistectomía Lap.", random.Next(10, 25) },
+        { "Apendicectomía", random.Next(8, 20) },
+        { "Hernioplastía Inguinal", random.Next(7, 18) },
+        { "Prótesis Total Cadera", random.Next(5, 15) },
+        { "Cesárea Programada", random.Next(12, 28) },
+        { "Histerectomía", random.Next(4, 12) },
+        { "Prótesis Total Rodilla", random.Next(6, 16) },
+        { "Tiroidectomía", random.Next(3, 10) }
+    });
         }
 
         //  ✅ NUEVO: Endpoint auxiliar para verificar datos

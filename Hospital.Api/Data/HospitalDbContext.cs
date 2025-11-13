@@ -35,6 +35,11 @@ namespace Hospital.Api.Data
         public DbSet<PrevisionTipo> TIPO_PREVISION { get; set; }
 
 
+        // Tablas de Contactabilidad
+        public DbSet<Contactabilidad> CONTACTABILIDAD { get; set; } = null!;
+        public DbSet<MotivoContacto> MOTIVO_CONTACTO { get; set; } = null!;
+
+
         // en proceso de reemplazo de procedimientos
         /* da conflicto, y en la bd no existe procedimientos como tal
         public DbSet<Procedimiento> Procedimientos { get; set; } = null!;
