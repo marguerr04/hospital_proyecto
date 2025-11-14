@@ -1,6 +1,6 @@
 ﻿using Hospital.Api.Data;
 using Hospital.Api.Data.DTOs;
-using Hospital.Api.Services;
+using Hospital.Api.Data.Services;
 using Microsoft.EntityFrameworkCore;
 using Hospital.Api.Data.Entities;
 
@@ -121,7 +121,7 @@ namespace Hospital.Api.Data.Services
                     FechaCreacion = DateTime.Now,
                     ValidacionGES = esGes,
                     ValidacionDuplicado = false,
-                    IdSIGTE = 1
+                    IdSIGTE = true
                 };
 
                 _context.SOLICITUD_QUIRURGICA.Add(solicitud);
@@ -193,7 +193,7 @@ namespace Hospital.Api.Data.Services
                     Rut = FormatearRut(s.Consentimiento?.Paciente?.Rut ?? "", s.Consentimiento?.Paciente?.Dv ?? ""),
                     Diagnostico = s.Diagnostico?.Nombre ?? "Sin diagnóstico",
                     Procedimiento = s.Consentimiento?.Procedimiento?.Nombre ?? "Sin procedimiento",
-                    Estado = s.ValidacionGES ? "Priorizada" : "Pendiente",
+                    Estado = (s.ValidacionGES.HasValue && s.ValidacionGES.Value) ? "Priorizada" : "Pendiente",
                     FechaCreacion = s.FechaCreacion,
                     FechaProgramada = null, // TODO: Cuando exista la tabla PROGRAMACION_QUIRURGICA
                     DiasRestantes = null,
@@ -229,14 +229,18 @@ namespace Hospital.Api.Data.Services
 
                 foreach (var solicitud in solicitudesReales)
                 {
+
+
+
+                    var esGes = solicitud.ValidacionGES.HasValue && solicitud.ValidacionGES.Value;
                     var dto = new SolicitudRecienteDto
                     {
                         SolicitudId = solicitud.IdSolicitud,
                         PacienteNombreCompleto = $"{solicitud.Consentimiento?.Paciente?.PrimerNombre} {solicitud.Consentimiento?.Paciente?.ApellidoPaterno}",
                         PacienteRut = solicitud.Consentimiento?.Paciente?.Rut ?? "N/A",
-                        Prioridad = solicitud.ValidacionGES ? "Prioritaria" : "Intermedia",
-                        PrioridadCssClass = solicitud.ValidacionGES ? "bg-success" : "bg-warning text-dark",
-                        EsGes = solicitud.ValidacionGES,
+                        Prioridad = esGes ? "Prioritaria" : "Intermedia",
+                        PrioridadCssClass = esGes ? "bg-success" : "bg-warning text-dark",
+                        EsGes = esGes,
                         DescripcionProcedimiento = solicitud.Consentimiento?.Procedimiento?.Nombre ?? "Procedimiento no especificado",
                         FechaCreacion = solicitud.FechaCreacion,
                         TiempoTranscurrido = CalculateTimeAgo(solicitud.FechaCreacion)
@@ -352,5 +356,229 @@ namespace Hospital.Api.Data.Services
             if (string.IsNullOrEmpty(rut)) return "N/A";
             return $"{rut}-{dv}";
         }
+
+
+
+
+
+
+
+        // Para priorizar
+
+        public async Task<bool> GuardarPriorizacionAsync(PriorizacionDto priorizacion)
+        {
+            using var transaction = await _context.Database.BeginTransactionAsync();
+
+            try
+            {
+                // 1. Obtener la solicitud
+                var solicitud = await _context.SOLICITUD_QUIRURGICA
+                    .FirstOrDefaultAsync(s => s.IdSolicitud == priorizacion.SolicitudId);
+
+                if (solicitud == null)
+                {
+                    Console.WriteLine($"❌ Solicitud {priorizacion.SolicitudId} no encontrada");
+                    return false;
+                }
+
+                // 2. Calcular prioridad numérica (1=Urgente, 2=Alta, 3=Media)
+                var prioridadNumerica = CalcularPrioridadNumerica(priorizacion.CriterioPriorizacion);
+
+                // 3. Actualizar estado de la solicitud
+                solicitud.ValidacionGES = true; // Marcar como priorizada
+                _context.SOLICITUD_QUIRURGICA.Update(solicitud);
+
+                // 4. Buscar o crear el criterio de priorización
+                var criterioNombre = MapearCriterioANombre(priorizacion.CriterioPriorizacion);
+                var criterio = await _context.CRITERIO_PRIORIZACION
+                    .FirstOrDefaultAsync(c => c.Nombre == criterioNombre);
+
+                if (criterio == null)
+                {
+                    criterio = new CriterioPriorizacion { Nombre = criterioNombre };
+                    _context.CRITERIO_PRIORIZACION.Add(criterio);
+                    await _context.SaveChangesAsync(); // Guardar para obtener el ID
+                }
+
+                // 5. Crear el registro de priorización
+                var nuevaPriorizacion = new PriorizacionSolicitud
+                {
+                    SolicitudQuirurgicaId = priorizacion.SolicitudId,
+                    CriterioPriorizacionId = criterio.Id,
+                    Prioridad = prioridadNumerica, // ✅ CAMBIO: Usar el cálculo correcto
+                    FechaPriorizacion = priorizacion.FechaPriorizacion,
+                    MotivoPriorizacionId = null // TODO: Implementar si es necesario
+                };
+
+                _context.PRIORIZACION_SOLICITUD.Add(nuevaPriorizacion);
+                await _context.SaveChangesAsync();
+                await transaction.CommitAsync();
+
+                Console.WriteLine($"✅ Solicitud {priorizacion.SolicitudId} priorizada con criterio '{criterioNombre}' (P{prioridadNumerica})");
+                return true;
+            }
+            catch (Exception ex)
+            {
+                await transaction.RollbackAsync();
+                Console.WriteLine($"❌ Error en GuardarPriorizacionAsync: {ex.Message}");
+                Console.WriteLine($"Stack: {ex.StackTrace}");
+                return false;
+            }
+        }
+
+        // ✅ NUEVO MÉTODO: Calcular prioridad numérica
+        private int CalcularPrioridadNumerica(string criterioKey)
+        {
+            return criterioKey.ToLower() switch
+            {
+                // PRIORIDAD 1 - URGENTE (Criterios médicos críticos)
+                "ges" => 1,
+                "sanitaria" => 1,
+
+                // PRIORIDAD 2 - ALTA (Criterios sociales/legales)
+                "prais" => 2,
+                "sename" => 2,
+                "comges" => 2,
+                "licencia" => 2,
+
+                // PRIORIDAD 3 - MEDIA (Criterios logísticos/administrativos)
+                "percentil50" => 3,
+                "logistica" => 3,
+
+                // FALLBACK
+                _ => 3
+            };
+        }
+
+        private string MapearCriterioANombre(string criterioKey)
+        {
+            return criterioKey.ToLower() switch
+            {
+                "ges" => "Patología GES",
+                "prais" => "PRAIS",
+                "sename" => "SENAME",
+                "comges" => "COMGES",
+                "sanitaria" => "Prioridad Sanitaria",
+                "logistica" => "Oportunidad Logística",
+                "percentil50" => "Percentil 50 más antiguo",
+                "licencia" => "Licencia médica prolongada",
+                _ => "Otro"
+            };
+        }
+
+
+
+        public async Task<IEnumerable<SolicitudMedicoDto>> ObtenerSolicitudesPendientesAsync()
+        {
+            try
+            {
+                var solicitudes = await _context.SOLICITUD_QUIRURGICA
+                    .Include(s => s.Consentimiento).ThenInclude(c => c.Paciente)
+                    .Include(s => s.Consentimiento).ThenInclude(c => c.Procedimiento)
+                    .Include(s => s.Diagnostico)
+                    .Where(s => !s.ValidacionGES.HasValue || !s.ValidacionGES.Value)
+                    .OrderBy(s => s.FechaCreacion)
+                    .ToListAsync();
+
+                return solicitudes.Select(s => new SolicitudMedicoDto
+                {
+                    Id = s.IdSolicitud,
+                    NombrePaciente = $"{s.Consentimiento?.Paciente?.PrimerNombre ?? ""} {s.Consentimiento?.Paciente?.ApellidoPaterno ?? ""}".Trim(),
+                    Rut = FormatearRut(s.Consentimiento?.Paciente?.Rut ?? "", s.Consentimiento?.Paciente?.Dv ?? ""),
+                    Diagnostico = s.Diagnostico?.Nombre ?? "Sin diagnóstico",
+                    Procedimiento = s.Consentimiento?.Procedimiento?.Nombre ?? "Sin procedimiento",
+                    Estado = "Pendiente",
+                    FechaCreacion = s.FechaCreacion
+                }).ToList();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"❌ Error: {ex.Message}");
+                return new List<SolicitudMedicoDto>();
+            }
+        }
+
+
+
+
+        public async Task<IEnumerable<SolicitudMedicoDto>> ObtenerSolicitudesPriorizadasAsync()
+        {
+            try
+            {
+                var solicitudes = await _context.SOLICITUD_QUIRURGICA
+                    .Include(s => s.Consentimiento).ThenInclude(c => c.Paciente)
+                    .Include(s => s.Consentimiento).ThenInclude(c => c.Procedimiento)
+                    .Include(s => s.Diagnostico)
+                    .Where(s => s.ValidacionGES.HasValue && s.ValidacionGES.Value)
+                    .OrderByDescending(s => s.FechaCreacion)
+                    .ToListAsync();
+
+                return solicitudes.Select(s => new SolicitudMedicoDto
+                {
+                    Id = s.IdSolicitud,
+                    NombrePaciente = $"{s.Consentimiento?.Paciente?.PrimerNombre ?? ""} {s.Consentimiento?.Paciente?.ApellidoPaterno ?? ""}".Trim(),
+                    Rut = FormatearRut(s.Consentimiento?.Paciente?.Rut ?? "", s.Consentimiento?.Paciente?.Dv ?? ""),
+                    Diagnostico = s.Diagnostico?.Nombre ?? "Sin diagnóstico",
+                    Procedimiento = s.Consentimiento?.Procedimiento?.Nombre ?? "Sin procedimiento",
+                    Estado = "Priorizada",
+                    FechaCreacion = s.FechaCreacion
+                }).ToList();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"❌ Error: {ex.Message}");
+                return new List<SolicitudMedicoDto>();
+            }
+        }
+
+
+
+
+        public async Task<SolicitudDetalleDto?> ObtenerSolicitudDetalleAsync(int solicitudId)
+{
+    try
+    {
+        var solicitud = await _context.SOLICITUD_QUIRURGICA
+            .Include(s => s.Consentimiento).ThenInclude(c => c.Paciente)
+            .Include(s => s.Consentimiento).ThenInclude(c => c.Procedimiento)
+            .Include(s => s.Diagnostico)
+            .Include(s => s.Procedencia)
+            .Include(s => s.DetallesPaciente)
+            .Include(s => s.DetalleClinico)
+            .FirstOrDefaultAsync(s => s.IdSolicitud == solicitudId);
+
+        if (solicitud == null) return null;
+
+        var detallePaciente = solicitud.DetallesPaciente?.FirstOrDefault();
+                var detalleClinico = solicitud.DetalleClinico;
+
+        return new SolicitudDetalleDto
+        {
+            Id = solicitud.IdSolicitud,
+            NombrePaciente = $"{solicitud.Consentimiento?.Paciente?.PrimerNombre ?? ""} {solicitud.Consentimiento?.Paciente?.ApellidoPaterno ?? ""}".Trim(),
+            Rut = FormatearRut(solicitud.Consentimiento?.Paciente?.Rut ?? "", solicitud.Consentimiento?.Paciente?.Dv ?? ""),
+            Diagnostico = solicitud.Diagnostico?.Nombre ?? "Sin diagnóstico",
+            Procedimiento = solicitud.Consentimiento?.Procedimiento?.Nombre ?? "Sin procedimiento",
+            Procedencia = solicitud.Procedencia?.Nombre ?? "N/A",
+            EsGes = solicitud.ValidacionGES ?? false,
+            Estado = (solicitud.ValidacionGES ?? false) ? "Priorizada" : "Pendiente",
+            FechaCreacion = solicitud.FechaCreacion,
+            Peso = detallePaciente?.Peso,
+            Talla = detallePaciente?.Altura,
+            IMC = detallePaciente?.IMC,
+            TiempoEstimado = detalleClinico?.TiempoEstimadoCirugia,
+            EvaluacionAnestesica = detalleClinico?.EvaluacionAnestesica ?? false,
+            EvaluacionTransfusion = detalleClinico?.EvaluacionTransfusion ?? false
+        };
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"❌ Error: {ex.Message}");
+        return null;
+    }
+}
+
+
+
     }
 }

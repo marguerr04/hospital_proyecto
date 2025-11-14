@@ -1,7 +1,7 @@
 ﻿using Hospital.Api.Data.DTOs;
 using System.Threading.Tasks;
 
-namespace Hospital.Api.Services
+namespace Hospital.Api.Data.Services
 {
     public interface ISolicitudQuirurgicaService
     {
@@ -31,5 +31,16 @@ namespace Hospital.Api.Services
 
 
         Task<IEnumerable<SolicitudMedicoDto>> ObtenerSolicitudesPorMedicoAsync(int idMedico);
+
+
+        // Para priorizacion
+
+
+        Task<IEnumerable<SolicitudMedicoDto>> ObtenerSolicitudesPendientesAsync();
+        Task<IEnumerable<SolicitudMedicoDto>> ObtenerSolicitudesPriorizadasAsync();
+        Task<SolicitudDetalleDto?> ObtenerSolicitudDetalleAsync(int solicitudId);
+        Task<bool> GuardarPriorizacionAsync(PriorizacionDto priorizacion);
+
+
     }
 }

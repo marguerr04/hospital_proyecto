@@ -2,7 +2,6 @@ using Hospital.Api.Data;
 using Microsoft.EntityFrameworkCore;
 using Hospital.Api.Data.Services;
 
-
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddDbContext<HospitalDbContext>(options =>
@@ -20,7 +19,7 @@ builder.Services.AddSwaggerGen();
 
 // para el serviceio
 builder.Services.AddScoped<SolicitudQuirurgicaRealService>();
-
+builder.Services.AddScoped<ISolicitudQuirurgicaService, SolicitudQuirurgicaRealService>(); // para el mapeo
 
 
 builder.Services.AddCors(options =>

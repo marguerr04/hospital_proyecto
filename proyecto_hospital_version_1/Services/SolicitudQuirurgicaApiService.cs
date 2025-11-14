@@ -1,15 +1,17 @@
-﻿using Hospital.Api.Data.DTOs;  // ✅ AGREGAR ESTA LÍNEA
-using proyecto_hospital_version_1.Data._Legacy;
+﻿using Hospital.Api.Data.DTOs;              // DTOs compartidos con la API
+using proyecto_hospital_version_1.Data._Legacy; // (opcional, si no se usa puedes quitarlo)
 using System.Net.Http.Json;
 
 namespace proyecto_hospital_version_1.Services
 {
+    // Contrato que usarás en tus componentes Blazor
     public interface ISolicitudQuirurgicaApiService
     {
         Task<bool> CrearSolicitudAsync(SolicitudCrearDto solicitudDto);
         Task<List<SolicitudMedicoDto>> ObtenerSolicitudesPorMedicoAsync(int idMedico);
     }
 
+    // Implementación que SOLO habla con la API vía HttpClient
     public class SolicitudQuirurgicaApiService : ISolicitudQuirurgicaApiService
     {
         private readonly HttpClient _http;
@@ -57,7 +59,8 @@ namespace proyecto_hospital_version_1.Services
             {
                 Console.WriteLine($"[SolicitudService] Obteniendo solicitudes del médico {idMedico}");
 
-                var solicitudes = await _http.GetFromJsonAsync<List<SolicitudMedicoDto>>($"api/Solicitud/medico/{idMedico}");
+                var solicitudes = await _http
+                    .GetFromJsonAsync<List<SolicitudMedicoDto>>($"api/Solicitud/medico/{idMedico}");
 
                 Console.WriteLine($"[SolicitudService] Solicitudes obtenidas: {solicitudes?.Count ?? 0}");
 

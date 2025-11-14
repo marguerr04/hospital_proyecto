@@ -4,7 +4,6 @@ using proyecto_hospital_version_1.Data._Legacy;   // Para acceder al contexto y 
 
 
 // se cambiaran temporalmente a legacy para comptabilidad con api y evitar errores de conflicto
-
 namespace proyecto_hospital_version_1.Services
 {
     public class SolicitudQuirurgicaService : ISolicitudQuirurgicaService

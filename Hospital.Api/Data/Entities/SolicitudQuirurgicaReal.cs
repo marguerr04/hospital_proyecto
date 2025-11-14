@@ -12,14 +12,14 @@ namespace Hospital.Api.Data.Entities
         public int IdSolicitud { get; set; }
 
         [Column("idSIGTE")]
-        public int? IdSIGTE { get; set; }
+        public bool? IdSIGTE { get; set; }
 
         [Column("CONSENTIMIENTO_INFORMADO_id")]
         public int ConsentimientoId { get; set; }
 
         [Required]
         [Column("validacionGES")]
-        public bool ValidacionGES { get; set; }
+        public bool? ValidacionGES { get; set; }
 
         [Required]
         [Column("fechaCreacion")]
@@ -30,7 +30,7 @@ namespace Hospital.Api.Data.Entities
 
         [Required]
         [Column("validacionDuplicado")]
-        public bool ValidacionDuplicado { get; set; }
+        public bool? ValidacionDuplicado { get; set; }
 
         [Column("PROCEDENCIA_id")]
         public int ProcedenciaId { get; set; }
@@ -55,5 +55,11 @@ namespace Hospital.Api.Data.Entities
 
         // ajuste
         public virtual ICollection<DetallePacienteReal> DetallesPaciente { get; set; } = new List<DetallePacienteReal>();
+
+        // Trackeo Rol Solicitud
+
+        public ICollection<SolicitudProfesional> Profesionales { get; set; }
+
+
     }
 }

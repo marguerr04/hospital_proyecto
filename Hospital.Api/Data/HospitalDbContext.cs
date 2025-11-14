@@ -59,7 +59,28 @@ namespace Hospital.Api.Data
         public DbSet<Procedencia> PROCEDENCIA { get; set; }
         public DbSet<TipoPrestacion> TIPO_PRESTACION { get; set; }
 
-       // public DbSet<PriorizacionSolicitud> PRIORIZACION_SOLICITUD { get; set; }
+
+        // Priorizacion de solicitud
+        public DbSet<CriterioPriorizacion> CRITERIO_PRIORIZACION { get; set; } = null!;
+        public DbSet<MotivoPriorizacion> MOTIVO_PRIORIZACION { get; set; } = null!;
+        public DbSet<PriorizacionSolicitud> PRIORIZACION_SOLICITUD { get; set; } = null!;
+
+
+        // Rol de solicitud
+
+
+
+
+        public DbSet<Profesional> PROFESIONAL { get; set; }
+        public DbSet<SolicitudProfesional> SOLICITUD_PROFESIONAL { get; set; }
+
+
+
+
+
+
+
+        // public DbSet<PriorizacionSolicitud> PRIORIZACION_SOLICITUD { get; set; }
 
         //public DbSet<CriterioPriorizacion> CRITERIO_PRIORIZACION { get; set; }
 
@@ -169,7 +190,23 @@ namespace Hospital.Api.Data
 
 
             // para 2 consentimientos informados
-            
+
+
+
+            // para el rol solicitud
+
+
+            modelBuilder.Entity<SolicitudProfesional>()
+        .HasOne(sp => sp.Solicitud)
+        .WithMany(s => s.Profesionales)
+        .HasForeignKey(sp => sp.SOLICITUD_QUIRURGICA_idSolicitud);
+
+            modelBuilder.Entity<SolicitudProfesional>()
+                .HasOne(sp => sp.Profesional)
+                .WithMany(p => p.SolicitudesProfesionales)
+                .HasForeignKey(sp => sp.PROFESIONAL_id);
+
+
 
 
 
