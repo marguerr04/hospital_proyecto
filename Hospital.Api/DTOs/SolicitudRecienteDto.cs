@@ -1,5 +1,5 @@
 ﻿// Hospital.Api/DTOs/SolicitudRecienteDto.cs
-namespace Hospital.Api.DTOs // ¡Namespace corregido!
+namespace Hospital.Api.Data.DTOs // ¡Namespace corregido!
 {
     public class SolicitudRecienteDto
     {

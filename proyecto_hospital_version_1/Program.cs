@@ -37,7 +37,7 @@ builder.Services.AddDbContext<HospitalDbContextLegacy>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("HospitalV4")));
 
 
-builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri("http://localhost:5227") });
+builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri("http://localhost:5227") }); // api
 builder.Services.AddScoped<DashboardService>();
 
 // servicio de la api

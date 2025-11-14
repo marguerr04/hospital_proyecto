@@ -1,4 +1,5 @@
-﻿using Hospital.Api.DTOs;
+﻿using Hospital.Api.Data.DTOs;
+using System.Threading.Tasks;
 
 namespace Hospital.Api.Services
 {
@@ -26,5 +27,9 @@ namespace Hospital.Api.Services
 
         Task<IEnumerable<SolicitudRecienteDto>> GetSolicitudesRecientesAsync();
         Task<IEnumerable<FechaProgramadaDto>> GetProximasFechasProgramadasAsync();
+
+
+
+        Task<IEnumerable<SolicitudMedicoDto>> ObtenerSolicitudesPorMedicoAsync(int idMedico);
     }
 }

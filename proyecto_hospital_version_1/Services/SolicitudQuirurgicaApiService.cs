@@ -1,13 +1,13 @@
-﻿using System.Net.Http.Json;
-using Hospital.Api.Data.DTOs;  // ✅ Para usar el DTO correcto
+﻿using Hospital.Api.Data.DTOs;  // ✅ AGREGAR ESTA LÍNEA
 using proyecto_hospital_version_1.Data._Legacy;
+using System.Net.Http.Json;
 
 namespace proyecto_hospital_version_1.Services
 {
     public interface ISolicitudQuirurgicaApiService
     {
-        // ✅ CAMBIADO: Ahora acepta SolicitudCrearDto
         Task<bool> CrearSolicitudAsync(SolicitudCrearDto solicitudDto);
+        Task<List<SolicitudMedicoDto>> ObtenerSolicitudesPorMedicoAsync(int idMedico);
     }
 
     public class SolicitudQuirurgicaApiService : ISolicitudQuirurgicaApiService
@@ -27,7 +27,6 @@ namespace proyecto_hospital_version_1.Services
                 Console.WriteLine($"[SolicitudService] Diagnóstico: {solicitudDto.DiagnosticoPrincipal}");
                 Console.WriteLine($"[SolicitudService] EspecialidadDestino: {solicitudDto.EspecialidadDestino}");
 
-                // ✅ Endpoint CORRECTO (respeta mayúsculas/minúsculas)
                 var response = await _http.PostAsJsonAsync("api/Solicitud/crear", solicitudDto);
 
                 Console.WriteLine($"[SolicitudService] Respuesta HTTP: {response.StatusCode}");
@@ -49,6 +48,25 @@ namespace proyecto_hospital_version_1.Services
                 Console.WriteLine($"💥 Error al conectar con la API: {ex.Message}");
                 Console.WriteLine($"💥 StackTrace: {ex.StackTrace}");
                 return false;
+            }
+        }
+
+        public async Task<List<SolicitudMedicoDto>> ObtenerSolicitudesPorMedicoAsync(int idMedico)
+        {
+            try
+            {
+                Console.WriteLine($"[SolicitudService] Obteniendo solicitudes del médico {idMedico}");
+
+                var solicitudes = await _http.GetFromJsonAsync<List<SolicitudMedicoDto>>($"api/Solicitud/medico/{idMedico}");
+
+                Console.WriteLine($"[SolicitudService] Solicitudes obtenidas: {solicitudes?.Count ?? 0}");
+
+                return solicitudes ?? new List<SolicitudMedicoDto>();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"💥 Error al obtener solicitudes: {ex.Message}");
+                return new List<SolicitudMedicoDto>();
             }
         }
     }

@@ -1,5 +1,5 @@
 ﻿using Hospital.Api.Data;
-using Hospital.Api.DTOs;
+using Hospital.Api.Data.DTOs;
 using Hospital.Api.Services;
 using Microsoft.EntityFrameworkCore;
 using Hospital.Api.Data.Entities;
@@ -168,6 +168,48 @@ namespace Hospital.Api.Data.Services
             }
         }
 
+        // ✅ NUEVO: Obtener solicitudes por médico (por ahora retorna todas las solicitudes)
+        public async Task<IEnumerable<SolicitudMedicoDto>> ObtenerSolicitudesPorMedicoAsync(int idMedico)
+        {
+            try
+            {
+                Console.WriteLine($"🔍 [Service] Obteniendo solicitudes del médico {idMedico}");
+
+                // 📝 NOTA: Por ahora retorna TODAS las solicitudes porque no hay tabla MEDICO
+                // TODO: Cuando implementes usuarios/médicos, agregar filtro WHERE
+                var solicitudes = await _context.SOLICITUD_QUIRURGICA
+                    .Include(s => s.Consentimiento)
+                        .ThenInclude(c => c.Paciente)
+                    .Include(s => s.Consentimiento)
+                        .ThenInclude(c => c.Procedimiento)
+                    .Include(s => s.Diagnostico)
+                    .OrderByDescending(s => s.FechaCreacion)
+                    .ToListAsync();
+
+                var resultado = solicitudes.Select(s => new SolicitudMedicoDto
+                {
+                    Id = s.IdSolicitud,
+                    NombrePaciente = $"{s.Consentimiento?.Paciente?.PrimerNombre ?? ""} {s.Consentimiento?.Paciente?.ApellidoPaterno ?? ""}".Trim(),
+                    Rut = FormatearRut(s.Consentimiento?.Paciente?.Rut ?? "", s.Consentimiento?.Paciente?.Dv ?? ""),
+                    Diagnostico = s.Diagnostico?.Nombre ?? "Sin diagnóstico",
+                    Procedimiento = s.Consentimiento?.Procedimiento?.Nombre ?? "Sin procedimiento",
+                    Estado = s.ValidacionGES ? "Priorizada" : "Pendiente",
+                    FechaCreacion = s.FechaCreacion,
+                    FechaProgramada = null, // TODO: Cuando exista la tabla PROGRAMACION_QUIRURGICA
+                    DiasRestantes = null,
+                    Contactabilidad = "Por Contactar" // TODO: Cuando exista esta información
+                }).ToList();
+
+                Console.WriteLine($"✅ Solicitudes obtenidas: {resultado.Count}");
+                return resultado;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"❌ Error en ObtenerSolicitudesPorMedicoAsync: {ex.Message}");
+                return new List<SolicitudMedicoDto>();
+            }
+        }
+
         // 🔹 MÉTODO SIMPLIFICADO 1: Solo datos básicos (CON DATOS REALES O DUMMY)
         public async Task<IEnumerable<SolicitudRecienteDto>> GetSolicitudesRecientesAsync()
         {
@@ -302,6 +344,13 @@ namespace Hospital.Api.Data.Services
             if (diff.TotalDays < 1) return $"Hace {(int)diff.TotalHours} horas";
             if (diff.TotalDays < 30) return $"Hace {(int)diff.TotalDays} días";
             return date.ToString("dd/MM/yyyy");
+        }
+
+        // 🔹 FUNCIÓN AUXILIAR PARA FORMATEAR RUT
+        private string FormatearRut(string rut, string dv)
+        {
+            if (string.IsNullOrEmpty(rut)) return "N/A";
+            return $"{rut}-{dv}";
         }
     }
 }

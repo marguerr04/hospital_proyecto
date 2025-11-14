@@ -1,6 +1,7 @@
 ﻿@page "/mis-solicitudes-medico"
 @layout Components.Layout.MainLayoutMedico
 @using MudBlazor
+@inject ISolicitudQuirurgicaApiService SolicitudApiService
 
 <PageTitle>Mis Solicitudes - Médico</PageTitle>
 
@@ -231,7 +232,7 @@
         public string Contactabilidad { get; set; } = "Por Contactar"; // Contactado | Sin Respuesta | Por Contactar
     }
 
-    // ===== Datos de demo (luego lo reemplazas por tu consulta) =====
+    // ===== Datos de demo (ahora cargados desde API) =====
     private List<SolicitudResumenVM> Resumen = new();
 
     // Particiones para las 2 vistas
@@ -243,9 +244,53 @@
     private int KpiPendientes => Resumen.Count(s => !s.Estado.Contains("Priorizada"));
     private int KpiPriorizadas => Resumen.Count(s => s.Estado.Contains("Priorizada"));
 
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
-        // Simulación rápida: toma 8 registros de ejemplo (puedes mapear desde tu lista real)
+        // ✅ CAMBIO CRÍTICO: Ahora carga desde la API
+        await CargarSolicitudesDesdeApi();
+
+        // Particionar los datos
+        Priorizadas = Resumen.Where(s => s.Estado.Contains("Priorizada")).ToList();
+        Programadas = Resumen.Where(s => s.FechaProgramada.HasValue).OrderBy(s => s.FechaProgramada).ToList();
+    }
+
+    // ✅ NUEVO: Cargar solicitudes desde la API
+    private async Task CargarSolicitudesDesdeApi()
+    {
+        try
+        {
+            // TODO: Reemplaza '1' con el ID real del médico autenticado
+            var idMedico = 1;
+
+            var solicitudesApi = await SolicitudApiService.ObtenerSolicitudesPorMedicoAsync(idMedico);
+
+            Resumen = solicitudesApi.Select(s => new SolicitudResumenVM
+            {
+                Id = s.Id,
+                NombrePaciente = s.NombrePaciente,
+                Rut = s.Rut,
+                Diagnostico = s.Diagnostico,
+                Procedimiento = s.Procedimiento,
+                Estado = s.Estado,
+                FechaCreacion = s.FechaCreacion,
+                FechaProgramada = s.FechaProgramada,
+                DiasRestantes = s.DiasRestantes,
+                Contactabilidad = s.Contactabilidad ?? "Por Contactar"
+            }).ToList();
+
+            Console.WriteLine($"✅ Solicitudes cargadas desde API: {Resumen.Count}");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"❌ Error al cargar solicitudes: {ex.Message}");
+            // Fallback a datos dummy si falla la API
+            CargarDatosDummy();
+        }
+    }
+
+    // ✅ RESPALDO: Si falla la API, usar datos dummy
+    private void CargarDatosDummy()
+    {
         Resumen = new List<SolicitudResumenVM>{
             new(){ Id=101, NombrePaciente="María González Pérez", Rut="12.345.678-9", Diagnostico="Fractura de cadera", Procedimiento="Osteosíntesis", Estado="Priorizada", FechaCreacion=DateTime.Now.AddDays(-8) },
             new(){ Id=102, NombrePaciente="Jorge Contreras", Rut="8.765.432-1", Diagnostico="Urgencia diferida", Procedimiento="Evaluación CI", Estado="Pendiente", FechaCreacion=DateTime.Now.AddDays(-5) },
@@ -257,12 +302,7 @@
             new(){ Id=108, NombrePaciente="Pedro Ruiz", Rut="7.555.111-9", Diagnostico="Cataratas", Procedimiento="Facoemulsificación", Estado="Pendiente", FechaCreacion=DateTime.Now.AddDays(-30) },
         };
 
-        // Asignar fechas dummy y contactabilidad
         SeedFechasYContacto();
-
-        // Particionar los datos
-        Priorizadas = Resumen.Where(s => s.Estado.Contains("Priorizada")).ToList();
-        Programadas = Resumen.Where(s => s.FechaProgramada.HasValue).OrderBy(s => s.FechaProgramada).ToList();
     }
 
     private void SeedFechasYContacto()

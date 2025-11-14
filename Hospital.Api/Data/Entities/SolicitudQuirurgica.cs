@@ -10,7 +10,7 @@ namespace Hospital.Api.Data.Entities
         public int Id { get; set; }
         public int PacienteId { get; set; }
 
-        public PacienteHospital Paciente { get; set; }
+        public Paciente Paciente { get; set; } = null!;  // ✅
 
         [Required]
         public string DiagnosticoPrincipal { get; set; } = string.Empty;
@@ -50,10 +50,5 @@ namespace Hospital.Api.Data.Entities
         public string? CreadoPor { get; set; }
         // saber la fecha de priorización
         public DateTime? FechaPriorizacion { get; set; }
-
-
-
-
-
     }
 }

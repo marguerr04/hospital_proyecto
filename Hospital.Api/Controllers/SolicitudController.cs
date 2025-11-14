@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Hospital.Api.Data.Services;
-using Hospital.Api.Data.DTOs; // (opcional si mueves el DTO a esta carpeta)
+using Hospital.Api.Data.DTOs;
 
 namespace Hospital.Api.Controllers
 {
@@ -54,40 +54,20 @@ namespace Hospital.Api.Controllers
                 return StatusCode(500, new { mensaje = "⚠️ Error interno del servidor", detalle = ex.Message });
             }
         }
-    }
 
-    // =============================
-    // ✅ DTO que refleja el flujo real
-    // =============================
-    public class SolicitudCrearDto
-    {
-        public int PacienteId { get; set; }
-        // para el id del consetnimiento
-        public int ConsentimientoId { get; set; }
-
-        // --- Datos base ---
-        public string DiagnosticoPrincipal { get; set; } = string.Empty;
-        public string ProcedimientoPrincipal { get; set; } = string.Empty;
-        public string Procedencia { get; set; } = "Ambulatorio";
-
-        // --- Datos clínicos ---
-        public decimal Peso { get; set; }
-        public decimal Talla { get; set; }
-        public decimal IMC { get; set; }
-        public int TiempoEstimado { get; set; }
-
-        // --- Evaluaciones ---
-        public bool EvaluacionAnestesica { get; set; }
-        public bool EvaluacionTransfusion { get; set; }
-        public bool EsGes { get; set; }
-
-        // --- Contexto ---
-        public string? Comentarios { get; set; }
-        public string? EspecialidadOrigen { get; set; }
-        public string? EspecialidadDestino { get; set; }
-
-        // --- Campos opcionales (compatibilidad) ---
-        public string? Lateralidad { get; set; }
-        public string? Extremidad { get; set; }
+        // ✅ GET api/solicitud/medico/{idMedico}
+        [HttpGet("medico/{idMedico}")]
+        public async Task<IActionResult> ObtenerSolicitudesPorMedico(int idMedico)
+        {
+            try
+            {
+                var solicitudes = await _solicitudService.ObtenerSolicitudesPorMedicoAsync(idMedico);
+                return Ok(solicitudes);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { mensaje = "⚠️ Error al obtener solicitudes del médico", detalle = ex.Message });
+            }
+        }
     }
 }

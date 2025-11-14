@@ -13,13 +13,14 @@
 @using ApiEntities = Hospital.Api.Data.Entities;
 
 
-@inject HospitalDbContextLegacy HospitalDb
+
 @inject IProcedimientoService ProcedimientoService
 @inject ISolicitudQuirurgicaApiService SolicitudApiService
 @inject IConsentimientoInformadoService ConsentimientoService
 @inject IJSRuntime JsRuntime // Para posibles alertas o interacciones JS
 @inject HttpClient Http // para http
 @inject SweetAlertHelper SweetAlert
+@inject IPacienteService PacienteApi
 
 <PageTitle>Nueva Solicitud Quirúrgica</PageTitle>
 
@@ -343,50 +344,50 @@
         {
             return;
         }
+
         _estado = "cargando";
         StateHasChanged();
 
         try
         {
-            var query = HospitalDb.Pacientes
-            .Include(p => p.Ubicaciones)  // 
-        .    AsQueryable();
-            if (!string.IsNullOrWhiteSpace(_busquedaTexto))
+            // ✅ USAR LA API
+            var resultados = await PacienteApi.BuscarPacientesApiAsync(
+                texto: _busquedaTexto,
+                rut: null,
+                dv: _busquedaDv
+            );
+
+            if (resultados != null && resultados.Any())
             {
-                var busqueda = _busquedaTexto.ToLower();
-                query = query.Where(p =>
-                    p.primerNombre.ToLower().Contains(busqueda) ||
-                    (p.segundoNombre != null && p.segundoNombre.ToLower().Contains(busqueda)) ||
-                    p.apellidoPaterno.ToLower().Contains(busqueda) ||
-                    (p.apellidoMaterno != null && p.apellidoMaterno.ToLower().Contains(busqueda)) ||
-                    p.rut.Contains(busqueda)
-                );
-            }
+                var pacienteData = resultados.First();
 
-            if (!string.IsNullOrWhiteSpace(_busquedaDv))
-            {
-                var dvUpper = _busquedaDv.ToUpper();
-                query = query.Where(p => p.dv.ToUpper() == dvUpper);
-            }
+                // Mapear a PacienteHospital (temporal para compatibilidad)
+                _pacienteSeleccionado = new proyecto_hospital_version_1.Data._Legacy.PacienteHospital
+                {
+                    id = Convert.ToInt32(pacienteData.GetType().GetProperty("Id")?.GetValue(pacienteData, null) ?? 0),
+                    rut = pacienteData.GetType().GetProperty("Rut")?.GetValue(pacienteData, null)?.ToString() ?? "",
+                    dv = pacienteData.GetType().GetProperty("Dv")?.GetValue(pacienteData, null)?.ToString() ?? "",
+                    primerNombre = pacienteData.GetType().GetProperty("PrimerNombre")?.GetValue(pacienteData, null)?.ToString() ?? "",
+                    segundoNombre = pacienteData.GetType().GetProperty("SegundoNombre")?.GetValue(pacienteData, null)?.ToString() ?? "",
+                    apellidoPaterno = pacienteData.GetType().GetProperty("ApellidoPaterno")?.GetValue(pacienteData, null)?.ToString() ?? "",
+                    apellidoMaterno = pacienteData.GetType().GetProperty("ApellidoMaterno")?.GetValue(pacienteData, null)?.ToString() ?? "",
+                    fechaNacimiento = Convert.ToDateTime(pacienteData.GetType().GetProperty("FechaNacimiento")?.GetValue(pacienteData, null) ?? DateTime.MinValue),
+                    sexo = pacienteData.GetType().GetProperty("Sexo")?.GetValue(pacienteData, null)?.ToString() ?? "",
+                    telefonoMovil = pacienteData.GetType().GetProperty("TelefonoMovil")?.GetValue(pacienteData, null)?.ToString() ?? "",
+                    mail = pacienteData.GetType().GetProperty("Mail")?.GetValue(pacienteData, null)?.ToString() ?? "",
+                    PRAIS = pacienteData.GetType().GetProperty("PRAIS")?.GetValue(pacienteData, null) as bool?,
+                    telefonoFijo = pacienteData.GetType().GetProperty("TelefonoFijo")?.GetValue(pacienteData, null)?.ToString()
+                };
 
-
-            var pacienteEncontrado = await query.FirstOrDefaultAsync();
-
-            if (pacienteEncontrado != null)
-            {
-                _pacienteSeleccionado = pacienteEncontrado;
-
-                _nombrePacienteParaMostrar = $"{pacienteEncontrado.primerNombre} {pacienteEncontrado.apellidoPaterno}";
-                _rutPacienteParaMostrar = $"{pacienteEncontrado.rut}-{pacienteEncontrado.dv}";
+                _nombrePacienteParaMostrar = pacienteData.GetType().GetProperty("NombreCompleto")?.GetValue(pacienteData, null)?.ToString() ?? "";
+                _rutPacienteParaMostrar = pacienteData.GetType().GetProperty("RutCompleto")?.GetValue(pacienteData, null)?.ToString() ?? "";
             }
             else
             {
-                // Si no se encuentra, mostramos un mensaje indicándolo.
                 _pacienteSeleccionado = null;
                 _nombrePacienteParaMostrar = "Paciente no encontrado";
                 _rutPacienteParaMostrar = "";
             }
-            // ===== FIN DEL CAMBIO IMPORTANTE =====
 
             _estado = "ok";
         }
@@ -394,7 +395,7 @@
         {
             _estado = "error";
             _error = ex.Message;
-            Console.WriteLine($"Error al buscar pacientes: {ex}");
+            Console.WriteLine($"Error al buscar pacientes: {ex.Message}");
         }
 
         StateHasChanged();
@@ -454,14 +455,12 @@
         if (_equiposSeleccionados.Count == 0)
             errores.Add("• No se han seleccionado equipos requeridos");
 
-        // Validaciones para peso y talla
         if (!_peso.HasValue || _peso <= 0)
             errores.Add("• Peso no válido");
 
         if (!_talla.HasValue || _talla <= 0)
             errores.Add("• Talla no válida");
 
-        // ✅ VALIDACIÓN CRÍTICA NUEVA - Consentimiento
         if (_consentimientoInformadoApiId == 0)
             errores.Add("• No se ha generado el consentimiento informado. Complete el Paso 1 correctamente.");
 
@@ -478,7 +477,7 @@
             Console.WriteLine($"   - ConsentimientoId: {_consentimientoInformadoApiId}");
             Console.WriteLine($"   - PacienteId: {_pacienteSeleccionado.id}");
 
-            // ✅ CREAR DTO CORRECTO para la nueva API
+            // ✅ SIMPLIFICADO: Ya no necesitas calificar completamente el tipo
             var solicitudDto = new SolicitudCrearDto
             {
                 // ✅ CAMPOS CRÍTICOS para FKs
@@ -487,8 +486,8 @@
                 DiagnosticoPrincipal = _diagnosticoPrincipal,
                 Procedencia = _procedenciaSeleccionada,
                 EspecialidadDestino = string.IsNullOrWhiteSpace(_especialidadDestino)
-                ? "Cirugía Urgencia" // 
-                : _especialidadDestino, // Valor por defecto
+                    ? "Cirugía Urgencia"
+                    : _especialidadDestino,
 
                 // ✅ CAMPOS CLÍNICOS
                 Peso = _peso.Value,
@@ -505,10 +504,10 @@
                 Comentarios = _comentariosAdicionales,
                 EspecialidadOrigen = _especialidadOrigen,
 
-                // ❌ CAMPOS QUE NO SE USAN (pero se envían por compatibilidad)
-                ProcedimientoPrincipal = _procedimientoSeleccionado, // No se usa en el service
-                Lateralidad = _lateralidadSeleccionada, // No se usa en el service
-                Extremidad = _extremidadSeleccionada // No se usa en el service
+                // Campos opcionales
+                ProcedimientoPrincipal = _procedimientoSeleccionado,
+                Lateralidad = _lateralidadSeleccionada,
+                Extremidad = _extremidadSeleccionada
             };
 
             Console.WriteLine("📦 DTO creado para enviar a API:");
