@@ -1,6 +1,7 @@
 ﻿using Hospital.Api.Data.Entities;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Collections.Generic;
 
 namespace Hospital.Api.Data.Entities
 {
@@ -38,28 +39,29 @@ namespace Hospital.Api.Data.Entities
         [Column("TIPO_PRESTACION_id")]
         public int TipoPrestacionId { get; set; }
 
-        // Navigation properties
-        [ForeignKey("ConsentimientoId")]
-        public virtual ConsentimientoInformadoReal Consentimiento { get; set; }
+        // ------------------ Navegaciones ------------------
 
-        [ForeignKey("DiagnosticoId")]
-        public virtual Diagnostico Diagnostico { get; set; }
+        [ForeignKey(nameof(ConsentimientoId))]
+        public virtual ConsentimientoInformadoReal? Consentimiento { get; set; }
 
-        [ForeignKey("ProcedenciaId")]
-        public virtual Procedencia Procedencia { get; set; }
+        [ForeignKey(nameof(DiagnosticoId))]
+        public virtual Diagnostico? Diagnostico { get; set; }
 
-        [ForeignKey("TipoPrestacionId")]
-        public virtual TipoPrestacion TipoPrestacion { get; set; }
+        [ForeignKey(nameof(ProcedenciaId))]
+        public virtual Procedencia? Procedencia { get; set; }
 
-        public virtual DetalleClinicoReal DetalleClinico { get; set; }
+        [ForeignKey(nameof(TipoPrestacionId))]
+        public virtual TipoPrestacion? TipoPrestacion { get; set; }
 
-        // ajuste
+        public virtual DetalleClinicoReal? DetalleClinico { get; set; }
+
+        // DetallePaciente (1:N)
         public virtual ICollection<DetallePacienteReal> DetallesPaciente { get; set; } = new List<DetallePacienteReal>();
 
-        // Trackeo Rol Solicitud
+        // Trackeo Rol Solicitud (1:N)
+        public virtual ICollection<SolicitudProfesional> Profesionales { get; set; } = new List<SolicitudProfesional>();
 
-        public ICollection<SolicitudProfesional> Profesionales { get; set; }
-
-
+        // Priorizaciones (1:N) — la FK compuesta se configura en OnModelCreating
+        public virtual ICollection<PriorizacionSolicitud> Priorizaciones { get; set; } = new List<PriorizacionSolicitud>();
     }
 }

@@ -18,25 +18,29 @@ namespace Hospital.Api.Data.Entities
         [Column("CRITERIO_PRIORIZACION_id")]
         public int CriterioPriorizacionId { get; set; }
 
+        // ⚠️ Estos dos nombres DEBEN calzar con la BD:
         [Required]
         [Column("SOLICITUD_QUIRURGICA_idSolicitud")]
         public int SolicitudQuirurgicaId { get; set; }
 
+        [Required]
+        [Column("SOLICITUD_QUIRURGICA_CONSENTIMIENTO_INFORMADO_id")]
+        public int SolicitudConsentimientoId { get; set; }
+
         [Column("MOTIVO_PRIORIZACION_id")]
         public int? MotivoPriorizacionId { get; set; }
 
-        [Required]
         [Column("prioridad")]
-        public int Prioridad { get; set; }
+        public int? Prioridad { get; set; }
 
         // Navegación
-        [ForeignKey("CriterioPriorizacionId")]
+        [ForeignKey(nameof(CriterioPriorizacionId))]
         public virtual CriterioPriorizacion CriterioPriorizacion { get; set; } = null!;
 
-        [ForeignKey("SolicitudQuirurgicaId")]
+        // OJO: relación compuesta contra la Alternate Key de SolicitudQuirurgicaReal
         public virtual SolicitudQuirurgicaReal SolicitudQuirurgica { get; set; } = null!;
 
-        [ForeignKey("MotivoPriorizacionId")]
+        [ForeignKey(nameof(MotivoPriorizacionId))]
         public virtual MotivoPriorizacion? MotivoPriorizacion { get; set; }
     }
 }

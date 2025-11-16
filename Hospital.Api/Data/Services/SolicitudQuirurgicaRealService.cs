@@ -371,7 +371,7 @@ namespace Hospital.Api.Data.Services
 
             try
             {
-                // 1. Obtener la solicitud
+                // 1) Obtener la solicitud por Id (parte 1 de la PK)
                 var solicitud = await _context.SOLICITUD_QUIRURGICA
                     .FirstOrDefaultAsync(s => s.IdSolicitud == priorizacion.SolicitudId);
 
@@ -381,40 +381,64 @@ namespace Hospital.Api.Data.Services
                     return false;
                 }
 
-                // 2. Calcular prioridad numérica (1=Urgente, 2=Alta, 3=Media)
-                var prioridadNumerica = CalcularPrioridadNumerica(priorizacion.CriterioPriorizacion);
-
-                // 3. Actualizar estado de la solicitud
-                solicitud.ValidacionGES = true; // Marcar como priorizada
-                _context.SOLICITUD_QUIRURGICA.Update(solicitud);
-
-                // 4. Buscar o crear el criterio de priorización
-                var criterioNombre = MapearCriterioANombre(priorizacion.CriterioPriorizacion);
+                // 2) Buscar el criterio por ID (lo envía el front)
                 var criterio = await _context.CRITERIO_PRIORIZACION
-                    .FirstOrDefaultAsync(c => c.Nombre == criterioNombre);
+                    .FirstOrDefaultAsync(c => c.Id == priorizacion.CriterioPriorizacionId);
 
                 if (criterio == null)
                 {
-                    criterio = new CriterioPriorizacion { Nombre = criterioNombre };
-                    _context.CRITERIO_PRIORIZACION.Add(criterio);
-                    await _context.SaveChangesAsync(); // Guardar para obtener el ID
+                    Console.WriteLine($"❌ CriterioPriorizacionId {priorizacion.CriterioPriorizacionId} no existe");
+                    return false;
                 }
 
-                // 5. Crear el registro de priorización
+                // 3) Calcular prioridad numérica según el NOMBRE del criterio
+                var prioridadNumerica = CalcularPrioridadNumerica(criterio.Nombre);
+
+                // 4) Marcar solicitud como priorizada (tu lógica actual)
+                solicitud.ValidacionGES = true;
+                _context.SOLICITUD_QUIRURGICA.Update(solicitud);
+
+                // 5) Crear la priorización (⚠️ incluir ambas columnas de la FK compuesta)
                 var nuevaPriorizacion = new PriorizacionSolicitud
                 {
-                    SolicitudQuirurgicaId = priorizacion.SolicitudId,
+                    SolicitudQuirurgicaId = solicitud.IdSolicitud,     // parte 1
+                    SolicitudConsentimientoId = solicitud.ConsentimientoId, // parte 2
                     CriterioPriorizacionId = criterio.Id,
-                    Prioridad = prioridadNumerica, // ✅ CAMBIO: Usar el cálculo correcto
+                    Prioridad = prioridadNumerica,
                     FechaPriorizacion = priorizacion.FechaPriorizacion,
-                    MotivoPriorizacionId = null // TODO: Implementar si es necesario
+                    MotivoPriorizacionId = null // opcional
                 };
 
-                _context.PRIORIZACION_SOLICITUD.Add(nuevaPriorizacion);
+                //_context.PRIORIZACION_SOLICITUD.Add(nuevaPriorizacion);
+                // await _context.SaveChangesAsync();
+
+
+
                 await _context.SaveChangesAsync();
+
+                // 5.2) Inserta la priorización vía SP (evita OUTPUT y no choca con triggers)
+                await _context.Database.ExecuteSqlRawAsync(@"
+                EXEC dbo.usp_PRIORIZACION_SOLICITUD_Insert
+                     @CRITERIO_PRIORIZACION_id = {0},
+                     @fechaPriorizacion = {1},
+                     @MOTIVO_PRIORIZACION_id = {2},
+                     @prioridad = {3},
+                     @SOLICITUD_QUIRURGICA_CONSENTIMIENTO_INFORMADO_id = {4},
+                     @SOLICITUD_QUIRURGICA_idSolicitud = {5}
+            ",
+                    nuevaPriorizacion.CriterioPriorizacionId,
+                    nuevaPriorizacion.FechaPriorizacion,
+                    nuevaPriorizacion.MotivoPriorizacionId,
+                    nuevaPriorizacion.Prioridad,
+                    nuevaPriorizacion.SolicitudConsentimientoId,
+                    nuevaPriorizacion.SolicitudQuirurgicaId
+                );
+
+
+
                 await transaction.CommitAsync();
 
-                Console.WriteLine($"✅ Solicitud {priorizacion.SolicitudId} priorizada con criterio '{criterioNombre}' (P{prioridadNumerica})");
+                Console.WriteLine($"✅ Solicitud {priorizacion.SolicitudId} priorizada con criterio '{criterio.Nombre}' (P{prioridadNumerica})");
                 return true;
             }
             catch (Exception ex)
@@ -427,27 +451,35 @@ namespace Hospital.Api.Data.Services
         }
 
         // ✅ NUEVO MÉTODO: Calcular prioridad numérica
-        private int CalcularPrioridadNumerica(string criterioKey)
+        private int CalcularPrioridadNumerica(string criterioNombre)
         {
-            return criterioKey.ToLower() switch
+            switch ((criterioNombre ?? string.Empty).Trim().ToLower())
             {
-                // PRIORIDAD 1 - URGENTE (Criterios médicos críticos)
-                "ges" => 1,
-                "sanitaria" => 1,
+                // PRIORIDAD 1 - URGENTE
+                case "patología ges":
+                case "prioridad sanitaria":
+                case "ges":
+                case "sanitaria":
+                    return 1;
 
-                // PRIORIDAD 2 - ALTA (Criterios sociales/legales)
-                "prais" => 2,
-                "sename" => 2,
-                "comges" => 2,
-                "licencia" => 2,
+                // PRIORIDAD 2 - ALTA
+                case "prais":
+                case "sename":
+                case "comges":
+                case "licencia médica prolongada":
+                case "licencia":
+                    return 2;
 
-                // PRIORIDAD 3 - MEDIA (Criterios logísticos/administrativos)
-                "percentil50" => 3,
-                "logistica" => 3,
+                // PRIORIDAD 3 - MEDIA
+                case "percentil 50 más antiguo":
+                case "percentil50":
+                case "oportunidad logística":
+                case "logistica":
+                    return 3;
 
-                // FALLBACK
-                _ => 3
-            };
+                default:
+                    return 3;
+            }
         }
 
         private string MapearCriterioANombre(string criterioKey)

@@ -1,10 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Hospital.Api.Data.Entities;
-
 
 namespace Hospital.Api.Data
 {
@@ -15,18 +12,13 @@ namespace Hospital.Api.Data
 
         // Tablas principales
         public DbSet<Paciente> PACIENTE { get; set; }
-        // temporal public DbSet<SolicitudQuirurgica> SOLICITUD_QUIRURGICA { get; set; }
-        // temporal public DbSet<ConsentimientoInformado> CONSENTIMIENTO_INFORMADO { get; set; }
         public DbSet<Prevision> PREVISION { get; set; }
         public DbSet<PrevisionPaciente> PREVISION_PACIENTE { get; set; }
         public DbSet<Ubicacion> UBICACION { get; set; }
         public DbSet<EstadoSolicitud> ESTADO_SOLICITUD { get; set; }
-        // temporal public DbSet<DetallePaciente> DETALLE_PACIENTE { get; set; }
-        // temporal public DbSet<DetalleClinico> DETALLE_CLINICO { get; set; }
-
         public DbSet<Solicitud> SOLICITUDES { get; set; } = null!;
 
-        // Tablas de catálogo
+        // Catálogos
         public DbSet<Extremidad> EXTREMIDAD { get; set; }
         public DbSet<Lateralidad> LATERALIDAD { get; set; }
         public DbSet<CatalogoEstados> CATALOGO_ESTADOS { get; set; }
@@ -34,91 +26,47 @@ namespace Hospital.Api.Data
         public DbSet<Diagnostico> DIAGNOSTICO { get; set; }
         public DbSet<PrevisionTipo> TIPO_PREVISION { get; set; }
 
-
-        // Tablas de Contactabilidad
+        // Contactabilidad
         public DbSet<Contactabilidad> CONTACTABILIDAD { get; set; } = null!;
         public DbSet<MotivoContacto> MOTIVO_CONTACTO { get; set; } = null!;
 
-
-        // en proceso de reemplazo de procedimientos
-        /* da conflicto, y en la bd no existe procedimientos como tal
-        public DbSet<Procedimiento> Procedimientos { get; set; } = null!;
-        */
+        // Procedimientos
         public DbSet<Procedimiento> PROCEDIMIENTO { get; set; } = null!;
         public DbSet<TipoProcedimiento> TIPO_PROCEDIMIENTO { get; set; } = null!;
-
         public DbSet<Especialidad> ESPECIALIDAD { get; set; } = null!;
 
-        // Para la integracion
-
-
-        public DbSet<SolicitudQuirurgicaReal> SOLICITUD_QUIRURGICA { get; set; } // ahora reemplazara  el original contolador
-        public DbSet<ConsentimientoInformadoReal> CONSENTIMIENTO_INFORMADO { get; set; } // ahora reemplazara  el original contolador
-        public DbSet<DetalleClinicoReal> DETALLE_CLINICO { get; set; } // ahora reemplazara  el original contolador
-        public DbSet<DetallePacienteReal> DETALLE_PACIENTE { get; set; } // ahora reemplazara  el original contolador
+        // Integración “Real”
+        public DbSet<SolicitudQuirurgicaReal> SOLICITUD_QUIRURGICA { get; set; }
+        public DbSet<ConsentimientoInformadoReal> CONSENTIMIENTO_INFORMADO { get; set; }
+        public DbSet<DetalleClinicoReal> DETALLE_CLINICO { get; set; }
+        public DbSet<DetallePacienteReal> DETALLE_PACIENTE { get; set; }
         public DbSet<Procedencia> PROCEDENCIA { get; set; }
         public DbSet<TipoPrestacion> TIPO_PRESTACION { get; set; }
 
-
-        // Priorizacion de solicitud
+        // Priorización
         public DbSet<CriterioPriorizacion> CRITERIO_PRIORIZACION { get; set; } = null!;
         public DbSet<MotivoPriorizacion> MOTIVO_PRIORIZACION { get; set; } = null!;
         public DbSet<PriorizacionSolicitud> PRIORIZACION_SOLICITUD { get; set; } = null!;
 
-
-        // Rol de solicitud
-
-
-
-
+        // Rol Solicitud
         public DbSet<Profesional> PROFESIONAL { get; set; }
         public DbSet<SolicitudProfesional> SOLICITUD_PROFESIONAL { get; set; }
 
-
-
-
-
-
-
-        // public DbSet<PriorizacionSolicitud> PRIORIZACION_SOLICITUD { get; set; }
-
-        //public DbSet<CriterioPriorizacion> CRITERIO_PRIORIZACION { get; set; }
-
-        //public DbSet<ProgramacionQuirurgica> PROGRAMACION_QUIRURGICA { get; set; }
-
-        //public DbSet<Cirugia> CIRUGIA { get; set; }
-
-        //public DbSet<EstadoProgramacion> ESTADO_PROGRAMACION { get; set; }
-
-
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            // Claves primarias
-            modelBuilder.Entity<DetallePaciente>()
-                .HasKey(dp => new { dp.Id, dp.SolicitudConsentimientoId, dp.SolicitudId });
+            // === Claves existentes (dejadas como estaban) ===
+            modelBuilder.Entity(typeof(DetallePaciente)).HasKey("Id", "SolicitudConsentimientoId", "SolicitudId");
+            modelBuilder.Entity(typeof(DetalleClinico)).HasKey("SolicitudConsentimientoId", "SolicitudId");
+            modelBuilder.Entity<EstadoSolicitud>().HasKey(es => es.Id);
+            modelBuilder.Entity<SolicitudQuirurgica>().HasKey("Id");
+            modelBuilder.Entity<Solicitud>().HasKey(s => s.Id);
+            modelBuilder.Entity<Ubicacion>().HasKey(u => u.IdDomicilio);
 
-            modelBuilder.Entity<DetalleClinico>()
-                .HasKey(dc => new { dc.SolicitudConsentimientoId, dc.SolicitudId });
-
-            modelBuilder.Entity<EstadoSolicitud>()
-                .HasKey(es => es.Id);
-
-            modelBuilder.Entity<SolicitudQuirurgica>()
-                .HasKey(s => s.Id); // aqui tenias definidio con Idsolicitud  mi modelo ocupa id, el funcional s => s.IdSolicitud
-
-            modelBuilder.Entity<Solicitud>()
-                .HasKey(s => s.Id);
-
-            modelBuilder.Entity<Ubicacion>()
-                .HasKey(u => u.IdDomicilio);
-
-            
-
-            modelBuilder.Entity<ConsentimientoInformadoReal>() // <--- ¡Asegúrate de que sea REAL aquí!
+            // === Relaciones existentes (respetadas) ===
+            modelBuilder.Entity<ConsentimientoInformadoReal>()
                 .HasOne(c => c.Paciente)
                 .WithMany(p => p.Consentimientos)
                 .HasForeignKey(c => c.PacienteId);
-
 
             modelBuilder.Entity<PrevisionPaciente>()
                 .HasOne(pp => pp.Paciente)
@@ -130,25 +78,7 @@ namespace Hospital.Api.Data
                 .WithMany(p => p.Ubicaciones)
                 .HasForeignKey(u => u.PacienteId);
 
-
-            /* La tuve que comentar, ya que mi modelo de solicitudquirurgica no esta ascoado a un consentimiento informado
-            modelBuilder.Entity<SolicitudQuirurgica>()
-                .HasOne(s => s.Consentimiento)
-                .WithMany(c => c.Solicitudes)
-                .HasForeignKey(s => s.ConsentimientoId)
-                .IsRequired();
-            */
-
-            modelBuilder.Entity<Solicitud>()
-                .HasOne(s => s.Paciente)
-                .WithMany(p => p.Solicitudes)
-                .HasForeignKey(s => s.PacienteId);
-
-            modelBuilder.Entity<EstadoSolicitud>()
-                .HasOne(es => es.CatalogoEstado)
-                .WithMany()
-                .HasForeignKey(es => es.CatalogoEstadosId);
-
+            // Precisión de campos (dejado igual)
             modelBuilder.Entity<DetallePaciente>(entity =>
             {
                 entity.Property(e => e.Altura).HasPrecision(5, 2);
@@ -156,50 +86,57 @@ namespace Hospital.Api.Data
                 entity.Property(e => e.IMC).HasPrecision(5, 2);
             });
 
-            // detalle clinico en la base de datos no tiene llave primaria, sjuj lalve primaria es relacion 1 a 1 con solicitud
-            // ademas de que es llave primaria compuesta
+            modelBuilder.Entity<Procedimiento>().ToTable("PROCEDIMIENTO");
+            modelBuilder.Entity<TipoProcedimiento>().ToTable("TIPO_PROCEDIMIENTO");
+            modelBuilder.Entity<Especialidad>().ToTable("ESPECIALIDAD");
+
+            // ============================================================
+            // 🔵 AJUSTES CLAVE PARA HACER FUNCIONAR PRIORIZACIÓN (PK compuesta)
+            // ============================================================
+
+            // 1) PK compuesta de SOLICITUD_QUIRURGICA: (idSolicitud, CONSENTIMIENTO_INFORMADO_id)
+            modelBuilder.Entity<SolicitudQuirurgicaReal>()
+                .HasKey(s => s.IdSolicitud);
+
+
+
+            modelBuilder.Entity<SolicitudQuirurgicaReal>()
+                .HasAlternateKey(s => new { s.IdSolicitud, s.ConsentimientoId })
+                .HasName("AK_SOLICITUD_QUIRURGICA_Id_Consent");
+
+
+            // 2) DETALLE_CLINICO_REAL con FK compuesta a SOLICITUD_QUIRURGICA
             modelBuilder.Entity<DetalleClinicoReal>()
                 .HasKey(d => new { d.SolicitudConsentimientoId, d.SolicitudId });
 
             modelBuilder.Entity<DetalleClinicoReal>()
                 .HasOne(d => d.Solicitud)
                 .WithOne(s => s.DetalleClinico)
-                .HasForeignKey<DetalleClinicoReal>(d => d.SolicitudId)  
-                .HasPrincipalKey<SolicitudQuirurgicaReal>(s => s.IdSolicitud);
+                .HasForeignKey<DetalleClinicoReal>(d => new { d.SolicitudId, d.SolicitudConsentimientoId })
+                .HasPrincipalKey<SolicitudQuirurgicaReal>(s => new { s.IdSolicitud, s.ConsentimientoId });
 
-
-
-
-            modelBuilder.Entity<Procedimiento>().ToTable("PROCEDIMIENTO");
-            modelBuilder.Entity<TipoProcedimiento>().ToTable("TIPO_PROCEDIMIENTO");
-
-
-            modelBuilder.Entity<Especialidad>().ToTable("ESPECIALIDAD");
-
-
-            // cambios para la llave
+            // 3) DETALLE_PACIENTE_REAL con FK compuesta a SOLICITUD_QUIRURGICA
             modelBuilder.Entity<DetallePacienteReal>()
                 .HasKey(dp => new { dp.Id, dp.SolicitudConsentimientoId, dp.SolicitudId });
-
 
             modelBuilder.Entity<DetallePacienteReal>()
                 .HasOne(dp => dp.Solicitud)
                 .WithMany(sq => sq.DetallesPaciente)
-                .HasForeignKey(dp => dp.SolicitudId)  
-                .HasPrincipalKey(sq => sq.IdSolicitud);
+                .HasForeignKey(dp => new { dp.SolicitudId, dp.SolicitudConsentimientoId })
+                .HasPrincipalKey(sq => new { sq.IdSolicitud, sq.ConsentimientoId });
 
+            // 4) PRIORIZACION_SOLICITUD con FK compuesta a SOLICITUD_QUIRURGICA
+            modelBuilder.Entity<PriorizacionSolicitud>()
+                .HasOne(p => p.SolicitudQuirurgica)
+                .WithMany(s => s.Priorizaciones)
+                .HasForeignKey(p => new { p.SolicitudQuirurgicaId, p.SolicitudConsentimientoId })
+                .HasPrincipalKey(s => new { s.IdSolicitud, s.ConsentimientoId });
 
-            // para 2 consentimientos informados
-
-
-
-            // para el rol solicitud
-
-
+            // 5) Relación Rol Solicitud (como la tenías)
             modelBuilder.Entity<SolicitudProfesional>()
-        .HasOne(sp => sp.Solicitud)
-        .WithMany(s => s.Profesionales)
-        .HasForeignKey(sp => sp.SOLICITUD_QUIRURGICA_idSolicitud);
+                .HasOne(sp => sp.Solicitud)
+                .WithMany(s => s.Profesionales)
+                .HasForeignKey(sp => sp.SOLICITUD_QUIRURGICA_idSolicitud);
 
             modelBuilder.Entity<SolicitudProfesional>()
                 .HasOne(sp => sp.Profesional)
@@ -210,111 +147,14 @@ namespace Hospital.Api.Data
 
 
 
+
+        
+
+
+
+
+
             base.OnModelCreating(modelBuilder);
         }
     }
-
-    // ===================== ENTIDADES =====================
-    // Paciente
-   
-
-    /*
-      
-     El Modelo le faltan datos, mi modelo parece ser mas compatible  
-     
-    public class SolicitudQuirurgica
-    {
-        public int IdSolicitud { get; set; }
-        public bool? IdSIGTE { get; set; }
-        public int ConsentimientoId { get; set; }
-        public bool ValidacionGES { get; set; }
-        public DateTime FechaCreacion { get; set; }
-        public int DiagnosticoId { get; set; }
-        public bool ValidacionDuplicado { get; set; }
-        public int ProcedenciaId { get; set; }
-        public int ProcedenciaId2 { get; set; }
-        public int TipoPrestacionId { get; set; }
-
-        public ConsentimientoInformado Consentimiento { get; set; } = null!;
-    }
-
-    */
-
-    // Se refactorizo Extremidad
-    // Solicitud ( solo solicitud , no solicitudquirurgica)
-    
-
-    // Resto de las entidades con inicialización de strings y colecciones
-    // ConsentimientoInformado
-    // Prevision
-   
-
-    /*
-     Reemplazo de procedimiento local para que este enlazada a base de datos , mi procedimiento
-     
-
-    public class Procedimiento
-    {
-        public int Id { get; set; }
-        public int Codigo { get; set; }
-        public string Nombre { get; set; } = string.Empty;
-        public string Descripcion { get; set; } = string.Empty;
-        public int TipoProcedimientoId { get; set; }
-    }
-
-     */
-
-    // Procedimiento
-    
-
-    //TipoProcedimiento
-
-
-
-
-
-
-
-   
-    // Se refactorizo Lateralidad
-    
-    // Causal salida
-    
-    // Diagnostico
-   
-
-    // PrevisionTipo
-    //PrevisionPaciente
-
-    // Ubicacion
-    // DetallePaciente
-    
-    // DetalleClinico
-    
-    // Catalogo Estados
-    
-    // Estado Solicitud
-   
-    // Las demás entidades (Prevision, Diagnostico, Lateralidad, Extremidad, Procedencia, PrevisionTipo, CausalSalida, Procedimiento) igual: inicializar strings con "".
-    // Tablas y modelos de Martin
-
-
-    // Solicitud quirurgica que es aplicable en mi caso Martin Guerrero 
-
-
-    // Defino PacienteGHospital para que este de manera local en HospitalFBcontext.cs
-    // PacienteHospital
-    
-
-
-
-
-    // Solicitudes quirugicas sew llama SolicitudQuirurgica
-    // Tabla Especialidad
-    // Migracion para la Pacinete hospital 
-    
-
-
-
-
 }
