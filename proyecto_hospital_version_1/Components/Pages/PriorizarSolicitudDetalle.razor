@@ -2,9 +2,8 @@
 @using proyecto_hospital_version_1.Shared
 @inject NavigationManager Navigation
 @layout Components.Layout.MainLayoutMedico
-@using proyecto_hospital_version_1.Data._Legacy
-@inject HospitalDbContextLegacy HospitalDb
-@using Microsoft.EntityFrameworkCore
+@using proyecto_hospital_version_1.Services
+@inject PriorizacionApiService Api
 
 <PageTitle>Priorizar Solicitud Quirúrgica - Detalle</PageTitle>
 
@@ -25,69 +24,66 @@
 
         <h3>Detalle y Priorización (ID: @_solicitudSeleccionada.Id)</h3>
 
-        @if (_solicitudSeleccionada.Paciente != null)
-        {
-            <div class="card mb-4">
-                <div class="card-header bg-primary text-white">
-                    <h5 class="mb-0">
-                        <i class="bi bi-person-fill me-2"></i> Información del Paciente
-                    </h5>
-                </div>
-                <div class="card-body">
-                    <div class="row">
-                        <div class="col-md-8">
-                            <div class="row">
-                                <div class="col-sm-6">
-                                    <strong>Paciente:</strong> @_solicitudSeleccionada.Paciente.primerNombre @_solicitudSeleccionada.Paciente.apellidoPaterno<br>
-                                    <strong>RUT:</strong> @_solicitudSeleccionada.Paciente.rut-@_solicitudSeleccionada.Paciente.dv<br>
-                                </div>
-                                <div class="col-sm-6">
-                                    <strong>Diagnóstico:</strong> @_solicitudSeleccionada.DiagnosticoPrincipal<br>
-                                    <strong>Procedencia:</strong> <span class="badge bg-primary">@_solicitudSeleccionada.Procedencia</span><br>
-                                    <strong>Especialidad:</strong> @_solicitudSeleccionada.EspecialidadOrigen
-                                </div>
+        <!-- Información del Paciente (DTO plano) -->
+        <div class="card mb-4">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">
+                    <i class="bi bi-person-fill me-2"></i> Información del Paciente
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-8">
+                        <div class="row">
+                            <div class="col-sm-6">
+                                <strong>Paciente:</strong> @_solicitudSeleccionada.NombrePaciente<br>
+                                <strong>RUT:</strong> @_solicitudSeleccionada.Rut<br>
                             </div>
-
-                            <div class="mt-3">
-                                <div class="d-flex align-items-center">
-                                    <strong class="me-2">Estado:</strong>
-                                    @if (_solicitudSeleccionada.EsGes)
-                                    {
-                                        <span class="badge bg-danger fs-6">
-                                            <i class="bi bi-shield-fill-exclamation me-1"></i> PACIENTE GES
-                                        </span>
-                                        <small class="text-muted ms-2">(Detectado automáticamente por el sistema)</small>
-                                    }
-                                    else
-                                    {
-                                        <span class="badge bg-success fs-6">Paciente No GES</span>
-                                    }
-                                </div>
+                            <div class="col-sm-6">
+                                <strong>Diagnóstico:</strong> @_solicitudSeleccionada.Diagnostico<br>
+                                <strong>Procedencia:</strong> <span class="badge bg-primary">@_solicitudSeleccionada.Procedencia</span><br>
                             </div>
                         </div>
 
-                        <div class="col-md-4">
-                            <div class="timeline-container">
-                                <h6 class="mb-2">Línea de Tiempo </h6>
-                                <div class="timeline-progress">
-                                    <div class="timeline-bar" style="width: @CalcularPorcentajeProgreso()%; background-color: @ObtenerColorProgreso();"></div>
-                                </div>
-                                <div class="d-flex justify-content-between small text-muted mt-1">
-                                    <span>Solicitud<br>@_solicitudSeleccionada.FechaCreacion.ToString("dd/MM/yyyy")</span>
-                                    <span class="@ObtenerClaseTextoDias()"><strong>@CalcularDiasTranscurridos() días transcurridos</strong></span>
-                                    <span>Hoy<br>@DateTime.Now.ToString("dd/MM/yyyy")</span>
-                                </div>
-                                <div class="mt-2">
-                                    <span class="badge @ObtenerClaseBadge()">
-                                        <i class="bi bi-clock me-1"></i> @ObtenerTextoEstado()
+                        <div class="mt-3">
+                            <div class="d-flex align-items-center">
+                                <strong class="me-2">Estado:</strong>
+                                @if (_solicitudSeleccionada.EsGes)
+                                {
+                                    <span class="badge bg-danger fs-6">
+                                        <i class="bi bi-shield-fill-exclamation me-1"></i> PACIENTE GES
                                     </span>
-                                </div>
+                                    <small class="text-muted ms-2">(Detectado automáticamente por el sistema)</small>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-success fs-6">Paciente No GES</span>
+                                }
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-4">
+                        <div class="timeline-container">
+                            <h6 class="mb-2">Línea de Tiempo </h6>
+                            <div class="timeline-progress">
+                                <div class="timeline-bar" style="width: @CalcularPorcentajeProgreso()%; background-color: @ObtenerColorProgreso();"></div>
+                            </div>
+                            <div class="d-flex justify-content-between small text-muted mt-1">
+                                <span>Solicitud<br>@_solicitudSeleccionada.FechaCreacion.ToString("dd/MM/yyyy")</span>
+                                <span class="@ObtenerClaseTextoDias()"><strong>@CalcularDiasTranscurridos() días transcurridos</strong></span>
+                                <span>Hoy<br>@DateTime.Now.ToString("dd/MM/yyyy")</span>
+                            </div>
+                            <div class="mt-2">
+                                <span class="badge @ObtenerClaseBadge()">
+                                    <i class="bi bi-clock me-1"></i> @ObtenerTextoEstado()
+                                </span>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
-        }
+        </div>
 
         <div class="card shadow-sm mb-4">
             <div class="card-body">
@@ -95,10 +91,10 @@
                 <hr />
                 <div class="row">
                     <div class="col-md-6">
-                        <strong>Diagnóstico:</strong> @_solicitudSeleccionada.DiagnosticoPrincipal
+                        <strong>Diagnóstico:</strong> @_solicitudSeleccionada.Diagnostico
                     </div>
                     <div class="col-md-6">
-                        <strong>Procedimiento:</strong> @_solicitudSeleccionada.ProcedimientoPrincipal
+                        <strong>Procedimiento:</strong> @_solicitudSeleccionada.Procedimiento
                     </div>
                     <div class="col-md-6">
                         <strong>Procedencia:</strong> @_solicitudSeleccionada.Procedencia
@@ -169,11 +165,6 @@
                             @(_solicitudSeleccionada.FechaPriorizacion?.ToString("dd/MM/yyyy HH:mm") ?? "No disponible")
                         </div>
                     </div>
-                    <div class="mt-3">
-                        <button class="btn btn-outline-warning" @onclick="ReabrirPriorizacion">
-                            <i class="bi bi-pencil me-2"></i> Reabrir para Editar
-                        </button>
-                    </div>
                 </div>
             </div>
         }
@@ -232,8 +223,7 @@
 @code {
     [Parameter] public int SolicitudId { get; set; }
 
-    // Variables para sistema de priorización (SOLO las necesarias para el detalle)
-    private SolicitudQuirurgica _solicitudSeleccionada;
+    private PriorizacionApiService.SolicitudDetalleDto? _solicitudSeleccionada;
     private int _prioridadSugerida = 3;
     private string _motivoSugerencia = "Prioridad base.";
     private string _criterioSeleccionado = "";
@@ -248,39 +238,27 @@
 
     private async Task VerDetalle(int id)
     {
-        try
-        {
-            _solicitudSeleccionada = await HospitalDb.SolicitudesQuirurgicas
-                .Include(s => s.Paciente)
-                .FirstOrDefaultAsync(s => s.Id == id);
+        _solicitudSeleccionada = await Api.GetDetalleAsync(id);
 
-            if (_solicitudSeleccionada != null)
+        if (_solicitudSeleccionada != null)
+        {
+            if ((_solicitudSeleccionada.Procedencia ?? "").Equals("Urgencia", StringComparison.OrdinalIgnoreCase))
             {
-                // Calcular prioridad sugerida
-                if (_solicitudSeleccionada.Procedencia == "Urgencia")
-                {
-                    _prioridadSugerida = 1;
-                    _motivoSugerencia = "Procedencia es URGENCIA. Máxima prioridad.";
-                }
-                else if (_solicitudSeleccionada.EsGes)
-                {
-                    _prioridadSugerida = 2;
-                    _motivoSugerencia = "Paciente con patología GES.";
-                }
-                else
-                {
-                    _prioridadSugerida = 3;
-                    _motivoSugerencia = "Prioridad estándar por orden de llegada.";
-                }
+                _prioridadSugerida = 1;
+                _motivoSugerencia = "Procedencia es URGENCIA. Máxima prioridad.";
+            }
+            else if (_solicitudSeleccionada.EsGes)
+            {
+                _prioridadSugerida = 2;
+                _motivoSugerencia = "Paciente con patología GES.";
+            }
+            else
+            {
+                _prioridadSugerida = 3;
+                _motivoSugerencia = "Prioridad estándar por orden de llegada.";
             }
         }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Error al cargar detalle: {ex.Message}");
-        }
     }
-
-    // ==================== MÉTODOS PARA LA LÍNEA DE TIEMPO (60 DÍAS) ====================
 
     private int CalcularDiasTranscurridos()
     {
@@ -294,30 +272,23 @@
     private int CalcularPorcentajeProgreso()
     {
         int diasTranscurridos = CalcularDiasTranscurridos();
-        int tiempoMaximoEsperado = 60; // 60 días como referencia
-
+        int tiempoMaximoEsperado = 60;
         if (tiempoMaximoEsperado == 0) return 0;
-
         var porcentaje = (diasTranscurridos * 100) / tiempoMaximoEsperado;
-        return Math.Min(porcentaje, 100); // No más del 100%
+        return Math.Min(porcentaje, 100);
     }
 
     private string ObtenerColorProgreso()
     {
         int dias = CalcularDiasTranscurridos();
-
-        // Verde: menos de 30 días (menos de la mitad)
         if (dias < 30) return "#28a745";
-        // Amarillo: entre 30 y 59 días
         if (dias < 60) return "#ffc107";
-        // Rojo: 60 días o más
         return "#dc3545";
     }
 
     private string ObtenerTextoEstado()
     {
         int dias = CalcularDiasTranscurridos();
-
         if (dias < 15) return "Reciente";
         if (dias < 30) return "En tiempo";
         if (dias < 45) return "Atención requerida";
@@ -328,7 +299,6 @@
     private string ObtenerClaseBadge()
     {
         int dias = CalcularDiasTranscurridos();
-
         if (dias < 30) return "bg-success";
         if (dias < 60) return "bg-warning text-dark";
         return "bg-danger";
@@ -337,102 +307,60 @@
     private string ObtenerClaseTextoDias()
     {
         int dias = CalcularDiasTranscurridos();
-
         if (dias < 30) return "text-success";
         if (dias < 60) return "text-warning";
         return "text-danger";
     }
 
-    // ==================== MÉTODOS EXISTENTES ====================
-
     private async Task AceptarPrioridad()
     {
-        try
-        {
-            _solicitudSeleccionada.Prioridad = _prioridadSugerida;
-            _solicitudSeleccionada.Estado = "Priorizada";
-            _solicitudSeleccionada.FechaPriorizacion = DateTime.Now;
+        if (_solicitudSeleccionada is null) return;
 
-            HospitalDb.SolicitudesQuirurgicas.Update(_solicitudSeleccionada);
-            await HospitalDb.SaveChangesAsync();
-
-            // Recargar para mostrar estado actualizado
-            await VerDetalle(SolicitudId);
-        }
-        catch (Exception ex)
+        int criterioId = _prioridadSugerida switch
         {
-            Console.WriteLine($"Error al actualizar: {ex.Message}");
+            1 => 1,
+            2 => 2,
+            _ => 3
+        };
+
+        var ok = await Api.GuardarAsync(new PriorizacionApiService.GuardarPriorizacionRequest
+        {
+            SolicitudId = _solicitudSeleccionada.Id,
+            CriterioPriorizacionId = criterioId,
+            Justificacion = "Aceptada por sugerencia",
+            FechaPriorizacion = DateTime.Now
+        });
+
+        if (ok)
+        {
+            Navigation.NavigateTo("/priorizar-solicitudes");
         }
     }
 
     private async Task GuardarPrioridadManual()
     {
-        if (string.IsNullOrEmpty(_criterioSeleccionado) || _solicitudSeleccionada == null)
-        {
-            Console.WriteLine("No se ha seleccionado un criterio manual o no hay solicitud.");
+        if (string.IsNullOrEmpty(_criterioSeleccionado) || _solicitudSeleccionada is null)
             return;
-        }
 
-        int prioridadManual = 0;
-        switch (_criterioSeleccionado)
+        int criterioId = _criterioSeleccionado.ToLower() switch
         {
-            case "ges":
-            case "logistica":
-            case "sanitaria":
-                prioridadManual = 1;
-                break;
-            case "percentil50":
-            case "licencia":
-            case "prais":
-                prioridadManual = 2;
-                break;
-            case "sename":
-            case "comges":
-                prioridadManual = 3;
-                break;
-            default:
-                Console.WriteLine($"Criterio no mapeado: '{_criterioSeleccionado}'");
-                return;
-        }
+            "ges" or "logistica" or "sanitaria" => 1,
+            "percentil50" or "licencia" or "prais" => 2,
+            "sename" or "comges" => 3,
+            _ => 3
+        };
 
-        if (prioridadManual > 0)
+        var ok = await Api.GuardarAsync(new PriorizacionApiService.GuardarPriorizacionRequest
         {
-            try
-            {
-                _solicitudSeleccionada.Prioridad = prioridadManual;
-                _solicitudSeleccionada.Estado = "Priorizada (Manual)";
-                _solicitudSeleccionada.FechaPriorizacion = DateTime.Now;
+            SolicitudId = _solicitudSeleccionada.Id,
+            CriterioPriorizacionId = criterioId,
+            Justificacion = $"Manual: {_criterioSeleccionado}",
+            FechaPriorizacion = DateTime.Now
+        });
 
-                HospitalDb.SolicitudesQuirurgicas.Update(_solicitudSeleccionada);
-                await HospitalDb.SaveChangesAsync();
-
-                // Recargar para mostrar estado actualizado
-                await VerDetalle(SolicitudId);
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error al guardar prioridad manual: {ex.Message}");
-            }
-        }
-    }
-
-    private async Task ReabrirPriorizacion()
-    {
-        try
+        if (ok)
         {
-            _solicitudSeleccionada.Estado = "Pendiente";
-            _solicitudSeleccionada.Prioridad = 0;
-            _solicitudSeleccionada.FechaPriorizacion = null;
-
-            HospitalDb.SolicitudesQuirurgicas.Update(_solicitudSeleccionada);
-            await HospitalDb.SaveChangesAsync();
-
-            // Recargar para mostrar opciones de priorización
-            await VerDetalle(SolicitudId);
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Error al reabrir priorización: {ex.Message}");
+            Navigation.NavigateTo("/priorizar-solicitudes");
         }
     }
 
