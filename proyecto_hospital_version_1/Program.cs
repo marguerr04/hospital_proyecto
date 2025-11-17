@@ -87,6 +87,15 @@ builder.Services.AddHttpClient<ISolicitudQuirurgicaApiService, SolicitudQuirurgi
 
 
 
+// Priorizacion Api
+
+builder.Services.AddHttpClient<PriorizacionApiService>(c =>
+{
+    c.BaseAddress = new Uri("https://localhost:7032/"); // tu API
+});
+
+
+
 // --- FIN DE SERVICIOS ---
 
 

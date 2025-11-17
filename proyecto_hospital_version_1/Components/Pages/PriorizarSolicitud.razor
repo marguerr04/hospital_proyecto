@@ -2,15 +2,29 @@
 @using proyecto_hospital_version_1.Shared
 @inject NavigationManager Navigation
 @layout Components.Layout.MainLayoutMedico
-@using proyecto_hospital_version_1.Data._Legacy
-@inject HospitalDbContextLegacy HospitalDb
+
+@using Hospital.Api.Data.Entities
+@using Hospital.Api.Data 
+
+
 @using Microsoft.EntityFrameworkCore
 @using MudBlazor
+
+@using proyecto_hospital_version_1.Services
+@inject PriorizacionApiService Api
+
+
 
 <PageTitle>Priorizar Solicitud Quirúrgica</PageTitle>
 
 <style>
-    /* 🎨 Colores institucionales y estilos generales */
+    /* Colores institucionales y estilos generales
+
+    @using proyecto_hospital_version_1.Data._Legacy 
+    @inject HospitalDbContextLegacy HospitalDb
+
+
+    */
     .header-bar-custom {
         background-color: #0d6efd;
         color: white;
@@ -129,9 +143,11 @@
                                     {
                                         <tr>
                                             <td><strong>@solicitud.Id</strong></td>
-                                            <td>@(solicitud.Paciente != null ? $"{solicitud.Paciente.rut}-{solicitud.Paciente.dv}" : "N/A")</td>
-                                            <td>@solicitud.ProcedimientoPrincipal</td>
-                                            <td>@solicitud.DiagnosticoPrincipal</td>
+                                            @* Reemplazar acceso a Paciente.rut-dv por la propiedad Rut devuelta por la API *@
+                                            <td>@solicitud.Rut</td>
+                                            @* Alinear con los nombres de propiedades del DTO de la API *@
+                                            <td>@solicitud.Procedimiento</td>
+                                            <td>@solicitud.Diagnostico</td>
                                             <td>@solicitud.FechaCreacion.ToString("dd/MM/yy HH:mm")</td>
                                             <td>
                                                 <span class="badge rounded-pill bg-warning text-dark">@solicitud.Estado</span>
@@ -224,9 +240,9 @@
                                     {
                                         <tr>
                                             <td><strong>@solicitud.Id</strong></td>
-                                            <td>@(solicitud.Paciente != null ? $"{solicitud.Paciente.rut}-{solicitud.Paciente.dv}" : "N/A")</td>
-                                            <td>@solicitud.ProcedimientoPrincipal</td>
-                                            <td>@solicitud.DiagnosticoPrincipal</td>
+                                            <td>@solicitud.Rut</td>@*  <td>@(solicitud.Paciente != null ? $"{solicitud.Paciente.rut}-{solicitud.Paciente.dv}" : "N/A")</td>  *@
+                                            <td>@solicitud.Procedimiento</td>  @*Se reemplaza por su version api <td>@solicitud.ProcedimientoPrincipal</td> *@
+                                            <td>@solicitud.Diagnostico</td> @*Se reemplaza por su version api <td>@solicitud.DiagnosticoPrincipal</td> *@
                                             <td>@solicitud.FechaCreacion.ToString("dd/MM/yy HH:mm")</td>
                                             <td>
                                                 @if (solicitud.Estado.Contains("Priorizada"))
@@ -316,11 +332,16 @@
         </div>
 
         <h3>Detalle y Priorización (ID: @_solicitudSeleccionada.Id)</h3>
+        /*
+        Se reemplaza aca
 
         @if (_solicitudSeleccionada.Paciente != null)
         {
-            <InfoPacienteCard Paciente="_solicitudSeleccionada.Paciente" />
+        <InfoPacienteCard Paciente="_solicitudSeleccionada.Paciente" />
         }
+        
+        */
+        
 
         <!-- 📋 Detalles de la solicitud -->
         <div class="card shadow-sm mb-4">
@@ -332,10 +353,16 @@
                 <hr />
                 <div class="row">
                     <div class="col-md-6">
-                        <strong>Diagnóstico:</strong> @_solicitudSeleccionada.DiagnosticoPrincipal
+                        <!-- Se reemplaza diagnostico <strong>Diagnóstico:</strong> arroba_solicitudSeleccionada.DiagnosticoPrincipal
+                        -->
+                        <strong>Diagnóstico:</strong> @_solicitudSeleccionada.Diagnostico
                     </div>
                     <div class="col-md-6">
-                        <strong>Procedimiento:</strong> @_solicitudSeleccionada.ProcedimientoPrincipal
+
+                        <!-- Se reemplaza diagnostico <strong>Procedimiento:</strong> arroba_solicitudSeleccionada.ProcedimientoPrincipal
+
+                        -->
+                        <strong>Procedimiento:</strong> @_solicitudSeleccionada.Procedimiento
                     </div>
                     <div class="col-md-6">
                         <strong>Procedencia:</strong> @_solicitudSeleccionada.Procedencia
@@ -387,24 +414,54 @@
 </div>
 
 @code {
+
+    /* Variables a reemplazar:
+     * 
+     *   private List<SolicitudQuirurgica> _solicitudesPendientes;
+    private List<SolicitudQuirurgica> _solicitudesPriorizadas;
+    private List<SolicitudQuirurgica> _solicitudesPendientesPagina;
+    private List<SolicitudQuirurgica> _solicitudesPriorizadasPagina;
+    private SolicitudQuirurgica _solicitudSeleccionada;
+     * 
+     * 
+     *
+     * 
+     */
+
+
     // --- Variables para el buscador (solo visual, sin lógica) ---
     private string _rutBusqueda;
     private string _dvBusqueda;
 
     // --- LÓGICA PRINCIPAL ---
-    private List<SolicitudQuirurgica> _solicitudesPendientes;
-    private List<SolicitudQuirurgica> _solicitudesPriorizadas;
+    // private List<SolicitudQuirurgica> _solicitudesPendientes;
+    // private List<SolicitudQuirurgica> _solicitudesPriorizadas;
 
     // --- NUEVAS VARIABLES PARA PAGINACIÓN ---
-    private List<SolicitudQuirurgica> _solicitudesPendientesPagina;
-    private List<SolicitudQuirurgica> _solicitudesPriorizadasPagina;
+    // private List<SolicitudQuirurgica> _solicitudesPendientesPagina;
+    // private List<SolicitudQuirurgica> _solicitudesPriorizadasPagina;
+    // private SolicitudQuirurgica _solicitudSeleccionada;
+
+    // Variables API
+
+    // --- AGREGAR ESTAS NUEVAS VARIABLES API ---
+    private List<PriorizacionApiService.SolicitudMedicoDto> _solicitudesPendientes = new();
+    private List<PriorizacionApiService.SolicitudMedicoDto> _solicitudesPriorizadas = new();
+    private List<PriorizacionApiService.SolicitudMedicoDto> _solicitudesPendientesPagina = new();
+    private List<PriorizacionApiService.SolicitudMedicoDto> _solicitudesPriorizadasPagina = new();
+    private PriorizacionApiService.SolicitudDetalleDto? _solicitudSeleccionada;
+
+
+
+
+
     private int _paginaActualPendientes = 1;
     private int _paginaActualPriorizadas = 1;
     private int _elementosPorPagina = 5;
     private int _totalPaginasPendientes;
     private int _totalPaginasPriorizadas;
 
-    private SolicitudQuirurgica _solicitudSeleccionada;
+
     private int _prioridadSugerida = 3;
     private string _motivoSugerencia = "Prioridad base.";
     private string _criterioSeleccionado = "";
@@ -423,35 +480,29 @@
             await CargarSolicitudes();
         }
     }
-
+    // Reemplazo cargar solicitudes
     private async Task CargarSolicitudes()
     {
         try
         {
-            // QUITAMOS EL .Take() PARA OBTENER TODOS LOS REGISTROS
-            _solicitudesPendientes = await HospitalDb.SolicitudesQuirurgicas
-                .Include(s => s.Paciente)
-                .Where(s => s.Estado == "Pendiente" || string.IsNullOrEmpty(s.Estado))
-                .OrderByDescending(s => s.FechaCreacion)
-                .AsNoTracking()
-                .ToListAsync();
+            // REEMPLAZAR todo el contenido del método con:
+            var pendientes = await Api.GetPendientesAsync() ?? new List<PriorizacionApiService.SolicitudMedicoDto>();
+            var priorizadas = await Api.GetPriorizadasAsync() ?? new List<PriorizacionApiService.SolicitudMedicoDto>();
 
-            _solicitudesPriorizadas = await HospitalDb.SolicitudesQuirurgicas
-                .Include(s => s.Paciente)
-                .Where(s => s.Estado == "Priorizada" || s.Estado == "Priorizada (Manual)")
-                .OrderBy(s => s.Prioridad)
-                .ThenByDescending(s => s.FechaPriorizacion)
-                .AsNoTracking()
-                .ToListAsync();
+            _solicitudesPendientes = pendientes.OrderByDescending(s => s.FechaCreacion).ToList();
+            _solicitudesPriorizadas = priorizadas
+                .OrderBy(s => s.Prioridad ?? int.MaxValue)
+                .ThenByDescending(s => s.FechaCreacion)
+                .ToList();
 
-            // CALCULAR PAGINACIÓN INICIAL
             CalcularPaginacion();
+            StateHasChanged();
         }
         catch (Exception ex)
         {
             Console.WriteLine($"Error al cargar solicitudes: {ex.Message}");
-            _solicitudesPendientes = new List<SolicitudQuirurgica>();
-            _solicitudesPriorizadas = new List<SolicitudQuirurgica>();
+            _solicitudesPendientes = new List<PriorizacionApiService.SolicitudMedicoDto>();
+            _solicitudesPriorizadas = new List<PriorizacionApiService.SolicitudMedicoDto>();
             CalcularPaginacion();
         }
     }
@@ -496,17 +547,16 @@
             StateHasChanged();
         }
     }
+    // Se reemplaza ver detalle
 
     private async Task VerDetalle(int id)
     {
-        // Esta consulta SÍ rastrea la entidad, lo cual es correcto para editarla.
-        _solicitudSeleccionada = await HospitalDb.SolicitudesQuirurgicas
-            .Include(s => s.Paciente)
-            .FirstOrDefaultAsync(s => s.Id == id);
+        // REEMPLAZAR todo el método con:
+        _solicitudSeleccionada = await Api.GetDetalleAsync(id);
 
         if (_solicitudSeleccionada != null)
         {
-            if (_solicitudSeleccionada.Procedencia == "Urgencia")
+            if ((_solicitudSeleccionada.Procedencia ?? "").Equals("Urgencia", StringComparison.OrdinalIgnoreCase))
             {
                 _prioridadSugerida = 1;
                 _motivoSugerencia = "Procedencia es URGENCIA. Máxima prioridad.";
@@ -523,20 +573,33 @@
             }
         }
     }
-
+     // Se reempalzo el metodo aceptar prioridad
     private async Task AceptarPrioridad()
     {
+        if (_solicitudSeleccionada is null) return;
+
         try
         {
-            _solicitudSeleccionada.Prioridad = _prioridadSugerida;
-            _solicitudSeleccionada.Estado = "Priorizada";
-            _solicitudSeleccionada.FechaPriorizacion = DateTime.Now;
+            int criterioId = _prioridadSugerida switch
+            {
+                1 => 1, // Ajusta según tus IDs reales de criterios
+                2 => 2,
+                _ => 3
+            };
 
-            HospitalDb.SolicitudesQuirurgicas.Update(_solicitudSeleccionada);
-            await HospitalDb.SaveChangesAsync();
+            var ok = await Api.GuardarAsync(new PriorizacionApiService.GuardarPriorizacionRequest
+            {
+                SolicitudId = _solicitudSeleccionada.Id,
+                CriterioPriorizacionId = criterioId,
+                Justificacion = "Aceptada por sugerencia",
+                FechaPriorizacion = DateTime.Now
+            });
 
-            VolverALista();
-            await CargarSolicitudes();
+            if (ok)
+            {
+                VolverALista();
+                await CargarSolicitudes();
+            }
         }
         catch (Exception ex)
         {
@@ -549,83 +612,69 @@
         _solicitudSeleccionada = null;
         Navigation.NavigateTo("/priorizar-solicitudes");
     }
-
+    // se reemplazo guardar prioridad manual
     private async Task GuardarPrioridadManual()
     {
-        if (string.IsNullOrEmpty(_criterioSeleccionado) || _solicitudSeleccionada == null)
+        if (string.IsNullOrEmpty(_criterioSeleccionado) || _solicitudSeleccionada is null)
         {
             Console.WriteLine("No se ha seleccionado un criterio manual o no hay solicitud.");
             return;
         }
-        int prioridadManual = 0;
-        switch (_criterioSeleccionado)
-        {
-            case "ges":
-            case "logistica":
-            case "sanitaria":
-                prioridadManual = 1;
-                break;
-            case "percentil50":
-            case "licencia":
-            case "prais":
-                prioridadManual = 2;
-                break;
-            case "sename":
-            case "comges":
-                prioridadManual = 3;
-                break;
-            default:
-                Console.WriteLine($"Criterio no mapeado: '{_criterioSeleccionado}'");
-                return;
-        }
 
-        if (prioridadManual > 0)
+        try
         {
-            try
+            int criterioId = _criterioSeleccionado.ToLower() switch
             {
-                _solicitudSeleccionada.Prioridad = prioridadManual;
-                _solicitudSeleccionada.Estado = "Priorizada (Manual)";
-                _solicitudSeleccionada.FechaPriorizacion = DateTime.Now;
+                "ges" or "logistica" or "sanitaria" => 1,
+                "percentil50" or "licencia" or "prais" => 2,
+                "sename" or "comges" => 3,
+                _ => 3
+            };
 
-                HospitalDb.SolicitudesQuirurgicas.Update(_solicitudSeleccionada);
-                await HospitalDb.SaveChangesAsync();
+            var ok = await Api.GuardarAsync(new PriorizacionApiService.GuardarPriorizacionRequest
+            {
+                SolicitudId = _solicitudSeleccionada.Id,
+                CriterioPriorizacionId = criterioId,
+                Justificacion = $"Manual: {_criterioSeleccionado}",
+                FechaPriorizacion = DateTime.Now
+            });
 
+            if (ok)
+            {
                 VolverALista();
                 await CargarSolicitudes();
             }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error al guardar prioridad manual: {ex.Message}");
-            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error al guardar prioridad manual: {ex.Message}");
         }
     }
-
+    // se cambio el filtrar por paciente
     private async Task FiltrarPorPaciente(PacienteHospital? paciente)
     {
         if (paciente == null)
         {
-            // Si se limpió el buscador, volvemos a mostrar todo
             await CargarSolicitudes();
             return;
         }
 
         try
         {
-            _solicitudesPendientes = await HospitalDb.SolicitudesQuirurgicas
-                .Include(s => s.Paciente)
-                .Where(s => s.Paciente.id == paciente.id && (s.Estado == "Pendiente" || string.IsNullOrEmpty(s.Estado)))
-                .OrderByDescending(s => s.FechaCreacion)
-                .AsNoTracking() // QUITAMOS EL .Take()
-                .ToListAsync();
+            // Primero cargamos todas las solicitudes
+            await CargarSolicitudes();
 
-            _solicitudesPriorizadas = await HospitalDb.SolicitudesQuirurgicas
-                .Include(s => s.Paciente)
-                .Where(s => s.Paciente.id == paciente.id && (s.Estado == "Priorizada" || s.Estado == "Priorizada (Manual)"))
-                .OrderByDescending(s => s.FechaPriorizacion)
-                .AsNoTracking() // QUITAMOS EL .Take()
-                .ToListAsync();
+            // Luego filtramos localmente por RUT
+            var rutFull = $"{paciente.rut}-{paciente.dv}";
 
-            // RESETEAR PAGINACIÓN AL FILTRAR
+            _solicitudesPendientes = _solicitudesPendientes
+                .Where(s => s.Rut == rutFull)
+                .ToList();
+
+            _solicitudesPriorizadas = _solicitudesPriorizadas
+                .Where(s => s.Rut == rutFull)
+                .ToList();
+
             _paginaActualPendientes = 1;
             _paginaActualPriorizadas = 1;
             CalcularPaginacion();
