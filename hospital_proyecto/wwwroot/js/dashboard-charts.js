@@ -28,7 +28,7 @@ window.dashboardCharts = (function () {
     charts[id] = new Chart(ctx.getContext('2d'), {
       type: 'bar',
       data: { labels: labels, datasets: [{ label: 'Casos', data: data, backgroundColor: bg, borderColor: bg, borderWidth: 1 }] },
-      options: { responsive: true, scales: { y: { beginAtZero: true } }, plugins: { legend: { display: false } } }
+      options: { responsive: true, scales: { y: { beginAtZero: true } }, plugins: { legend: { display: false } }, onClick: function (evt, elements) { if (elements && elements.length) { const el = elements[0]; const idx = el.index; const lbl = this.data.labels[idx]; const val = this.data.datasets[0].data[idx]; window.dashboardCharts.showDetail(lbl, val); } } }
     });
   }
 
@@ -46,7 +46,7 @@ window.dashboardCharts = (function () {
     charts[id] = new Chart(ctx.getContext('2d'), {
       type: 'doughnut',
       data: { labels: labels, datasets: [{ data: data, backgroundColor: bg, borderColor: '#fff', borderWidth: 1 }] },
-      options: { responsive: true, plugins: { legend: { position: 'right' } } }
+      options: { responsive: true, plugins: { legend: { position: 'right' } }, onClick: function(evt, elements) { if (elements && elements.length) { const el = elements[0]; const idx = el.index; const lbl = this.data.labels[idx]; const val = this.data.datasets[0].data[idx]; window.dashboardCharts.showDetail(lbl, val); } } }
     });
   }
 
@@ -64,7 +64,7 @@ window.dashboardCharts = (function () {
     charts[id] = new Chart(ctx.getContext('2d'), {
       type: 'line',
       data: { labels: labels, datasets: [ds] },
-      options: { responsive: true, scales: { y: { beginAtZero: true } }, plugins: { legend: { display: options.showLegend ?? true } } }
+      options: { responsive: true, scales: { y: { beginAtZero: true } }, plugins: { legend: { display: options.showLegend ?? true } }, onClick: function(evt, elements) { if (elements && elements.length) { const el = elements[0]; const idx = el.index; const lbl = this.data.labels[idx]; const val = this.data.datasets[0].data[idx]; window.dashboardCharts.showDetail(lbl, val); } } }
     });
   }
 
@@ -82,9 +82,71 @@ window.dashboardCharts = (function () {
     charts[id] = new Chart(ctx.getContext('2d'), {
       type: 'pie',
       data: { labels: labels, datasets: [{ data: data, backgroundColor: bg, borderColor: '#fff', borderWidth: 1 }] },
-      options: { responsive: true, plugins: { legend: { position: 'right' } } }
+      options: { responsive: true, plugins: { legend: { position: 'right' } }, onClick: function(evt, elements) { if (elements && elements.length) { const el = elements[0]; const idx = el.index; const lbl = this.data.labels[idx]; const val = this.data.datasets[0].data[idx]; window.dashboardCharts.showDetail(lbl, val); } } }
     });
   }
 
-  return { renderBar, renderDonut, renderLine, renderPie };
+  function showDetail(label, value, sexo, ges) {
+    try {
+      // crear modal básico
+      const existing = document.getElementById('dc-modal-root');
+      if (existing) existing.remove();
+      const root = document.createElement('div');
+      root.id = 'dc-modal-root';
+      root.style.position = 'fixed';
+      root.style.left = '0';
+      root.style.top = '0';
+      root.style.width = '100vw';
+      root.style.height = '100vh';
+      root.style.background = 'rgba(0,0,0,0.5)';
+      root.style.display = 'flex';
+      root.style.alignItems = 'center';
+      root.style.justifyContent = 'center';
+      root.style.zIndex = 9999;
+
+      const panel = document.createElement('div');
+      panel.style.background = '#fff';
+      panel.style.borderRadius = '8px';
+      panel.style.padding = '16px';
+      panel.style.width = '80%';
+      panel.style.maxWidth = '900px';
+      panel.style.boxShadow = '0 8px 24px rgba(0,0,0,0.2)';
+
+      const title = document.createElement('h3');
+      title.innerText = `Detalle: ${label} (${value})`;
+      panel.appendChild(title);
+
+      const info = document.createElement('div');
+      info.style.fontSize = '0.9rem';
+      info.style.marginBottom = '8px';
+      info.innerText = `Filtros — Sexo: ${sexo || 'Todos'}, GES: ${ges || 'Todos'}`;
+      panel.appendChild(info);
+
+      const canvas = document.createElement('canvas');
+      canvas.id = 'dc-detail-chart';
+      canvas.style.width = '100%';
+      canvas.style.height = '320px';
+      panel.appendChild(canvas);
+
+      const close = document.createElement('button');
+      close.innerText = 'Cerrar';
+      close.style.marginTop = '12px';
+      close.onclick = () => { root.remove(); };
+      panel.appendChild(close);
+
+      root.appendChild(panel);
+      document.body.appendChild(root);
+
+      // render simple chart con el valor (puede reemplazarse por fetch a API para detalle real)
+      const ctxD = canvas.getContext('2d');
+      new Chart(ctxD, {
+        type: 'bar',
+        data: { labels: [label], datasets: [{ label: 'Valor', data: [value], backgroundColor: ['rgba(33,150,243,0.8)'] }] },
+        options: { responsive: true, scales: { y: { beginAtZero: true } }, plugins: { legend: { display: false } } }
+      });
+    }
+    catch (e) { console.error('showDetail error', e); }
+  }
+
+  return { renderBar, renderDonut, renderLine, renderPie, showDetail };
 })();

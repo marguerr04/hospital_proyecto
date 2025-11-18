@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\Usuario\\Desktop\\repo-equipo\\hospital_proyecto\\Hospital.Api\\Hospital.Api.csproj": {}
+    "C:\\Users\\Usuario\\Desktop\\repo-equipo\\hospital_proyecto\\Hospital.api\\Hospital.Api.csproj": {}
   },
   "projects": {
-    "C:\\Users\\Usuario\\Desktop\\repo-equipo\\hospital_proyecto\\Hospital.Api\\Hospital.Api.csproj": {
+    "C:\\Users\\Usuario\\Desktop\\repo-equipo\\hospital_proyecto\\Hospital.api\\Hospital.Api.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\Usuario\\Desktop\\repo-equipo\\hospital_proyecto\\Hospital.Api\\Hospital.Api.csproj",
+        "projectUniqueName": "C:\\Users\\Usuario\\Desktop\\repo-equipo\\hospital_proyecto\\Hospital.api\\Hospital.Api.csproj",
         "projectName": "Hospital.Api",
-        "projectPath": "C:\\Users\\Usuario\\Desktop\\repo-equipo\\hospital_proyecto\\Hospital.Api\\Hospital.Api.csproj",
+        "projectPath": "C:\\Users\\Usuario\\Desktop\\repo-equipo\\hospital_proyecto\\Hospital.api\\Hospital.Api.csproj",
         "packagesPath": "C:\\Users\\Usuario\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\Usuario\\Desktop\\repo-equipo\\hospital_proyecto\\Hospital.Api\\obj\\",
+        "outputPath": "C:\\Users\\Usuario\\Desktop\\repo-equipo\\hospital_proyecto\\Hospital.api\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "C:\\Users\\Usuario\\AppData\\Roaming\\NuGet\\NuGet.Config",

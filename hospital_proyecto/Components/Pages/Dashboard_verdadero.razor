@@ -14,13 +14,25 @@
         🏥 Panel de Gestión Clínica
     </MudText>
     <MudText Typo="Typo.subtitle1" Align="Align.Center" Class="mb-6 text-secondary">
-        Unidad de Control de Gestión · @DateTime.Now:dd/MM/yyyy
+        Unidad de Control de Gestión · @DateTime.Now.ToString("dd/MM/yyyy")
     </MudText>
     <MudGrid>
         <MudItem xs="12">
             <MudPaper Class="pa-4">
-                <MudDateRangePicker @bind-DateRange="dateRange" Label="Filtrar por fecha" />
-                <MudButton Color="Color.Primary" OnClick="ActualizarDatos" Class="ml-2">Actualizar</MudButton>
+                <MudStack Row="true" Spacing="2" AlignItems="AlignItems.Center">
+                    <MudDateRangePicker @bind-DateRange="dateRange" Label="Filtrar por fecha" />
+                    <MudSelect T="string" Label="Sexo" @bind-Value="sexoFilter" Dense="true" Class="ml-2" Style="width:140px;">
+                        <MudSelectItem Value="@("Todos")">Todos</MudSelectItem>
+                        <MudSelectItem Value="@("M")">Masculino</MudSelectItem>
+                        <MudSelectItem Value="@("F")">Femenino</MudSelectItem>
+                    </MudSelect>
+                    <MudSelect T="string" Label="GES" @bind-Value="gesFilter" Dense="true" Class="ml-2" Style="width:140px;">
+                        <MudSelectItem Value="@("Todos")">Todos</MudSelectItem>
+                        <MudSelectItem Value="@("GES")">GES</MudSelectItem>
+                        <MudSelectItem Value="@("NO")">NO GES</MudSelectItem>
+                    </MudSelect>
+                    <MudButton Color="Color.Primary" OnClick="ActualizarDatos" Class="ml-2">Actualizar</MudButton>
+                </MudStack>
             </MudPaper>
         </MudItem>
     </MudGrid>
@@ -80,6 +92,26 @@
             </MudPaper>
         </MudItem>
     </MudGrid>
+
+    <MudGrid Class="mt-4">
+        <MudItem xs="12">
+            <MudPaper Class="pa-4">
+                <MudText Typo="Typo.h6">Tabla de procedimientos</MudText>
+                <MudTable Dense="true" Items="procedimientosList" Hover="true" Bordered="true">
+                    <HeaderContent>
+                        <MudTh>Procedimiento</MudTh>
+                        <MudTh>Casos</MudTh>
+                    </HeaderContent>
+                    <RowTemplate>
+                        <MudTd>@context.Key</MudTd>
+                        <MudTd>
+                            <MudLink Href="#" OnClick="@(async ()=> await OpenDetail(context.Key, context.Value))">@context.Value</MudLink>
+                        </MudTd>
+                    </RowTemplate>
+                </MudTable>
+            </MudPaper>
+        </MudItem>
+    </MudGrid>
 </MudContainer>
 
 @code {
@@ -87,6 +119,9 @@
     private int Reduccion;
     private int Pendientes;
     private DateRange dateRange = new DateRange(DateTime.Today.AddMonths(-6), DateTime.Today);
+    private string sexoFilter = "Todos";
+    private string gesFilter = "Todos"; // "Todos", "GES", "NO"
+    private List<KeyValuePair<string,int>> procedimientosList = new();
     private string[] EstadoLabels = Array.Empty<string>();
     private string[] EstadoColors = Array.Empty<string>();
     private List<ChartSeries> EstadoSeries = new();
@@ -154,10 +189,13 @@
             var hasta = dateRange.End;
 
             // Cargar datos para gráficos
-            var procedimientos = await dashboard.ObtenerProcedimientosPorTipoAsync(desde, hasta);
-            var contactabilidad = await dashboard.ObtenerContactabilidadAsync(desde, hasta);
-            var evolucion = await dashboard.ObtenerEvolucionPercentilAsync(desde, hasta);
-            var causales = await dashboard.ObtenerCausalEgresoAsync(desde, hasta);
+            string sexoParam = sexoFilter == "Todos" ? null : sexoFilter;
+            bool? gesParam = gesFilter == "Todos" ? null : (gesFilter == "GES" ? true : (bool?)false);
+
+            var procedimientos = await dashboard.ObtenerProcedimientosPorTipoAsync(desde, hasta, sexoParam, gesParam);
+            var contactabilidad = await dashboard.ObtenerContactabilidadAsync(desde, hasta, sexoParam, gesParam);
+            var evolucion = await dashboard.ObtenerEvolucionPercentilAsync(desde, hasta, sexoParam, gesParam);
+            var causales = await dashboard.ObtenerCausalEgresoAsync(desde, hasta, sexoParam, gesParam);
 
             // imprimir en la consola del servidor (terminal)
             Console.WriteLine($"procedimientos count={procedimientos?.Count ?? 0}");
@@ -176,6 +214,8 @@
                 var data = procedimientos.Values.Select(v => (double)v).ToArray();
                 await JS.InvokeVoidAsync("console.log", "invoke renderBar", labels, data);
                 await JS.InvokeVoidAsync("dashboardCharts.renderBar", "chartEstado", labels, data, GenerarColores(procedimientos.Count));
+                // preparar lista para la tabla
+                procedimientosList = procedimientos.Select(kv => new KeyValuePair<string,int>(kv.Key, kv.Value)).ToList();
             }
 
             if (contactabilidad?.Any() == true)
@@ -210,6 +250,18 @@
             Console.WriteLine($"Error actualizando datos: {ex.Message}");
             _isLoaded = true;
             StateHasChanged();
+        }
+    }
+
+    private async Task OpenDetail(string label, int value)
+    {
+        try
+        {
+            await JS.InvokeVoidAsync("dashboardCharts.showDetail", label, value, sexoFilter, gesFilter);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error abriendo detalle: {ex.Message}");
         }
     }
 }

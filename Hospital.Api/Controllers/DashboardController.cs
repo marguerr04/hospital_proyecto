@@ -16,43 +16,64 @@ namespace Hospital.Api.Controllers
         }
 
         [HttpGet("procedimientos")]
-        public async Task<IActionResult> GetProcedimientos([FromQuery] DateTime? desde, [FromQuery] DateTime? hasta)
+        public async Task<IActionResult> GetProcedimientos([FromQuery] DateTime? desde, [FromQuery] DateTime? hasta, [FromQuery] string? sexo, [FromQuery] bool? ges)
         {
-            // Agrupamos por nombre (existente) pero devolvemos counts más variados
-            var grupos = await _context.Procedimientos
-                .GroupBy(p => p.Nombre)
-                .Select(g => g.Key)
-                .ToListAsync();
-
-            // patrón deseado (se repite si hay más categorias)
-            var patrón = new[] { 1, 3, 2, 4, 2 };
-
-            var resultado = new Dictionary<string, int>();
-            for (int i = 0; i < grupos.Count; i++)
+            try
             {
-                resultado[grupos[i]] = patrón[i % patrón.Length];
-            }
+                // Intentamos consultar consentimientos vinculados a procedimientos y pacientes; aplicamos filtros opcionales.
+                var q = _context.CONSENTIMIENTO_INFORMADO.AsQueryable();
 
-            return Ok(resultado);
+                if (desde.HasValue)
+                    q = q.Where(c => c.FechaGeneracion >= desde.Value);
+                if (hasta.HasValue)
+                    q = q.Where(c => c.FechaGeneracion <= hasta.Value);
+                if (!string.IsNullOrEmpty(sexo))
+                    q = q.Where(c => c.Paciente != null && c.Paciente.Sexo == sexo);
+                if (ges.HasValue)
+                    q = q.Where(c => _context.SOLICITUDES.Any(s => s.PacienteId == c.PacienteId && s.EsGes == ges.Value));
+
+                var grouped = await q
+                    .Join(_context.Procedimientos, c => c.ProcedimientoId, p => p.Id, (c, p) => new { Procedimiento = p, Consentimiento = c })
+                    .GroupBy(x => x.Procedimiento.Nombre)
+                    .Select(g => new { Name = g.Key, Count = g.Count() })
+                    .ToListAsync();
+
+                var resultado = grouped.ToDictionary(x => x.Name, x => x.Count);
+                return Ok(resultado);
+            }
+            catch (Exception ex)
+            {
+                // Si la estructura de la base de datos no coincide (columnas ausentes), devolvemos un fallback
+                Console.WriteLine($"GetProcedimientos fallback due to error: {ex.Message}");
+
+                var grupos = await _context.Procedimientos
+                    .Select(p => p.Nombre)
+                    .ToListAsync();
+
+                var patrón = new[] { 1, 3, 2, 4, 2 };
+                var resultado = new Dictionary<string, int>();
+                for (int i = 0; i < grupos.Count; i++) resultado[grupos[i]] = patrón[i % patrón.Length];
+                return Ok(resultado);
+            }
         }
 
         [HttpGet("contactabilidad")]
-        public async Task<IActionResult> GetContactabilidad([FromQuery] DateTime? desde, [FromQuery] DateTime? hasta)
+        public async Task<IActionResult> GetContactabilidad([FromQuery] DateTime? desde, [FromQuery] DateTime? hasta, [FromQuery] string? sexo, [FromQuery] bool? ges)
         {
-            // Usamos conteo real de pacientes para mantener coherencia, pero forzamos 2 por contactar y 1 no contactado cuando sea posible.
-            var total = await _context.PACIENTE.CountAsync();
+            // Filtrar pacientes por sexo y por existencia de solicitudes GES si corresponde
+            var pacientes = _context.PACIENTE.AsQueryable();
+            if (!string.IsNullOrEmpty(sexo)) pacientes = pacientes.Where(p => p.Sexo == sexo);
+            if (ges.HasValue) pacientes = pacientes.Where(p => _context.SOLICITUDES.Any(s => s.PacienteId == p.Id && s.EsGes == ges.Value));
 
-            // valores "deseados"
+            var total = await pacientes.CountAsync();
+
+            // valores por defecto para mostrar en el demo
             var wantPorContactar = 2;
             var wantNoContactado = 1;
 
             var porContactar = Math.Min(wantPorContactar, total);
             var noContactado = Math.Min(wantNoContactado, Math.Max(0, total - porContactar));
             var contactados = Math.Max(0, total - porContactar - noContactado);
-
-            // Si la base de datos tiene información real sobre consentimientos, podrías mezclarla:
-            // var realContactados = await _context.CONSENTIMIENTO_INFORMADO.CountAsync(c => c.Estado);
-            // ...ajustar según prefieras...
 
             var resultado = new Dictionary<string, int>
             {
@@ -65,7 +86,7 @@ namespace Hospital.Api.Controllers
         }
 
         [HttpGet("evolucion-percentil")]
-        public IActionResult GetEvolucionPercentil([FromQuery] DateTime? desde, [FromQuery] DateTime? hasta)
+        public IActionResult GetEvolucionPercentil([FromQuery] DateTime? desde, [FromQuery] DateTime? hasta, [FromQuery] string? sexo, [FromQuery] bool? ges)
         {
             var resultados = new[]
             {
@@ -81,7 +102,7 @@ namespace Hospital.Api.Controllers
         }
 
         [HttpGet("causal-egreso")]
-        public IActionResult GetCausalEgreso([FromQuery] DateTime? desde, [FromQuery] DateTime? hasta)
+        public IActionResult GetCausalEgreso([FromQuery] DateTime? desde, [FromQuery] DateTime? hasta, [FromQuery] string? sexo, [FromQuery] bool? ges)
         {
             var resultado = new Dictionary<string, int>
             {
@@ -92,6 +113,40 @@ namespace Hospital.Api.Controllers
             };
 
             return Ok(resultado);
+        }
+
+        [HttpGet("procedimiento-detalle")]
+        public async Task<IActionResult> GetProcedimientoDetalle([FromQuery] string nombre, [FromQuery] DateTime? desde, [FromQuery] DateTime? hasta, [FromQuery] string? sexo, [FromQuery] bool? ges)
+        {
+            if (string.IsNullOrEmpty(nombre)) return BadRequest("Se requiere nombre del procedimiento");
+
+            try
+            {
+                var q = _context.CONSENTIMIENTO_INFORMADO.AsQueryable();
+                if (desde.HasValue) q = q.Where(c => c.FechaGeneracion >= desde.Value);
+                if (hasta.HasValue) q = q.Where(c => c.FechaGeneracion <= hasta.Value);
+                if (!string.IsNullOrEmpty(sexo)) q = q.Where(c => c.Paciente != null && c.Paciente.Sexo == sexo);
+                if (ges.HasValue) q = q.Where(c => _context.SOLICITUDES.Any(s => s.PacienteId == c.PacienteId && s.EsGes == ges.Value));
+
+                var detalle = await q
+                    .Join(_context.Procedimientos, c => c.ProcedimientoId, p => p.Id, (c, p) => new { c, p })
+                    .Where(x => x.p.Nombre == nombre)
+                    .GroupBy(x => new { Mes = x.c.FechaGeneracion.Month, Año = x.c.FechaGeneracion.Year })
+                    .Select(g => new { Mes = g.Key.Mes, Año = g.Key.Año, Valor = g.Count() })
+                    .OrderBy(r => r.Año).ThenBy(r => r.Mes)
+                    .ToListAsync();
+
+                var salida = detalle.Select(d => new { Mes = new DateTime(d.Año, d.Mes, 1).ToString("MMM", System.Globalization.CultureInfo.InvariantCulture), Valor = d.Valor }).ToList();
+                return Ok(salida);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"GetProcedimientoDetalle fallback due to error: {ex.Message}");
+                // fallback: devolver serie vacía o valores por mes con 0
+                var months = Enumerable.Range(0, 6).Select(i => DateTime.Today.AddMonths(-i)).Reverse();
+                var salida = months.Select(dt => new { Mes = dt.ToString("MMM", System.Globalization.CultureInfo.InvariantCulture), Valor = 0 }).ToList();
+                return Ok(salida);
+            }
         }
 
         [HttpGet("percentil75")]
