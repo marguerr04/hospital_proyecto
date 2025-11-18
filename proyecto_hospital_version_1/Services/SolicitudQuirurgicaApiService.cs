@@ -8,6 +8,7 @@ namespace proyecto_hospital_version_1.Services
     public interface ISolicitudQuirurgicaApiService
     {
         Task<bool> CrearSolicitudAsync(SolicitudCrearDto solicitudDto);
+        Task<int> CrearSolicitudYDevolverIdAsync(SolicitudCrearDto solicitudDto);
         Task<List<SolicitudMedicoDto>> ObtenerSolicitudesPorMedicoAsync(int idMedico);
     }
 
@@ -50,6 +51,22 @@ namespace proyecto_hospital_version_1.Services
                 Console.WriteLine($"💥 Error al conectar con la API: {ex.Message}");
                 Console.WriteLine($"💥 StackTrace: {ex.StackTrace}");
                 return false;
+            }
+        }
+
+        public async Task<int> CrearSolicitudYDevolverIdAsync(SolicitudCrearDto solicitudDto)
+        {
+            try
+            {
+                var response = await _http.PostAsJsonAsync("api/Solicitud/crear-y-devolver-id", solicitudDto);
+                if (!response.IsSuccessStatusCode) return 0;
+                var id = await response.Content.ReadFromJsonAsync<int>();
+                return id;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"💥 Error al crear y obtener ID: {ex.Message}");
+                return 0;
             }
         }
 

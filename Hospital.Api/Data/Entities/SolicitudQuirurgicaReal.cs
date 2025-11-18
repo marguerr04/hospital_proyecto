@@ -63,5 +63,8 @@ namespace Hospital.Api.Data.Entities
 
         // Priorizaciones (1:N) — la FK compuesta se configura en OnModelCreating
         public virtual ICollection<PriorizacionSolicitud> Priorizaciones { get; set; } = new List<PriorizacionSolicitud>();
+
+        // Procedimientos vinculados a la solicitud (1:N)
+        public virtual ICollection<SolicitudProcedimiento> Procedimientos { get; set; } = new List<SolicitudProcedimiento>();
     }
 }

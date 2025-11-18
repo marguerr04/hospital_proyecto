@@ -7,6 +7,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using proyecto_hospital_version_1.Data._Legacy; // Añadir esto para usar Include y ToListAsync
+using proyecto_hospital_version_1.Models;
 
 namespace proyecto_hospital_version_1.Components.Shared
 {
@@ -35,12 +36,16 @@ namespace proyecto_hospital_version_1.Components.Shared
         [Parameter] public string EspecialidadDestino { get; set; } = string.Empty;
         [Parameter] public EventCallback<string> EspecialidadDestinoChanged { get; set; }
 
+        // NUEVO: Procedimientos secundarios gestionados en este paso
+        [Parameter] public List<ProcSelVM> ProcedimientosSecundarios { get; set; } = new();
+        [Parameter] public EventCallback<List<ProcSelVM>> ProcedimientosSecundariosChanged { get; set; }
+
         // Variables locales
         private List<EspecialidadHospital> _especialidadesDisponiblesBd = new List<EspecialidadHospital>();
         private List<Diagnostico> _todosLosDiagnosticos = new List<Diagnostico>(); // Contendrá todos los diagnósticos cargados una vez.
         private List<Diagnostico> _diagnosticosFiltrados = new List<Diagnostico>(); // Contendrá los diagnósticos para mostrar en la lista sugerida.
+        private List<Diagnostico> DiagnosticosFiltrados => _diagnosticosFiltrados;
         private List<string> _diagnosticosSugeridos = new List<string>(); // Nombres de los diagnósticos para el datalist.
-        private List<string> _procedimientosAnadidos = new List<string>(); // Mantener esta, es para otro componente.
 
         protected override async Task OnInitializedAsync()
         {
@@ -133,10 +138,10 @@ namespace proyecto_hospital_version_1.Components.Shared
         }
 
 
-        private void AgregarProcedimientoDummy()
-        {
-            _procedimientosAnadidos.Add($"Procedimiento {(_procedimientosAnadidos.Count + 1)}");
-        }
+        // --- Handlers para Procedimientos secundarios ---
+        private Task OnAddProc(ProcSelVM vm) => ProcedimientosSecundariosChanged.InvokeAsync(ProcedimientosSecundarios);
+        private Task OnEditProc(ProcSelVM vm) => ProcedimientosSecundariosChanged.InvokeAsync(ProcedimientosSecundarios);
+        private Task OnDeleteProc(ProcSelVM vm) => ProcedimientosSecundariosChanged.InvokeAsync(ProcedimientosSecundarios);
 
         // --- MÉTODOS DE MANEJO DE CAMBIOS (Event Handlers) ---
         private async Task OnPesoChanged(ChangeEventArgs e)
@@ -168,12 +173,8 @@ namespace proyecto_hospital_version_1.Components.Shared
         {
             if (e.Value is bool valor)
             {
-                // NOTA: Directamente actualizamos el parámetro aquí, Blazor lo propagará.
-                // Si este componente fuera el único lugar donde se usa EsGes, podríamos usar una variable de campo privada.
-                // Para simplificar, asumimos que el padre actualizará el parámetro y Blazor re-renderizará,
-                // pero si no, también podríamos setear this.EsGes = valor; aquí.
                 await EsGesChanged.InvokeAsync(valor);
-                AplicarFiltroDiagnosticos(); // Volver a aplicar el filtro con el nuevo estado de EsGes
+                AplicarFiltroDiagnosticos();
             }
         }
 

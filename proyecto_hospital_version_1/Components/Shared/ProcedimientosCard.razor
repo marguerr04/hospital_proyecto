@@ -1,38 +1,151 @@
 ﻿@using Microsoft.AspNetCore.Components
+@using proyecto_hospital_version_1.Services
+@using proyecto_hospital_version_1.Models
 
 <div class="mb-4 p-3 bg-light border rounded">
     <h6 class="border-bottom pb-2 mb-3"><i class="bi bi-list-check me-2 text-primary"></i> Procedimientos secunadarios a realizar</h6>
 
-    @if (!ListaProcedimientos.Any())
+    <div class="mb-3">
+        <div class="input-group">
+            <input class="form-control" placeholder="Buscar procedimiento por nombre o código" @bind="_textoBusqueda" @bind:event="oninput" />
+            <button class="btn btn-outline-secondary" @onclick="Buscar">Buscar</button>
+        </div>
+        @if (_sugerencias?.Any() == true)
+        {
+            <ul class="list-group mt-2">
+                @foreach (var s in _sugerencias)
+                {
+                    <li class="list-group-item list-group-item-action" @onclick="(() => SeleccionarSugerencia(s))">
+                        <strong>@s.Codigo</strong> - @s.Nombre
+                    </li>
+                }
+            </ul>
+        }
+    </div>
+
+    @if (Procedimientos.Any())
+    {
+        <div class="table-responsive">
+            <table class="table table-sm">
+                <thead>
+                    <tr>
+                        <th style="width:110px">Código</th>
+                        <th>Nombre</th>
+                        <th style="width:110px">Orden</th>
+                        <th>Observaciones</th>
+                        <th style="width:120px"></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var p in Procedimientos)
+                    {
+                        <tr>
+                            <td>@p.Codigo</td>
+                            <td>@p.Nombre</td>
+                            <td style="max-width:110px">
+                                <input class="form-control form-control-sm" type="number" min="1" value="@p.Orden" @onchange="(e => CambiarOrden(p, e))" />
+                            </td>
+                            <td>
+                                <input class="form-control form-control-sm" value="@p.Observaciones" @onchange="(e => CambiarObs(p, e))" />
+                            </td>
+                            <td class="text-end">
+                                <button class="btn btn-sm btn-outline-danger" @onclick="(() => Eliminar(p))"><i class="bi bi-trash"></i></button>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+    else
     {
         <div class="alert alert-info text-center">
             No hay procedimientos añadidos.
         </div>
     }
-    else
-    {
-        <ul class="list-group">
-            @foreach (var proc in ListaProcedimientos)
-            {
-                <li class="list-group-item">@proc</li>
-            }
-        </ul>
-    }
 
-    <button class="btn btn-primary mt-3 w-100" @onclick="HandleAgregarClick">
+    <button class="btn btn-primary mt-3 w-100" @onclick="AgregarSeleccionado" disabled="@(_seleccionActual == null)">
         <i class="bi bi-plus-circle me-2"></i> Agregar Procedimiento
     </button>
 </div>
 
 @code {
-    [Parameter]
-    public List<string> ListaProcedimientos { get; set; } = new List<string>();
+    [Inject] public IProcedimientoService ProcedimientoService { get; set; } = default!;
 
-    [Parameter]
-    public EventCallback OnAgregarPresionado { get; set; }
+    // Lista que maneja este componente
+    [Parameter] public List<ProcSelVM> Procedimientos { get; set; } = new();
+    [Parameter] public EventCallback<List<ProcSelVM>> ProcedimientosChanged { get; set; }
 
-    private async Task HandleAgregarClick()
+    // Eventos para notificar al padre (opcional)
+    [Parameter] public EventCallback<ProcSelVM> OnAgregar { get; set; }
+    [Parameter] public EventCallback<ProcSelVM> OnEliminar { get; set; }
+    [Parameter] public EventCallback<ProcSelVM> OnEditar { get; set; }
+
+    private string _textoBusqueda = string.Empty;
+    private List<ProcedimientoDto> _sugerencias = new();
+    private ProcedimientoDto? _seleccionActual;
+
+    private async Task Buscar()
     {
-        await OnAgregarPresionado.InvokeAsync();
+        if (string.IsNullOrWhiteSpace(_textoBusqueda))
+        {
+            _sugerencias = new();
+            _seleccionActual = null;
+            return;
+        }
+        _sugerencias = await ProcedimientoService.BuscarProcedimientosAsync(_textoBusqueda);
+    }
+
+    private void SeleccionarSugerencia(ProcedimientoDto dto)
+    {
+        _seleccionActual = dto;
+        _textoBusqueda = $"{dto.Codigo} - {dto.Nombre}";
+        _sugerencias = new();
+    }
+
+    private async Task AgregarSeleccionado()
+    {
+        if (_seleccionActual == null) return;
+        if (Procedimientos.Any(x => x.ProcedimientoId == _seleccionActual.Id)) return; // evitar duplicados
+
+        var nuevo = new ProcSelVM
+        {
+            ProcedimientoId = _seleccionActual.Id,
+            Codigo = _seleccionActual.Codigo,
+            Nombre = _seleccionActual.Nombre,
+            EsPrincipal = false,
+            Orden = Procedimientos.Count + 1,
+            Observaciones = string.Empty
+        };
+        Procedimientos.Add(nuevo);
+        await ProcedimientosChanged.InvokeAsync(Procedimientos);
+        await OnAgregar.InvokeAsync(nuevo);
+
+        _seleccionActual = null;
+        _textoBusqueda = string.Empty;
+    }
+
+    private async Task Eliminar(ProcSelVM vm)
+    {
+        Procedimientos.Remove(vm);
+        await ProcedimientosChanged.InvokeAsync(Procedimientos);
+        await OnEliminar.InvokeAsync(vm);
+    }
+
+    private async Task CambiarOrden(ProcSelVM vm, ChangeEventArgs e)
+    {
+        if (int.TryParse(e.Value?.ToString(), out var val))
+        {
+            vm.Orden = Math.Max(1, val);
+            await ProcedimientosChanged.InvokeAsync(Procedimientos);
+            await OnEditar.InvokeAsync(vm);
+        }
+    }
+
+    private async Task CambiarObs(ProcSelVM vm, ChangeEventArgs e)
+    {
+        vm.Observaciones = e.Value?.ToString();
+        await ProcedimientosChanged.InvokeAsync(Procedimientos);
+        await OnEditar.InvokeAsync(vm);
     }
 }

@@ -20,7 +20,6 @@ namespace Hospital.Api.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<object>>> GetPacientes([FromQuery] int? limit = 50)
         {
-            // Validar que limit no sea null
             var limitValue = limit ?? 50;
 
             var pacientes = await _context.PACIENTE
@@ -44,7 +43,7 @@ namespace Hospital.Api.Controllers
                     p.Mail,
                     p.PRAIS
                 })
-                .Take(limitValue)  //  Usar variable no nullable
+                .Take(limitValue)  
                 .ToListAsync();
 
             return Ok(pacientes);
@@ -75,7 +74,6 @@ namespace Hospital.Api.Controllers
                     p.TelefonoFijo,
                     p.Mail,
                     p.PRAIS,
-                    // CORREGIDO: Usar los campos reales de UBICACION
                     Ubicaciones = p.Ubicaciones.Select(u => new
                     {
                         u.IdDomicilio,
@@ -84,7 +82,6 @@ namespace Hospital.Api.Controllers
                         u.NumDireccion,      
                         u.CiudadId,          
                         u.TipoViaId,         
-                        //  Propiedad calculada si existe en el modelo
                         DireccionCompleta = u.NomDireccion + " " + u.NumDireccion
                     }).ToList()
                 })

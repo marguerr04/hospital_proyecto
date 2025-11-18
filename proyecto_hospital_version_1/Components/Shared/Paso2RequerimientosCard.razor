@@ -1,4 +1,5 @@
 ﻿@using proyecto_hospital_version_1.Data._Legacy
+@using proyecto_hospital_version_1.Models
 
 @* Ocupama models *@
 
@@ -58,15 +59,15 @@
                                        class="form-control"
                                        id="diagnosticoPrincipal"
                                        list="listaDiagnosticos-@EsGes.ToString()"
-                                                                                         value="@DiagnosticoPrincipal"
-                                                                                         @onchange="OnDiagnosticoInput"
-                                                                                         placeholder="Escriba el diagnóstico..." />
+                                                                                     value="@DiagnosticoPrincipal"
+                                                                                     @onchange="OnDiagnosticoInput"
+                                                                                     placeholder="Escriba el diagnóstico..." />
 
                                
                                 <datalist id="listaDiagnosticos-@EsGes.ToString()" @key="EsGes">
                                     @foreach (var diagnostico in _diagnosticosSugeridos)
                                     {
-                                        <option value="@diagnostico">@diagnostico</option>
+                                        <option value="@diagnostico"></option>
                                     }
                                 </datalist>
                             </div>
@@ -126,8 +127,11 @@
                 </div>
             </div>
 
-            <ProcedimientosCard ListaProcedimientos="_procedimientosAnadidos"
-                                OnAgregarPresionado="AgregarProcedimientoDummy" />
+            <ProcedimientosCard Procedimientos="ProcedimientosSecundarios"
+                                ProcedimientosChanged="ProcedimientosSecundariosChanged"
+                                OnAgregar="OnAddProc"
+                                OnEditar="OnEditProc"
+                                OnEliminar="OnDeleteProc" />
         }
         else
         {

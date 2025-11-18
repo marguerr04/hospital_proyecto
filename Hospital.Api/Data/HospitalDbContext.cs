@@ -34,6 +34,7 @@ namespace Hospital.Api.Data
         public DbSet<Procedimiento> PROCEDIMIENTO { get; set; } = null!;
         public DbSet<TipoProcedimiento> TIPO_PROCEDIMIENTO { get; set; } = null!;
         public DbSet<Especialidad> ESPECIALIDAD { get; set; } = null!;
+        public DbSet<SolicitudProcedimiento> SOLICITUD_QUIRURGICA_PROCEDIMIENTO { get; set; } = null!;
 
         // Integración “Real”
         public DbSet<SolicitudQuirurgicaReal> SOLICITUD_QUIRURGICA { get; set; }
@@ -94,16 +95,13 @@ namespace Hospital.Api.Data
             // 🔵 AJUSTES CLAVE PARA HACER FUNCIONAR PRIORIZACIÓN (PK compuesta)
             // ============================================================
 
-            // 1) PK compuesta de SOLICITUD_QUIRURGICA: (idSolicitud, CONSENTIMIENTO_INFORMADO_id)
+            // 1) PK compuesta de SOLICITUD_QUIRURGICA: (idSolicitud, CONSENTIMENTO_INFORMADO_id)
             modelBuilder.Entity<SolicitudQuirurgicaReal>()
                 .HasKey(s => s.IdSolicitud);
-
-
 
             modelBuilder.Entity<SolicitudQuirurgicaReal>()
                 .HasAlternateKey(s => new { s.IdSolicitud, s.ConsentimientoId })
                 .HasName("AK_SOLICITUD_QUIRURGICA_Id_Consent");
-
 
             // 2) DETALLE_CLINICO_REAL con FK compuesta a SOLICITUD_QUIRURGICA
             modelBuilder.Entity<DetalleClinicoReal>()
@@ -143,16 +141,18 @@ namespace Hospital.Api.Data
                 .WithMany(p => p.SolicitudesProfesionales)
                 .HasForeignKey(sp => sp.PROFESIONAL_id);
 
-
-
-
-
-
-        
-
-
-
-
+            // 6) Relación Solicitud <-> SolicitudProcedimiento (FK compuesta)
+            modelBuilder.Entity<SolicitudProcedimiento>(entity =>
+            {
+                entity.HasKey(e => new { e.SolicitudId, e.SolicitudConsentimientoId, e.ProcedimientoId });
+                entity.HasOne<SolicitudQuirurgicaReal>()
+                      .WithMany(s => s.Procedimientos)
+                      .HasForeignKey(e => new { e.SolicitudId, e.SolicitudConsentimientoId })
+                      .HasPrincipalKey(s => new { s.IdSolicitud, s.ConsentimientoId });
+                entity.HasOne(e => e.Procedimiento)
+                      .WithMany()
+                      .HasForeignKey(e => e.ProcedimientoId);
+            });
 
             base.OnModelCreating(modelBuilder);
         }

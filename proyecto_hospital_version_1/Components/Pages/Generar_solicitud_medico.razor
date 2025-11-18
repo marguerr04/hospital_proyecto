@@ -10,12 +10,14 @@
 @using System.Linq
 @using Hospital.Api.Data.DTOs
 @using proyecto_hospital_version_1.Helpers
+@using proyecto_hospital_version_1.Models
 @using ApiEntities = Hospital.Api.Data.Entities;
 
 
 
 @inject IProcedimientoService ProcedimientoService
 @inject ISolicitudQuirurgicaApiService SolicitudApiService
+@inject ISolicitudProcedimientoApiService SolicitudProcApi
 @inject IConsentimientoInformadoService ConsentimientoService
 @inject IJSRuntime JsRuntime // Para posibles alertas o interacciones JS
 @inject HttpClient Http // para http
@@ -62,12 +64,14 @@
                                          EspecialidadOrigen="_especialidadOrigen"
                                          EspecialidadOrigenChanged="(value) => _especialidadOrigen = value"
                                          EspecialidadDestino="_especialidadDestino"
-                                         EspecialidadDestinoChanged="(value) => _especialidadDestino = value" />
+                                         EspecialidadDestinoChanged="(value) => _especialidadDestino = value"
+                                         ProcedimientosSecundarios="_procedsSeleccionados"
+                                         ProcedimientosSecundariosChanged="(lista) => _procedsSeleccionados = lista" />
             }
 
             @if (_pasoActual == 3)
             {
-                                  
+                              
                     <Paso3GenerarSolicitudCard Paciente="_pacienteSeleccionado"
                                            ProcedimientoPrincipal="@_procedimientoSeleccionado"
                                            DiagnosticoPrincipal="@_diagnosticoPrincipal"
@@ -213,6 +217,8 @@
 
     private List<ProcedimientoDto> _listaProcedimientos = new();
 
+    // NUEVO: Lista local de procedimientos secundarios seleccionados
+    private List<ProcSelVM> _procedsSeleccionados = new();
     
     // variables para cambiar de rutas
 
@@ -242,8 +248,6 @@
     // variables para el id del consentimiento de la api
 
     
-
-
 
 
 
@@ -515,12 +519,30 @@
             Console.WriteLine($"   - DiagnosticoPrincipal: {solicitudDto.DiagnosticoPrincipal}");
             Console.WriteLine($"   - EspecialidadDestino: {solicitudDto.EspecialidadDestino}");
 
-            // ✅ ENVIAR A LA NUEVA API
-            var exito = await SolicitudApiService.CrearSolicitudAsync(solicitudDto);
+            // ✅ ENVIAR A LA NUEVA API Y OBTENER ID
+            var solicitudId = await SolicitudApiService.CrearSolicitudYDevolverIdAsync(solicitudDto);
 
-            if (exito)
+            if (solicitudId > 0)
             {
-                Console.WriteLine("✅ Solicitud guardada exitosamente");
+                Console.WriteLine($"✅ Solicitud guardada exitosamente con Id {solicitudId}");
+
+                // Enviar procedimientos secundarios seleccionados
+                if (_procedsSeleccionados?.Any() == true)
+                {
+                    foreach (var p in _procedsSeleccionados.OrderBy(x => x.Orden))
+                    {
+                        var dtoProc = new SolicitudProcedimientoCrearDto
+                        {
+                            ProcedimientoId = p.ProcedimientoId,
+                            EsPrincipal = false,
+                            Orden = p.Orden,
+                            Observaciones = p.Observaciones
+                        };
+                        var ok = await SolicitudProcApi.AgregarAsync(solicitudId, _consentimientoInformadoApiId, dtoProc);
+                        Console.WriteLine($"   - POST Proc {p.ProcedimientoId} => {(ok ? "OK" : "ERROR")}");
+                    }
+                }
+
                 await JsRuntime.InvokeVoidAsync("alert", "✅ Solicitud guardada correctamente en la base real.");
                 ResetFormulario();
                 _pasoActual = 1;
@@ -528,7 +550,7 @@
             }
             else
             {
-                Console.WriteLine("❌ Falló CrearSolicitudAsync");
+                Console.WriteLine("❌ Falló crear solicitud (ID 0)");
                 await JsRuntime.InvokeVoidAsync("alert", "❌ Error al enviar la solicitud a la API.");
             }
         }
@@ -571,6 +593,8 @@
         _tiempoEstimado = null;
         _comorbilidadesSeleccionadas = new List<string>();
         _comentariosAdicionales = "";
+
+        _procedsSeleccionados.Clear();
 
         _isPaso3Ready = false; // Resetear el estado del paso 3
     }
@@ -740,7 +764,6 @@
 
 
 
-
     private void GoPreviousStep()
     {
         if (_pasoActual > 1)
@@ -749,7 +772,6 @@
             StateHasChanged();
         }
     }
-
 
 
 
@@ -794,11 +816,6 @@
             await JsRuntime.InvokeVoidAsync("alert", $"Error al cargar procedimientos: {ex.Message}");
         }
     }
-
-
-
-
-
 
 
 

@@ -55,6 +55,37 @@ namespace Hospital.Api.Controllers
             }
         }
 
+        // ✅ NUEVO: POST api/solicitud/crear-y-devolver-id
+        [HttpPost("crear-y-devolver-id")]
+        public async Task<ActionResult<int>> CrearSolicitudYDevolverId([FromBody] SolicitudCrearDto dto)
+        {
+            if (dto == null)
+                return BadRequest(0);
+
+            var id = await _solicitudService.CrearSolicitudYDevolverIdAsync(
+                dto.PacienteId,
+                dto.ConsentimientoId,
+                dto.DiagnosticoPrincipal,
+                dto.ProcedimientoPrincipal,
+                dto.Procedencia,
+                dto.Peso,
+                dto.Talla,
+                dto.IMC,
+                dto.TiempoEstimado,
+                dto.EvaluacionAnestesica,
+                dto.EvaluacionTransfusion,
+                dto.EsGes,
+                dto.Comentarios,
+                dto.EspecialidadOrigen,
+                dto.EspecialidadDestino,
+                dto.Lateralidad,
+                dto.Extremidad
+            );
+
+            if (id <= 0) return StatusCode(500, 0);
+            return Ok(id);
+        }
+
         // ✅ GET api/solicitud/medico/{idMedico}
         [HttpGet("medico/{idMedico}")]
         public async Task<IActionResult> ObtenerSolicitudesPorMedico(int idMedico)

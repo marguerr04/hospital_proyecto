@@ -61,7 +61,8 @@ builder.Services.AddScoped<IProcedimientoService, ProcedimientoService>();
 builder.Services.AddScoped<IEspecialidadService, EspecialidadService>();
 // Consentimiento informado
 builder.Services.AddScoped<IConsentimientoInformadoService, ConsentimientoInformadoService>();
-
+// Procedimientos por solicitud (API)
+builder.Services.AddScoped<ISolicitudProcedimientoApiService, SolicitudProcedimientoApiService>();
 
 
 
@@ -124,7 +125,7 @@ app.UseRouting(); // Importante: Habilita el enrutamiento
 app.UseAntiforgery();
 
 
-// TU MAPEO (Mantenido)
+/// TU MAPEO (Mantenido)
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
 

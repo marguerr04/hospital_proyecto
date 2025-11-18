@@ -168,6 +168,110 @@ namespace Hospital.Api.Data.Services
             }
         }
 
+        // ✅ NUEVO: igual que el anterior, pero devuelve el ID de la solicitud creada (o 0 en error)
+        public async Task<int> CrearSolicitudYDevolverIdAsync(
+            int pacienteId,
+            int? consentimientoId,
+            string diagnosticoPrincipal,
+            string procedimientoPrincipal,
+            string procedencia,
+            decimal peso,
+            decimal talla,
+            decimal imc,
+            int tiempoEstimado,
+            bool evaluacionAnestesica,
+            bool evaluacionTransfusion,
+            bool esGes,
+            string? comentarios,
+            string? especialidadOrigen,
+            string? especialidadDestino,
+            string? lateralidad,
+            string? extremidad)
+        {
+            using var transaction = await _context.Database.BeginTransactionAsync();
+            try
+            {
+                // Reutilizamos exactamente la misma lógica que el método anterior, pero capturando el ID generado
+                if (consentimientoId == null || consentimientoId == 0)
+                    return 0;
+
+                var consentimiento = await _context.CONSENTIMIENTO_INFORMADO
+                    .FirstOrDefaultAsync(c => c.Id == consentimientoId && c.PacienteId == pacienteId);
+                if (consentimiento == null)
+                    return 0;
+
+                var diagnosticoId = await _context.DIAGNOSTICO
+                    .Where(d => d.Nombre == diagnosticoPrincipal)
+                    .Select(d => d.Id)
+                    .FirstOrDefaultAsync();
+                var procedenciaId = await _context.PROCEDENCIA
+                    .Where(p => p.Nombre == procedencia)
+                    .Select(p => p.Id)
+                    .FirstOrDefaultAsync();
+
+                var tipoPrestacionKey = "Cirugía Urgencia";
+                if (!string.IsNullOrWhiteSpace(especialidadDestino))
+                {
+                    var tipoPrestacionValida = await _context.TIPO_PRESTACION
+                        .Where(t => t.Nombre.ToLower() == especialidadDestino.ToLower())
+                        .Select(t => t.Nombre)
+                        .FirstOrDefaultAsync();
+                    if (tipoPrestacionValida != null) tipoPrestacionKey = tipoPrestacionValida;
+                }
+                var tipoPrestacionId = await _context.TIPO_PRESTACION
+                    .Where(t => t.Nombre == tipoPrestacionKey)
+                    .Select(t => t.Id)
+                    .FirstOrDefaultAsync();
+
+                if (diagnosticoId == 0 || procedenciaId == 0 || tipoPrestacionId == 0)
+                    return 0;
+
+                var solicitud = new SolicitudQuirurgicaReal
+                {
+                    ConsentimientoId = consentimientoId.Value,
+                    DiagnosticoId = diagnosticoId,
+                    ProcedenciaId = procedenciaId,
+                    TipoPrestacionId = tipoPrestacionId,
+                    FechaCreacion = DateTime.Now,
+                    ValidacionGES = esGes,
+                    ValidacionDuplicado = false,
+                    IdSIGTE = true
+                };
+                _context.SOLICITUD_QUIRURGICA.Add(solicitud);
+                await _context.SaveChangesAsync();
+
+                var detallePaciente = new DetallePacienteReal
+                {
+                    SolicitudConsentimientoId = consentimientoId.Value,
+                    SolicitudId = solicitud.IdSolicitud,
+                    Peso = peso,
+                    Altura = talla,
+                    IMC = imc
+                };
+                _context.DETALLE_PACIENTE.Add(detallePaciente);
+
+                var detalleClinico = new DetalleClinicoReal
+                {
+                    SolicitudConsentimientoId = consentimientoId.Value,
+                    SolicitudId = solicitud.IdSolicitud,
+                    TiempoEstimadoCirugia = tiempoEstimado,
+                    EvaluacionAnestesica = evaluacionAnestesica,
+                    EvaluacionTransfusion = evaluacionTransfusion
+                };
+                _context.DETALLE_CLINICO.Add(detalleClinico);
+
+                await _context.SaveChangesAsync();
+                await transaction.CommitAsync();
+
+                return solicitud.IdSolicitud;
+            }
+            catch
+            {
+                await transaction.RollbackAsync();
+                return 0;
+            }
+        }
+
         // ✅ NUEVO: Obtener solicitudes por médico (por ahora retorna todas las solicitudes)
         public async Task<IEnumerable<SolicitudMedicoDto>> ObtenerSolicitudesPorMedicoAsync(int idMedico)
         {
@@ -356,12 +460,6 @@ namespace Hospital.Api.Data.Services
             if (string.IsNullOrEmpty(rut)) return "N/A";
             return $"{rut}-{dv}";
         }
-
-
-
-
-
-
 
         // Para priorizar
 
