@@ -30,8 +30,9 @@ namespace Hospital.Api.Data.Entities
         [Column("MOTIVO_PRIORIZACION_id")]
         public int? MotivoPriorizacionId { get; set; }
 
+        // La columna en BD es tinyint -> usar byte? para evitar InvalidCastException
         [Column("prioridad")]
-        public int? Prioridad { get; set; }
+        public byte? Prioridad { get; set; }
 
         // Navegación
         [ForeignKey(nameof(CriterioPriorizacionId))]

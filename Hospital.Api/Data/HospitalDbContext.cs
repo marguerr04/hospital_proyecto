@@ -36,7 +36,7 @@ namespace Hospital.Api.Data
         public DbSet<Especialidad> ESPECIALIDAD { get; set; } = null!;
         public DbSet<SolicitudProcedimiento> SOLICITUD_QUIRURGICA_PROCEDIMIENTO { get; set; } = null!;
 
-        // Integración “Real”
+        // Integración 
         public DbSet<SolicitudQuirurgicaReal> SOLICITUD_QUIRURGICA { get; set; }
         public DbSet<ConsentimientoInformadoReal> CONSENTIMIENTO_INFORMADO { get; set; }
         public DbSet<DetalleClinicoReal> DETALLE_CLINICO { get; set; }
@@ -48,6 +48,10 @@ namespace Hospital.Api.Data
         public DbSet<CriterioPriorizacion> CRITERIO_PRIORIZACION { get; set; } = null!;
         public DbSet<MotivoPriorizacion> MOTIVO_PRIORIZACION { get; set; } = null!;
         public DbSet<PriorizacionSolicitud> PRIORIZACION_SOLICITUD { get; set; } = null!;
+
+        // Egreso solicitud 
+        public DbSet<EgresoSolicitud> EGRESO_SOLICITUD { get; set; } = null!;
+
 
         // Rol Solicitud
         public DbSet<Profesional> PROFESIONAL { get; set; }
@@ -91,11 +95,9 @@ namespace Hospital.Api.Data
             modelBuilder.Entity<TipoProcedimiento>().ToTable("TIPO_PROCEDIMIENTO");
             modelBuilder.Entity<Especialidad>().ToTable("ESPECIALIDAD");
 
-            // ============================================================
-            // 🔵 AJUSTES CLAVE PARA HACER FUNCIONAR PRIORIZACIÓN (PK compuesta)
-            // ============================================================
 
-            // 1) PK compuesta de SOLICITUD_QUIRURGICA: (idSolicitud, CONSENTIMENTO_INFORMADO_id)
+
+            //  PK compuesta de SOLICITUD_QUIRURGICA
             modelBuilder.Entity<SolicitudQuirurgicaReal>()
                 .HasKey(s => s.IdSolicitud);
 
@@ -103,7 +105,7 @@ namespace Hospital.Api.Data
                 .HasAlternateKey(s => new { s.IdSolicitud, s.ConsentimientoId })
                 .HasName("AK_SOLICITUD_QUIRURGICA_Id_Consent");
 
-            // 2) DETALLE_CLINICO_REAL con FK compuesta a SOLICITUD_QUIRURGICA
+
             modelBuilder.Entity<DetalleClinicoReal>()
                 .HasKey(d => new { d.SolicitudConsentimientoId, d.SolicitudId });
 
@@ -113,7 +115,7 @@ namespace Hospital.Api.Data
                 .HasForeignKey<DetalleClinicoReal>(d => new { d.SolicitudId, d.SolicitudConsentimientoId })
                 .HasPrincipalKey<SolicitudQuirurgicaReal>(s => new { s.IdSolicitud, s.ConsentimientoId });
 
-            // 3) DETALLE_PACIENTE_REAL con FK compuesta a SOLICITUD_QUIRURGICA
+            //  DETALLE_PACIENTE_REAL con FK compuesta a SOLICITUD_QUIRURGICA
             modelBuilder.Entity<DetallePacienteReal>()
                 .HasKey(dp => new { dp.Id, dp.SolicitudConsentimientoId, dp.SolicitudId });
 
@@ -123,14 +125,14 @@ namespace Hospital.Api.Data
                 .HasForeignKey(dp => new { dp.SolicitudId, dp.SolicitudConsentimientoId })
                 .HasPrincipalKey(sq => new { sq.IdSolicitud, sq.ConsentimientoId });
 
-            // 4) PRIORIZACION_SOLICITUD con FK compuesta a SOLICITUD_QUIRURGICA
+            //  PRIORIZACION_SOLICITUD con FK compuesta a SOLICITUD_QUIRURGICA
             modelBuilder.Entity<PriorizacionSolicitud>()
                 .HasOne(p => p.SolicitudQuirurgica)
                 .WithMany(s => s.Priorizaciones)
                 .HasForeignKey(p => new { p.SolicitudQuirurgicaId, p.SolicitudConsentimientoId })
                 .HasPrincipalKey(s => new { s.IdSolicitud, s.ConsentimientoId });
 
-            // 5) Relación Rol Solicitud (como la tenías)
+
             modelBuilder.Entity<SolicitudProfesional>()
                 .HasOne(sp => sp.Solicitud)
                 .WithMany(s => s.Profesionales)
@@ -141,7 +143,17 @@ namespace Hospital.Api.Data
                 .WithMany(p => p.SolicitudesProfesionales)
                 .HasForeignKey(sp => sp.PROFESIONAL_id);
 
-            // 6) Relación Solicitud <-> SolicitudProcedimiento (FK compuesta)
+
+            // egreso solicitud
+
+            modelBuilder.Entity<EgresoSolicitud>()
+                .HasOne(e => e.CausalSalida)
+                .WithMany()
+                .HasForeignKey(e => e.CausalSalidaId);
+
+
+
+            // (FK compuesta)
             modelBuilder.Entity<SolicitudProcedimiento>(entity =>
             {
                 entity.HasKey(e => new { e.SolicitudId, e.SolicitudConsentimientoId, e.ProcedimientoId });
@@ -153,6 +165,15 @@ namespace Hospital.Api.Data
                       .WithMany()
                       .HasForeignKey(e => e.ProcedimientoId);
             });
+
+            // egreso soliciutd
+
+            
+
+
+
+
+
 
             base.OnModelCreating(modelBuilder);
         }

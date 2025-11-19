@@ -1,5 +1,4 @@
-﻿
-namespace Hospital.Api.Data.DTOs
+﻿namespace Hospital.Api.Data.DTOs
 {
     public class SolicitudMedicoDto
     {
@@ -13,5 +12,6 @@ namespace Hospital.Api.Data.DTOs
         public DateTime? FechaProgramada { get; set; }
         public int? DiasRestantes { get; set; }
         public string? Contactabilidad { get; set; }
+        public byte? Prioridad { get; set; }
     }
 }

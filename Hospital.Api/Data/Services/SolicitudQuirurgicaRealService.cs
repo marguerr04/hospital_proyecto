@@ -502,7 +502,7 @@ namespace Hospital.Api.Data.Services
                     SolicitudQuirurgicaId = solicitud.IdSolicitud,     // parte 1
                     SolicitudConsentimientoId = solicitud.ConsentimientoId, // parte 2
                     CriterioPriorizacionId = criterio.Id,
-                    Prioridad = prioridadNumerica,
+                    Prioridad = (byte)prioridadNumerica,
                     FechaPriorizacion = priorizacion.FechaPriorizacion,
                     MotivoPriorizacionId = null // opcional
                 };
@@ -643,7 +643,8 @@ namespace Hospital.Api.Data.Services
                     .OrderByDescending(s => s.FechaCreacion)
                     .ToListAsync();
 
-                return solicitudes.Select(s => new SolicitudMedicoDto
+                // Para cada solicitud priorizada, obtener la prioridad (P1/P2/P3) desde PRIORIZACION_SOLICITUD
+                var resultado = solicitudes.Select(s => new SolicitudMedicoDto
                 {
                     Id = s.IdSolicitud,
                     NombrePaciente = $"{s.Consentimiento?.Paciente?.PrimerNombre ?? ""} {s.Consentimiento?.Paciente?.ApellidoPaterno ?? ""}".Trim(),
@@ -651,8 +652,15 @@ namespace Hospital.Api.Data.Services
                     Diagnostico = s.Diagnostico?.Nombre ?? "Sin diagnóstico",
                     Procedimiento = s.Consentimiento?.Procedimiento?.Nombre ?? "Sin procedimiento",
                     Estado = "Priorizada",
-                    FechaCreacion = s.FechaCreacion
+                    FechaCreacion = s.FechaCreacion,
+                    Prioridad = (byte?)_context.PRIORIZACION_SOLICITUD
+                                .Where(p => p.SolicitudQuirurgicaId == s.IdSolicitud && p.SolicitudConsentimientoId == s.ConsentimientoId)
+                                .OrderByDescending(p => p.FechaPriorizacion)
+                                .Select(p => p.Prioridad)
+                                .FirstOrDefault() ?? (byte)3
                 }).ToList();
+
+                return resultado;
             }
             catch (Exception ex)
             {
