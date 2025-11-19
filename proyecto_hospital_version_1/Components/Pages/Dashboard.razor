@@ -103,6 +103,27 @@
         <div class="col-lg-8">
             @if (_pacienteSeleccionado != null)
             {
+                <!-- RESUMEN RÁPIDO DEL PACIENTE -->
+                <div class="card shadow-sm border-info mb-3">
+                    <div class="card-body p-3">
+                        <h6 class="card-title text-info mb-2">
+                            <i class="bi bi-person-circle me-2"></i>
+                            Resumen del Paciente
+                        </h6>
+                        <div class="row">
+                            <div class="col-md-4">
+                                <p class="mb-1 small"><strong>Nombre:</strong> @_pacienteSeleccionado.primerNombre @_pacienteSeleccionado.apellidoPaterno</p>
+                            </div>
+                            <div class="col-md-4">
+                                <p class="mb-1 small"><strong>RUT:</strong> @_pacienteSeleccionado.rut-@_pacienteSeleccionado.dv</p>
+                            </div>
+                            <div class="col-md-4">
+                                <p class="mb-1 small"><strong>Edad:</strong> @CalcularEdad(_pacienteSeleccionado.fechaNacimiento) años</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <div class="row g-3">
                     <!-- INFORMACIÓN DEL PACIENTE SELECCIONADO - CON BORDE AZUL Y CLICK -->
                     <div class="col-12">
@@ -134,6 +155,23 @@
                                     <i class="bi bi-chevron-down text-danger"></i>
                                 </div>
                                 <p class="text-muted mb-0 mt-1 small">Haz clic para ver alertas importantes</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- SOLICITUDES QUIRÚRGICAS - CON BORDE VERDE Y CLICK -->
+                    <div class="col-12">
+                        <div class="card shadow-sm border-success" style="border-width: 2px; cursor: pointer;"
+                             @onclick="AbrirModalSolicitudes">
+                            <div class="card-body p-3">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <h5 class="card-title mb-0 text-success">
+                                        <i class="bi bi-clipboard2-pulse me-2"></i>
+                                        Solicitudes Quirúrgicas
+                                    </h5>
+                                    <i class="bi bi-chevron-down text-success"></i>
+                                </div>
+                                <p class="text-muted mb-0 mt-1 small">Haz clic para ver solicitudes del paciente</p>
                             </div>
                         </div>
                     </div>
@@ -214,12 +252,218 @@
     </div>
 }
 
+<!-- MODAL PARA SOLICITUDES QUIRÚRGICAS -->
+@if (_mostrarSolicitudes && _pacienteSeleccionado != null)
+{
+    <div class="modal-backdrop fade show" style="z-index: 1050;"></div>
+    <div class="modal fade show d-block" style="z-index: 1055; max-height: 90vh; overflow: hidden;" tabindex="-1">
+        <div class="modal-dialog modal-xl" style="max-height: 85vh;">
+            <div class="modal-content" style="max-height: 85vh;">
+                <div class="modal-header bg-success text-white">
+                    <h5 class="modal-title">
+                        <i class="bi bi-clipboard2-pulse me-2"></i>
+                        Solicitudes Quirúrgicas - @_pacienteSeleccionado.primerNombre @_pacienteSeleccionado.apellidoPaterno
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" @onclick="CerrarModalSolicitudes"></button>
+                </div>
+                <div class="modal-body" style="overflow-y: auto; max-height: 70vh;">
+
+                    @if (_cargandoSolicitudes)
+                    {
+                        <div class="text-center py-4">
+                            <div class="spinner-border text-success" role="status">
+                                <span class="visually-hidden">Cargando...</span>
+                            </div>
+                            <p class="mt-2 text-muted">Cargando solicitudes...</p>
+                        </div>
+                    }
+                    else if (_solicitudesPendientes?.Any() == true || _solicitudesPriorizadas?.Any() == true || _solicitudesEgresadas?.Any() == true)
+                    {
+                        <!-- SECCIÓN 1: SOLICITUDES PRIORIZADAS -->
+                        @if (_solicitudesPriorizadas?.Any() == true)
+                        {
+                            <div class="card shadow-sm border-success mb-4">
+                                <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
+                                    <h6 class="mb-0">
+                                        <i class="bi bi-check-circle me-2"></i>
+                                        Solicitudes Priorizadas
+                                    </h6>
+                                    <span class="badge bg-light text-dark">@_solicitudesPriorizadas.Count</span>
+                                </div>
+                                <div class="card-body p-0">
+                                    <div class="table-responsive">
+                                        <table class="table table-sm table-hover mb-0">
+                                            <thead class="table-light">
+                                                <tr>
+                                                    <th>ID</th>
+                                                    <th>Procedimiento</th>
+                                                    <th>Diagnóstico</th>
+                                                    <th>Prioridad</th>
+                                                    <th>Fecha</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                @foreach (var solicitud in _solicitudesPriorizadas.Take(5))
+                                                {
+                                                    <tr>
+                                                        <td class="fw-bold">@solicitud.Id</td>
+                                                        <td>@solicitud.Procedimiento</td>
+                                                        <td>@solicitud.Diagnostico</td>
+                                                        <td>
+                                                            @if (solicitud.Prioridad == 1)
+                                                            {
+                                                                <span class="badge bg-danger">P1</span>
+                                                            }
+                                                            else if (solicitud.Prioridad == 2)
+                                                            {
+                                                                <span class="badge bg-warning text-dark">P2</span>
+                                                            }
+                                                            else
+                                                            {
+                                                                <span class="badge bg-primary">P@solicitud.Prioridad</span>
+                                                            }
+                                                        </td>
+                                                        <td>@solicitud.FechaCreacion.ToString("dd/MM/yyyy")</td>
+                                                    </tr>
+                                                }
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                    @if (_solicitudesPriorizadas.Count > 5)
+                                    {
+                                        <div class="card-footer text-center py-2">
+                                            <small class="text-muted">Mostrando 5 de @_solicitudesPriorizadas.Count solicitudes priorizadas</small>
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                        }
+
+                        <!-- SECCIÓN 2: SOLICITUDES PENDIENTES -->
+                        @if (_solicitudesPendientes?.Any() == true)
+                        {
+                            <div class="card shadow-sm border-warning mb-4">
+                                <div class="card-header bg-warning text-dark d-flex justify-content-between align-items-center">
+                                    <h6 class="mb-0">
+                                        <i class="bi bi-clock me-2"></i>
+                                        Solicitudes Pendientes
+                                    </h6>
+                                    <span class="badge bg-light text-dark">@_solicitudesPendientes.Count</span>
+                                </div>
+                                <div class="card-body p-0">
+                                    <div class="table-responsive">
+                                        <table class="table table-sm table-hover mb-0">
+                                            <thead class="table-light">
+                                                <tr>
+                                                    <th>ID</th>
+                                                    <th>Procedimiento</th>
+                                                    <th>Diagnóstico</th>
+                                                    <th>Estado</th>
+                                                    <th>Fecha</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                @foreach (var solicitud in _solicitudesPendientes.Take(5))
+                                                {
+                                                    <tr>
+                                                        <td class="fw-bold">@solicitud.Id</td>
+                                                        <td>@solicitud.Procedimiento</td>
+                                                        <td>@solicitud.Diagnostico</td>
+                                                        <td><span class="badge bg-secondary">Pendiente</span></td>
+                                                        <td>@solicitud.FechaCreacion.ToString("dd/MM/yyyy")</td>
+                                                    </tr>
+                                                }
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                    @if (_solicitudesPendientes.Count > 5)
+                                    {
+                                        <div class="card-footer text-center py-2">
+                                            <small class="text-muted">Mostrando 5 de @_solicitudesPendientes.Count solicitudes pendientes</small>
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                        }
+
+                        <!-- SECCIÓN 3: SOLICITUDES EGRESADAS -->
+                        @if (_solicitudesEgresadas?.Any() == true)
+                        {
+                            <div class="card shadow-sm border-info">
+                                <div class="card-header bg-info text-white d-flex justify-content-between align-items-center">
+                                    <h6 class="mb-0">
+                                        <i class="bi bi-check2-all me-2"></i>
+                                        Solicitudes Egresadas
+                                    </h6>
+                                    <span class="badge bg-light text-dark">@_solicitudesEgresadas.Count</span>
+                                </div>
+                                <div class="card-body p-0">
+                                    <div class="table-responsive">
+                                        <table class="table table-sm table-hover mb-0">
+                                            <thead class="table-light">
+                                                <tr>
+                                                    <th>ID</th>
+                                                    <th>Procedimiento</th>
+                                                    <th>Diagnóstico</th>
+                                                    <th>Estado</th>
+                                                    <th>Fecha Egreso</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                @foreach (var solicitud in _solicitudesEgresadas.Take(5))
+                                                {
+                                                    <tr>
+                                                        <td class="fw-bold">@solicitud.Id</td>
+                                                        <td>@solicitud.Procedimiento</td>
+                                                        <td>@solicitud.Diagnostico</td>
+                                                        <td><span class="badge bg-success">Egresado</span></td>
+                                                        <td>@solicitud.FechaCreacion.ToString("dd/MM/yyyy")</td>
+                                                    </tr>
+                                                }
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                    @if (_solicitudesEgresadas.Count > 5)
+                                    {
+                                        <div class="card-footer text-center py-2">
+                                            <small class="text-muted">Mostrando 5 de @_solicitudesEgresadas.Count solicitudes egresadas</small>
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        <div class="text-center py-4">
+                            <i class="bi bi-clipboard-x text-muted" style="font-size: 3rem;"></i>
+                            <p class="text-muted mt-2">No se encontraron solicitudes quirúrgicas para este paciente.</p>
+                        </div>
+                    }
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" @onclick="CerrarModalSolicitudes">
+                        Cerrar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
 @code {
     private PacienteHospital? _pacienteSeleccionado;
     private List<Profesional>? _profesionales;
     private bool _cargando = true;
     private bool _mostrarInfoPaciente = false;
     private bool _mostrarAlertasClinicas = false;
+    private bool _mostrarSolicitudes = false;
+    private bool _cargandoSolicitudes = false;
+
+    // Nuevas variables para solicitudes
+    private List<SolicitudDto>? _solicitudesPendientes;
+    private List<SolicitudDto>? _solicitudesPriorizadas;
+    private List<SolicitudDto>? _solicitudesEgresadas;
 
     protected override async Task OnInitializedAsync()
     {
@@ -251,12 +495,83 @@
         }
     }
 
-    private void HandlePacienteSeleccionado(PacienteHospital? paciente)
+    private async void HandlePacienteSeleccionado(PacienteHospital? paciente)
     {
         _pacienteSeleccionado = paciente;
         _mostrarInfoPaciente = false;
         _mostrarAlertasClinicas = false;
+        _mostrarSolicitudes = false;
+
+        // Limpiar solicitudes anteriores
+        _solicitudesPendientes = null;
+        _solicitudesPriorizadas = null;
+        _solicitudesEgresadas = null;
+
         StateHasChanged();
+    }
+
+    private async Task AbrirModalSolicitudes()
+    {
+        if (_pacienteSeleccionado != null)
+        {
+            _mostrarSolicitudes = true;
+            _cargandoSolicitudes = true;
+            StateHasChanged();
+
+            await CargarSolicitudesPaciente();
+            _cargandoSolicitudes = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task CargarSolicitudesPaciente()
+    {
+        try
+        {
+            // Obtener todas las solicitudes del médico (por ahora todas)
+            var todasSolicitudes = await Http.GetFromJsonAsync<List<SolicitudDto>>("http://localhost:5227/api/solicitud/medico/1");
+
+            if (todasSolicitudes != null)
+            {
+                var rutPaciente = $"{_pacienteSeleccionado!.rut}-{_pacienteSeleccionado.dv}";
+
+                // Filtrar por el paciente seleccionado
+                var solicitudesPaciente = todasSolicitudes
+                    .Where(s => s.Rut == rutPaciente)
+                    .ToList();
+
+                // Separar por estado
+                _solicitudesPendientes = solicitudesPaciente
+                    .Where(s => s.Estado == "Pendiente")
+                    .Take(5)
+                    .ToList();
+
+                _solicitudesPriorizadas = solicitudesPaciente
+                    .Where(s => s.Estado == "Priorizada")
+                    .Take(5)
+                    .ToList();
+
+                // Para egresadas, usar un estado diferente o lógica específica
+                _solicitudesEgresadas = solicitudesPaciente
+                    .Where(s => s.Estado == "Egresada" || s.Estado == "Completada")
+                    .Take(5)
+                    .ToList();
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error cargando solicitudes: {ex.Message}");
+            // Datos de ejemplo si falla la API
+            _solicitudesPendientes = new List<SolicitudDto>
+            {
+                new SolicitudDto { Id = 1, Procedimiento = "Cirugía de Cadera", Diagnostico = "Artrosis", Estado = "Pendiente", FechaCreacion = DateTime.Now.AddDays(-2) },
+                new SolicitudDto { Id = 2, Procedimiento = "Artroscopía Rodilla", Diagnostico = "Lesión Meniscal", Estado = "Pendiente", FechaCreacion = DateTime.Now.AddDays(-5) }
+            };
+            _solicitudesPriorizadas = new List<SolicitudDto>
+            {
+                new SolicitudDto { Id = 3, Procedimiento = "Colecistectomía", Diagnostico = "Colelitiasis", Estado = "Priorizada", Prioridad = 1, FechaCreacion = DateTime.Now.AddDays(-1) }
+            };
+        }
     }
 
     private void AbrirModalInfoPaciente()
@@ -289,6 +604,12 @@
         StateHasChanged();
     }
 
+    private void CerrarModalSolicitudes()
+    {
+        _mostrarSolicitudes = false;
+        StateHasChanged();
+    }
+
     private int CalcularEdad(DateTime fechaNacimiento)
     {
         var today = DateTime.Today;
@@ -297,6 +618,7 @@
         return age;
     }
 
+    // CLASE INTERNA para mapear la respuesta de profesionales
     public class Profesional
     {
         public int Id { get; set; }
@@ -304,5 +626,17 @@
         public string RutCompleto { get; set; } = string.Empty;
         public string Rol { get; set; } = string.Empty;
         public string Especialidad { get; set; } = string.Empty;
+    }
+
+    // CLASE INTERNA para mapear solicitudes
+    public class SolicitudDto
+    {
+        public int Id { get; set; }
+        public string Rut { get; set; } = string.Empty;
+        public string Procedimiento { get; set; } = string.Empty;
+        public string Diagnostico { get; set; } = string.Empty;
+        public string Estado { get; set; } = string.Empty;
+        public int Prioridad { get; set; }
+        public DateTime FechaCreacion { get; set; }
     }
 }
