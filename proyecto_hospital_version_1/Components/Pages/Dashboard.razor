@@ -4,72 +4,149 @@
 @using proyecto_hospital_version_1.Data._Legacy
 @inject HospitalDbContextLegacy HospitalDb
 @inject NavigationManager Navigation
+@inject HttpClient Http
 
 <PageTitle>Panel de Trabajo Quirúrgico</PageTitle>
 
 <div class="container-fluid">
-    <div class="row mb-4">
+    <div class="row mb-3">
         <div class="col">
-            <h1 class="h3">Panel de Trabajo Quirúrgico</h1>
+            <h1 class="h3 mb-0">Panel de Trabajo Quirúrgico</h1>
         </div>
     </div>
 
-    <div class="row">
-        <div class="col-lg-12">
-            <!-- BUSCADOR DE PACIENTES -->
-            <div class="widget-card mb-4">
-                <h5 class="card-title mb-3">Buscar Paciente</h5>
-                <div class="mb-4">
-                    <BuscadorPaciente OnPacienteEncontrado="HandlePacienteSeleccionado" />
+    <!-- BOTÓN ROJO PARA DASHBOARD ANALÍTICO -->
+    <div class="row mb-3">
+        <div class="col-12">
+            <div class="card shadow-sm border-0">
+                <div class="card-body p-3">
+                    <button class="btn btn-danger btn-lg w-100 d-flex align-items-center justify-content-center"
+                            style="height: 60px; font-size: 1.1rem; font-weight: 600;"
+                            onclick="@(() => Navigation.NavigateTo("/dashboard_verdadero"))">
+                        <i class="bi bi-graph-up-arrow me-2" style="font-size: 1.3rem;"></i>
+                        IR A DASHBOARD ANALÍTICO
+                    </button>
                 </div>
             </div>
+        </div>
+    </div>
 
-            @if (_pacienteSeleccionado != null)
-            {
-                <div class="row">
-                    <!-- INFORMACIÓN DEL PACIENTE SELECCIONADO -->
-                    <div class="col-lg-6">
-                        <div class="widget-card mb-4">
-                            <h5 class="card-title mb-3">Información del Paciente</h5>
-                            <div class="mb-4">
-                                <InfoPacienteCard Paciente="_pacienteSeleccionado" />
-                            </div>
-                        </div>
-                    </div>
+    <!-- TABLA DE PROFESIONALES -->
+    <div class="row mb-3">
+        <div class="col-12">
+            <div class="card shadow-sm border-0">
+                <div class="card-body p-3">
+                    <h5 class="card-title mb-3">Profesionales Médicos</h5>
 
-                    <!-- ALERTAS CLÍNICAS DEL PACIENTE -->
-                    <div class="col-lg-6">
-                        <div class="widget-card mb-4">
-                            <h5 class="card-title mb-3">Alertas Clínicas</h5>
-                            <div class="mb-4">
-                                <AlertasClinicasCard Paciente="_pacienteSeleccionado" />
-                            </div>
+                    @if (_profesionales?.Any() == true)
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-striped table-hover table-sm">
+                                <thead class="table-dark">
+                                    <tr>
+                                        <th>Nombre Completo</th>
+                                        <th>RUT</th>
+                                        <th>Rol</th>
+                                        <th>Especialidad</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var profesional in _profesionales)
+                                    {
+                                        <tr>
+                                            <td>@profesional.NombreCompleto</td>
+                                            <td>@profesional.RutCompleto</td>
+                                            <td>@profesional.Rol</td>
+                                            <td>@profesional.Especialidad</td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
                         </div>
+                    }
+                    else if (_cargando)
+                    {
+                        <div class="text-center py-3">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="visually-hidden">Cargando...</span>
+                            </div>
+                            <p class="mt-2 mb-0">Cargando profesionales...</p>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="alert alert-warning text-center mb-0">
+                            <i class="bi bi-exclamation-triangle me-2"></i>
+                            No se encontraron profesionales.
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- NUEVA DISTRIBUCIÓN: BUSCADOR A LA IZQUIERDA, INFO A LA DERECHA -->
+    <div class="row" style="align-items: flex-start;">
+        <!-- BUSCADOR DE PACIENTES - COLUMNA IZQUIERDA (4 columnas) -->
+        <div class="col-lg-4">
+            <div class="card shadow-sm border-0" style="height: fit-content;">
+                <div class="card-body p-3">
+                    <h5 class="card-title mb-3">Buscar Paciente</h5>
+                    <div>
+                        <BuscadorPaciente OnPacienteEncontrado="HandlePacienteSeleccionado" />
                     </div>
                 </div>
+            </div>
+        </div>
 
-                <!-- RESUMEN SIMPLE DEL PACIENTE -->
-                <div class="widget-card mb-4">
-                    <h5 class="card-title mb-3">Resumen del Paciente</h5>
-                    <div class="row">
-                        <div class="col-md-4">
-                            <p><strong>Nombre:</strong> @_pacienteSeleccionado.primerNombre @_pacienteSeleccionado.apellidoPaterno</p>
+        <!-- INFORMACIÓN DEL PACIENTE - COLUMNA DERECHA (8 columnas) -->
+        <div class="col-lg-8">
+            @if (_pacienteSeleccionado != null)
+            {
+                <div class="row g-3">
+                    <!-- INFORMACIÓN DEL PACIENTE SELECCIONADO - CON BORDE AZUL Y CLICK -->
+                    <div class="col-12">
+                        <div class="card shadow-sm border-primary" style="border-width: 2px; cursor: pointer;"
+                             @onclick="AbrirModalInfoPaciente">
+                            <div class="card-body p-3">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <h5 class="card-title mb-0 text-primary">
+                                        <i class="bi bi-person-badge me-2"></i>
+                                        Información del Paciente
+                                    </h5>
+                                    <i class="bi bi-chevron-down text-primary"></i>
+                                </div>
+                                <p class="text-muted mb-0 mt-1 small">Haz clic para ver detalles completos</p>
+                            </div>
                         </div>
-                        <div class="col-md-4">
-                            <p><strong>RUT:</strong> @_pacienteSeleccionado.rut-@_pacienteSeleccionado.dv</p>
-                        </div>
-                        <div class="col-md-4">
-                            <p><strong>Edad:</strong> @CalcularEdad(_pacienteSeleccionado.fechaNacimiento) años</p>
+                    </div>
+
+                    <!-- ALERTAS CLÍNICAS DEL PACIENTE - CON BORDE ROJO Y CLICK -->
+                    <div class="col-12">
+                        <div class="card shadow-sm border-danger" style="border-width: 2px; cursor: pointer;"
+                             @onclick="AbrirModalAlertasClinicas">
+                            <div class="card-body p-3">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <h5 class="card-title mb-0 text-danger">
+                                        <i class="bi bi-exclamation-triangle me-2"></i>
+                                        Alertas Clínicas
+                                    </h5>
+                                    <i class="bi bi-chevron-down text-danger"></i>
+                                </div>
+                                <p class="text-muted mb-0 mt-1 small">Haz clic para ver alertas importantes</p>
+                            </div>
                         </div>
                     </div>
                 </div>
             }
             else
             {
-                <div class="widget-card">
-                    <div class="alert alert-info text-center">
-                        <i class="bi bi-search me-2"></i>
-                        No se ha seleccionado ningún paciente. Use el buscador para iniciar.
+                <div class="card shadow-sm border-0" style="height: 200px; display: flex; align-items: center; justify-content: center;">
+                    <div class="card-body text-center">
+                        <div class="alert alert-info mb-0">
+                            <i class="bi bi-search me-2"></i>
+                            No se ha seleccionado ningún paciente. Use el buscador para iniciar.
+                        </div>
                     </div>
                 </div>
             }
@@ -77,12 +154,138 @@
     </div>
 </div>
 
+<!-- MODAL PARA INFORMACIÓN DEL PACIENTE -->
+@if (_mostrarInfoPaciente && _pacienteSeleccionado != null)
+{
+    <div class="modal-backdrop fade show" style="z-index: 1050;"></div>
+    <div class="modal fade show d-block" style="z-index: 1055;" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title">
+                        <i class="bi bi-person-badge me-2"></i>
+                        Información Completa del Paciente
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" @onclick="CerrarModalInfoPaciente"></button>
+                </div>
+                <div class="modal-body">
+                    @if (_pacienteSeleccionado != null)
+                    {
+                        <InfoPacienteCard Paciente="_pacienteSeleccionado" />
+                    }
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" @onclick="CerrarModalInfoPaciente">
+                        Cerrar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+<!-- MODAL PARA ALERTAS CLÍNICAS -->
+@if (_mostrarAlertasClinicas && _pacienteSeleccionado != null)
+{
+    <div class="modal-backdrop fade show" style="z-index: 1050;"></div>
+    <div class="modal fade show d-block" style="z-index: 1055;" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title">
+                        <i class="bi bi-exclamation-triangle me-2"></i>
+                        Alertas Clínicas del Paciente
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" @onclick="CerrarModalAlertasClinicas"></button>
+                </div>
+                <div class="modal-body">
+                    @if (_pacienteSeleccionado != null)
+                    {
+                        <AlertasClinicasCard Paciente="_pacienteSeleccionado" />
+                    }
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" @onclick="CerrarModalAlertasClinicas">
+                        Cerrar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
 @code {
     private PacienteHospital? _pacienteSeleccionado;
+    private List<Profesional>? _profesionales;
+    private bool _cargando = true;
+    private bool _mostrarInfoPaciente = false;
+    private bool _mostrarAlertasClinicas = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await CargarProfesionales();
+    }
+
+    private async Task CargarProfesionales()
+    {
+        try
+        {
+            _cargando = true;
+            _profesionales = await Http.GetFromJsonAsync<List<Profesional>>("http://localhost:5227/api/profesional");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error cargando profesionales: {ex.Message}");
+            // Datos de ejemplo si falla la conexión
+            _profesionales = new List<Profesional>
+            {
+                new Profesional { NombreCompleto = "Andrés Felipe Moreno Gutiérrez", RutCompleto = "11223344-5", Rol = "Cirujano Principal", Especialidad = "Solicitante" },
+                new Profesional { NombreCompleto = "Valentina Paz Campos Núñez", RutCompleto = "22334455-6", Rol = "Cirujano Principal", Especialidad = "Solicitante" },
+                new Profesional { NombreCompleto = "Francisco Javier Bravo Santana", RutCompleto = "33445566-7", Rol = "Cirujano Principal", Especialidad = "Solicitante" }
+            };
+        }
+        finally
+        {
+            _cargando = false;
+            StateHasChanged();
+        }
+    }
 
     private void HandlePacienteSeleccionado(PacienteHospital? paciente)
     {
         _pacienteSeleccionado = paciente;
+        _mostrarInfoPaciente = false;
+        _mostrarAlertasClinicas = false;
+        StateHasChanged();
+    }
+
+    private void AbrirModalInfoPaciente()
+    {
+        if (_pacienteSeleccionado != null)
+        {
+            _mostrarInfoPaciente = true;
+            StateHasChanged();
+        }
+    }
+
+    private void AbrirModalAlertasClinicas()
+    {
+        if (_pacienteSeleccionado != null)
+        {
+            _mostrarAlertasClinicas = true;
+            StateHasChanged();
+        }
+    }
+
+    private void CerrarModalInfoPaciente()
+    {
+        _mostrarInfoPaciente = false;
+        StateHasChanged();
+    }
+
+    private void CerrarModalAlertasClinicas()
+    {
+        _mostrarAlertasClinicas = false;
         StateHasChanged();
     }
 
@@ -92,5 +295,14 @@
         var age = today.Year - fechaNacimiento.Year;
         if (fechaNacimiento.Date > today.AddYears(-age)) age--;
         return age;
+    }
+
+    public class Profesional
+    {
+        public int Id { get; set; }
+        public string NombreCompleto { get; set; } = string.Empty;
+        public string RutCompleto { get; set; } = string.Empty;
+        public string Rol { get; set; } = string.Empty;
+        public string Especialidad { get; set; } = string.Empty;
     }
 }

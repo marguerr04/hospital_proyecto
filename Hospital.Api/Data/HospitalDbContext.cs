@@ -57,6 +57,11 @@ namespace Hospital.Api.Data
         public DbSet<Profesional> PROFESIONAL { get; set; }
         public DbSet<SolicitudProfesional> SOLICITUD_PROFESIONAL { get; set; }
 
+
+        // falta
+
+        public DbSet<RolHospital> ROL_HOSPITAL { get; set; }
+        public DbSet<RolSolicitud> ROL_SOLICITUD { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             // === Claves existentes (dejadas como estaban) ===
