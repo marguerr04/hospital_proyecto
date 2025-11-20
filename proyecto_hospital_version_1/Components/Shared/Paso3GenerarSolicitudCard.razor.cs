@@ -1,6 +1,5 @@
 ﻿using Hospital.Api.DTOs;
 using Microsoft.AspNetCore.Components;
-using proyecto_hospital_version_1.Data._Legacy;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;

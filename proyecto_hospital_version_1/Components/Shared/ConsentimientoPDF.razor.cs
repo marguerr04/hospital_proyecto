@@ -6,7 +6,6 @@ using QuestPDF.Infrastructure;
 using System.IO;
 using System;
 using System.Threading.Tasks;
-using proyecto_hospital_version_1.Data._Legacy; // Añadir esto si no está
 
 using Hospital.Api.DTOs;
 

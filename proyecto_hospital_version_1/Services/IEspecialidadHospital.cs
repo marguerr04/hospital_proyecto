@@ -1,9 +1,9 @@
-﻿using proyecto_hospital_version_1.Data._Legacy;
+﻿using Hospital.Api.DTOs;
 
 namespace proyecto_hospital_version_1.Services
 {
     public interface IEspecialidadHospital
     {
-        Task<List<EspecialidadHospital>> GetEspecialidadesAsync();
+        Task<List<EspecialidadDto>> GetEspecialidadesAsync();
     }
 }

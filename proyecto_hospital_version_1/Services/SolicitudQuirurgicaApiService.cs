@@ -1,5 +1,4 @@
 ﻿using Hospital.Api.DTOs;              // DTOs compartidos con la API
-using proyecto_hospital_version_1.Data._Legacy; // (opcional, si no se usa puedes quitarlo)
 using System.Net.Http.Json;
 
 namespace proyecto_hospital_version_1.Services

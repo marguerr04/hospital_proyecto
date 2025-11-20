@@ -29,7 +29,6 @@
     <Content Include="Components\Layout\MainLayoutMedico.razor.css" />
     <Content Include="Components\Layout\NavMenuMedico.razor.css" />
     <Content Include="Components\Shared\ProcedimientosCard.razor.cs" />
-    <Content Include="Data\_Legacy\Especialidad.cs" />
   </ItemGroup>
 
   <ItemGroup>

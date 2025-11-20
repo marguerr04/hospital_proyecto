@@ -1,7 +1,6 @@
 ﻿using Hospital.Api.DTOs;
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
-using proyecto_hospital_version_1.Data._Legacy;
 using proyecto_hospital_version_1.Models;
 using proyecto_hospital_version_1.Services;
 using System;
@@ -36,10 +35,10 @@ namespace proyecto_hospital_version_1.Components.Shared
         [Parameter] public List<ProcSelVM> ProcedimientosSecundarios { get; set; } = new();
         [Parameter] public EventCallback<List<ProcSelVM>> ProcedimientosSecundariosChanged { get; set; }
 
-        // Variables locales - CAMBIAR a DiagnosticoDto
-        private List<EspecialidadHospital> _especialidadesDisponiblesBd = new();
-        private List<DiagnosticoDto> _todosLosDiagnosticos = new(); // Cambio aquí
-        private List<DiagnosticoDto> _diagnosticosFiltrados = new(); // Cambio aquí
+        // Variables locales
+        private List<EspecialidadDto> _especialidadesDisponiblesBd = new();
+        private List<DiagnosticoDto> _todosLosDiagnosticos = new();
+        private List<DiagnosticoDto> _diagnosticosFiltrados = new();
         private List<string> _diagnosticosSugeridos = new();
 
         protected override async Task OnInitializedAsync()
@@ -47,10 +46,10 @@ namespace proyecto_hospital_version_1.Components.Shared
             try
             {
                 // Cargar especialidades
-                _especialidadesDisponiblesBd = await EspecialidadHospitalService.GetEspecialidadesAsync() ?? new List<EspecialidadHospital>();
+                _especialidadesDisponiblesBd = await EspecialidadHospitalService.GetEspecialidadesAsync() ?? new List<EspecialidadDto>();
                 Console.WriteLine($"Total especialidades cargadas: {_especialidadesDisponiblesBd.Count}");
 
-                // Cargar TODOS los diagnósticos desde la API - CAMBIO PRINCIPAL
+                // Cargar TODOS los diagnósticos desde la API
                 Console.WriteLine("Cargando todos los diagnósticos desde la API...");
                 _todosLosDiagnosticos = await DiagnosticoService.GetDiagnosticosAsync();
 
@@ -69,7 +68,7 @@ namespace proyecto_hospital_version_1.Components.Shared
                 await JsRuntime.InvokeVoidAsync("alert", $"Error cargando datos iniciales del diagnóstico: {ex.Message}");
             }
         }
-        // logica del GES
+
         private async Task AplicarFiltroDiagnosticos()
         {
             Console.WriteLine($"--- Aplicando filtro GES. EsGes: {EsGes} ---");
@@ -77,13 +76,9 @@ namespace proyecto_hospital_version_1.Components.Shared
 
             if (EsGes)
             {
-                // Opción A: Usar solo los que ya vienen con EsGes=true
                 diagnosticosParaMostrar = _todosLosDiagnosticos
                     .Where(d => d.EsGes)
                     .ToList();
-
-
-
                 Console.WriteLine($"Diagnósticos filtrados (solo GES): {diagnosticosParaMostrar.Count}");
             }
             else
@@ -94,13 +89,13 @@ namespace proyecto_hospital_version_1.Components.Shared
 
             _diagnosticosFiltrados = diagnosticosParaMostrar;
 
-            // Dugerencias para diasnisticodto
+            // Sugerencias para diagnosticoDto
             _diagnosticosSugeridos = _diagnosticosFiltrados
                 .Select(d => d.Nombre ?? string.Empty)
                 .Distinct()
                 .ToList();
 
-            //  No seleccioanr diagnostico principal
+            // No seleccionar diagnostico principal
             if (!string.IsNullOrEmpty(DiagnosticoPrincipal) &&
                 !_diagnosticosSugeridos.Contains(DiagnosticoPrincipal, StringComparer.OrdinalIgnoreCase))
             {
@@ -115,12 +110,11 @@ namespace proyecto_hospital_version_1.Components.Shared
             Console.WriteLine($"Datalist actualizado con {_diagnosticosSugeridos.Count} sugerencias para el estado EsGes={EsGes}.");
         }
 
-        // --- Handlers para Procedimientos secundarios (sin cambios) ---
+        // --- Handlers para Procedimientos secundarios ---
         private Task OnAddProc(ProcSelVM vm) => ProcedimientosSecundariosChanged.InvokeAsync(ProcedimientosSecundarios);
         private Task OnEditProc(ProcSelVM vm) => ProcedimientosSecundariosChanged.InvokeAsync(ProcedimientosSecundarios);
         private Task OnDeleteProc(ProcSelVM vm) => ProcedimientosSecundariosChanged.InvokeAsync(ProcedimientosSecundarios);
 
-  
         private async Task OnPesoChanged(ChangeEventArgs e)
         {
             if (decimal.TryParse(e.Value?.ToString(), out decimal peso))
@@ -142,7 +136,7 @@ namespace proyecto_hospital_version_1.Components.Shared
             if (e.Value is bool valor)
             {
                 await EsGesChanged.InvokeAsync(valor);
-                await AplicarFiltroDiagnosticos(); // Cambio: hacerlo async
+                await AplicarFiltroDiagnosticos();
             }
         }
 
@@ -156,16 +150,13 @@ namespace proyecto_hospital_version_1.Components.Shared
             await EspecialidadDestinoChanged.InvokeAsync(e.Value?.ToString() ?? "");
         }
 
-        // Este método se dispara cuando el usuario escribe o selecciona un diagnóstico
         private async Task OnDiagnosticoInput(ChangeEventArgs e)
         {
             var nuevoDiagnostico = e.Value?.ToString() ?? "";
             Console.WriteLine($"Diagnóstico ingresado/seleccionado: {nuevoDiagnostico}");
 
-            // 1. Actualizar el parámetro DiagnosticoPrincipal
             await DiagnosticoPrincipalChanged.InvokeAsync(nuevoDiagnostico);
 
-            // 2. Buscar el diagnóstico en la lista FILTRADA y actualizar el código CIE
             if (!string.IsNullOrWhiteSpace(nuevoDiagnostico))
             {
                 var diagnosticoEncontrado = _diagnosticosFiltrados

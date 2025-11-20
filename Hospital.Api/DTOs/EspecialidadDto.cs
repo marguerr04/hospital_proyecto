@@ -1,7 +1,6 @@
-﻿
-namespace proyecto_hospital_version_1.Models
+﻿namespace Hospital.Api.DTOs
 {
-    public class Especialidad
+    public class EspecialidadDto
     {
         public int Id { get; set; }
         public string Nombre { get; set; } = string.Empty;

@@ -1,11 +1,10 @@
 ﻿using Hospital.Api.Data;
+using Hospital.Api.DTOs;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Hospital.Api.Data.Entities;
+
 namespace Hospital.Api.Controllers
-
-
-{using Hospital.Api.Data.Entities;
+{
     [ApiController]
     [Route("api/[controller]")]
     public class EspecialidadController : ControllerBase
@@ -17,20 +16,25 @@ namespace Hospital.Api.Controllers
             _context = context;
         }
 
-        //  1. Obtener todas las especialidades
+        // Obtener todas las especialidades (DEVUELVE DTOs)
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Especialidad>>> GetEspecialidades()
+        public async Task<ActionResult<IEnumerable<EspecialidadDto>>> GetEspecialidades()
         {
             var especialidades = await _context.ESPECIALIDAD
                 .OrderBy(e => e.Nombre)
+                .Select(e => new EspecialidadDto
+                {
+                    Id = e.Id,
+                    Nombre = e.Nombre
+                })
                 .ToListAsync();
 
             return Ok(especialidades);
         }
 
-        //  2. Buscar por texto
+        // Buscar por texto (DEVUELVE DTOs)
         [HttpGet("buscar")]
-        public async Task<ActionResult<IEnumerable<Especialidad>>> BuscarEspecialidades([FromQuery] string? texto)
+        public async Task<ActionResult<IEnumerable<EspecialidadDto>>> BuscarEspecialidades([FromQuery] string? texto)
         {
             var query = _context.ESPECIALIDAD.AsQueryable();
 
@@ -42,6 +46,11 @@ namespace Hospital.Api.Controllers
             var resultados = await query
                 .OrderBy(e => e.Nombre)
                 .Take(20)
+                .Select(e => new EspecialidadDto
+                {
+                    Id = e.Id,
+                    Nombre = e.Nombre
+                })
                 .ToListAsync();
 
             return Ok(resultados);

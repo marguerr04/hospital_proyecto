@@ -2,6 +2,7 @@
 using System;
 using System.Net.Http.Json;
 using System.Threading.Tasks;
+using Hospital.Api.DTOs;   
 
 namespace proyecto_hospital_version_1.Services
 {
@@ -28,9 +29,4 @@ namespace proyecto_hospital_version_1.Services
         }
     }
 
-    public class EspecialidadDto
-    {
-        public int Id { get; set; }
-        public string Nombre { get; set; } = string.Empty;
-    }
 }

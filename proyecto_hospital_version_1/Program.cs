@@ -1,34 +1,22 @@
-using Microsoft.EntityFrameworkCore;
+Ôªøusing Microsoft.EntityFrameworkCore;
 using proyecto_hospital_version_1.Components;
 using proyecto_hospital_version_1.Data;
 using proyecto_hospital_version_1.Models;
 using proyecto_hospital_version_1.Services;
 using proyecto_hospital_version_1.Helpers;
 using MudBlazor.Services;
-using proyecto_hospital_version_1.Data._Legacy;
 
 var builder = WebApplication.CreateBuilder(args);
-
-//
-// ============================
-//       REGISTRO SERVICIOS
-// ============================
-//
 
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
-
 // ========== DB CONTEXTS ==========
-
-// Tu DB default (Identity u otra interna)
+// Solo el DbContext principal (Identity)
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("Default")));
 
-// Contexto Legacy (solo para transicionar)
-builder.Services.AddDbContext<HospitalDbContextLegacy>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("HospitalV4")));
-
+// ‚ùå ELIMINADO: HospitalDbContextLegacy
 
 // ========== MUD BLAZOR ==========
 builder.Services.AddMudServices(config =>
@@ -36,28 +24,23 @@ builder.Services.AddMudServices(config =>
     config.SnackbarConfiguration.PositionClass = MudBlazor.Defaults.Classes.Position.BottomRight;
 });
 
-
-// ========== HTTP CLIENT ⁄NICO PARA API REAL ==========
+// ========== HTTP CLIENT PARA API ==========
 builder.Services.AddHttpClient("ApiReal", client =>
 {
     client.BaseAddress = new Uri("https://localhost:7032/");
 });
 
-// forma recomendada para inyectarlo:
 builder.Services.AddScoped(sp =>
 {
     var factory = sp.GetRequiredService<IHttpClientFactory>();
     return factory.CreateClient("ApiReal");
 });
 
-
-// ========== SERVICIOS LEGACY (seguir·n hasta migraciÛn total) ==========
+// ========== SERVICIOS MIGRADOS A API ==========
+// Estos servicios ahora usan HttpClient para llamar a la API
 builder.Services.AddScoped<IEspecialidadHospital, EspecialidadHospitalService>();
 builder.Services.AddScoped<IDiagnosticoService, DiagnosticoService>();
-builder.Services.AddScoped<IProcedimientoService, ProcedimientoService>();
-builder.Services.AddScoped<ISolicitudQuirurgicaService, SolicitudQuirurgicaService>();
-
-
+builder.Services.AddScoped<IProcedimientoService, ProcedimientoService>(); // ‚úÖ Migrado a API
 
 // ========== SERVICIOS API REALES ==========
 builder.Services.AddScoped<IPacienteApiService, PacienteApiService>();
@@ -65,22 +48,20 @@ builder.Services.AddScoped<ISolicitudQuirurgicaApiService, SolicitudQuirurgicaAp
 builder.Services.AddScoped<ISolicitudProcedimientoApiService, SolicitudProcedimientoApiService>();
 builder.Services.AddScoped<IConsentimientoInformadoService, ConsentimientoInformadoService>();
 builder.Services.AddScoped<PriorizacionApiService>();
+builder.Services.AddScoped<DashboardService>();
 
+
+// ========== ELIMINAR SERVICIOS LEGACY ==========
+// ‚ùå COMENTAR O ELIMINAR ESTOS:
+// builder.Services.AddScoped<ISolicitudQuirurgicaService, SolicitudQuirurgicaService>();
 
 // ========== SWEET ALERTS ==========
 builder.Services.AddScoped<SweetAlertHelper>();
 
-
 // ========== BLAZOR ==========
 builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();
-builder.Services.AddScoped<proyecto_hospital_version_1.Services.DashboardService>();
-
-//
-// ============================
-//       BUILD & PIPELINE
-// ============================
-//
+builder.Services.AddScoped<DashboardService>();
 
 var app = builder.Build();
 
@@ -92,7 +73,6 @@ if (!app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();
-
 app.UseRouting();
 app.UseAntiforgery();
 
