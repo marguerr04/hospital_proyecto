@@ -40,56 +40,7 @@
 
             @if (_pasoActual == 1)
             {
-                <div class="card shadow-sm mb-3">
-                    <div class="card-body">
-                        <h5 class="card-title">Buscar paciente</h5>
-
-                        <div class="row g-2 align-items-end">
-                            <div class="col-md-6">
-                                <label class="form-label">Nombre / RUT / Texto</label>
-                                <input class="form-control"
-                                       @bind="_busquedaTexto" />
-                            </div>
-
-                            <div class="col-md-2">
-                                <label class="form-label">DV (opcional)</label>
-                                <input class="form-control"
-                                       maxlength="1"
-                                       @bind="_busquedaDv" />
-                            </div>
-
-                            <div class="col-md-4 mt-2 mt-md-0">
-                                <button class="btn btn-primary me-2"
-                                        @onclick="BuscarPacientes">
-                                    Buscar
-                                </button>
-                                <button class="btn btn-outline-secondary"
-                                        @onclick="LimpiarBusqueda">
-                                    Limpiar
-                                </button>
-                            </div>
-                        </div>
-
-                        @* Resultado básico *@
-                        @if (!string.IsNullOrWhiteSpace(_nombrePacienteParaMostrar))
-                        {
-                            <hr />
-                            <p class="mb-1">
-                                <strong>Resultado:</strong>
-                                @_nombrePacienteParaMostrar (@_rutPacienteParaMostrar)
-                            </p>
-                        }
-
-                        @if (!string.IsNullOrEmpty(_error))
-                        {
-                            <div class="alert alert-danger mt-2">@_error</div>
-                        }
-                    </div>
-                </div>
-
-
-
-
+           
                 <Paso1ContextoCard @bind-PacienteSeleccionado="_pacienteSeleccionado"
                                    @bind-ProcedenciaSeleccionada="_procedenciaSeleccionada"
                                    @bind-ProcedimientoSeleccionado="_procedimientoSeleccionado"
@@ -409,6 +360,7 @@
 
         try
         {
+            // ✅ USAR IPacienteApiService (que sí tiene BuscarPacientesAsync)
             var resultados = await PacienteApi.BuscarPacientesAsync(
                 texto: _busquedaTexto,
                 rut: null,
@@ -419,10 +371,10 @@
 
             if (resultados != null && resultados.Any())
             {
-                var paciente = resultados.First();      // PacienteDto
+                var paciente = resultados.First();
 
-                _pacienteSeleccionadoApi = paciente;    // opcional
-                _pacienteSeleccionado = paciente;       // ← ESTE es el que usa el wizard
+                _pacienteSeleccionadoApi = paciente;
+                _pacienteSeleccionado = paciente;
 
                 _nombrePacienteParaMostrar = paciente.NombreCompleto;
                 _rutPacienteParaMostrar = paciente.RutCompleto;

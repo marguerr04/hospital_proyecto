@@ -1,6 +1,6 @@
 ﻿using System.Net.Http.Json;
-
-namespace proyecto_hospital_version_1.Data
+using Hospital.Api.DTOs;
+namespace proyecto_hospital_version_1.Services
 {
     public class DashboardService
     {

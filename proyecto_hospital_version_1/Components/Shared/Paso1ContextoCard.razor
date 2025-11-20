@@ -1,4 +1,8 @@
 ﻿@using Hospital.Api.DTOs
+@using proyecto_hospital_version_1.Components.Shared
+@inject IJSRuntime JsRuntime
+@inject IPacienteApiService PacienteApi
+
 
 <!-- NAVEGACIÓN DEL PASO -->
 <div class="alert alert-primary p-3 mb-4 d-flex align-items-center"
@@ -169,13 +173,21 @@
                 </label>
             </div>
 
-            <!-- BOTÓN PDF NO FUNCIONAL -->
+            <!-- BOTÓN PDF FUNCIONAL -->
             <button class="btn btn-success"
+                    @onclick="GenerarPDF"
                     disabled="@(!PuedeGenerarPDF)"
                     title="@(PuedeGenerarPDF ? "Generar PDF de consentimiento" : "Debe seleccionar paciente, procedimiento y aceptar el consentimiento")">
                 <i class="bi bi-file-earmark-pdf-fill me-2"></i> Generar PDF
             </button>
         </div>
+
+        <!-- Componente PDF con referencia -->
+        <ConsentimientoPDF @ref="_consentimientoPdfRef"
+                           Paciente="@PacienteSeleccionado"
+                           Procedimiento="@ProcedimientoSeleccionado"
+                           Lateralidad="@LateralidadSeleccionada"
+                           Extremidad="@ExtremidadSeleccionada" />
     </div>
 </div>
 
@@ -211,6 +223,9 @@
     private string _busquedaDv = "";
     private string _estado = "inicial";
     private string? _error;
+
+    // Referencia al componente PDF
+    private ConsentimientoPDF? _consentimientoPdfRef;
 
     private bool PuedeGenerarPDF =>
         PacienteSeleccionado != null &&
@@ -259,15 +274,41 @@
     // Métodos de búsqueda (necesitarás implementar la lógica real)
     private async Task CargarPacientes()
     {
-        // TODO: Implementar la búsqueda real usando IPacienteService
-        // Por ahora es un placeholder
+        if (string.IsNullOrWhiteSpace(_busquedaTexto) && string.IsNullOrWhiteSpace(_busquedaDv))
+        {
+            return;
+        }
+
         _estado = "cargando";
         StateHasChanged();
 
-        // Simular carga
-        await Task.Delay(500);
+        try
+        {
+            // ✅ USAR IPacienteApiService
+            var resultados = await PacienteApi.BuscarPacientesAsync(
+                texto: _busquedaTexto,
+                rut: null,
+                dv: _busquedaDv
+            );
 
-        _estado = "ok";
+            if (resultados != null && resultados.Any())
+            {
+                var pacienteEncontrado = resultados.First();
+                await PacienteSeleccionadoChanged.InvokeAsync(pacienteEncontrado);
+            }
+            else
+            {
+                await PacienteSeleccionadoChanged.InvokeAsync(null);
+            }
+
+            _estado = "ok";
+        }
+        catch (Exception ex)
+        {
+            _estado = "error";
+            _error = ex.Message;
+        }
+
         StateHasChanged();
     }
 
@@ -278,5 +319,22 @@
         _estado = "inicial";
         await PacienteSeleccionadoChanged.InvokeAsync(null);
         StateHasChanged();
+    }
+
+    private async Task GenerarPDF()
+    {
+        if (_consentimientoPdfRef == null)
+        {
+            await JsRuntime.InvokeVoidAsync("alert", "Error: El componente de PDF no está disponible.");
+            return;
+        }
+
+        if (!PuedeGenerarPDF)
+        {
+            await JsRuntime.InvokeVoidAsync("alert", "No se puede generar el PDF. Asegúrese de haber seleccionado un paciente, un procedimiento y haber aceptado el consentimiento.");
+            return;
+        }
+
+        await _consentimientoPdfRef.GenerarPdf();
     }
 }

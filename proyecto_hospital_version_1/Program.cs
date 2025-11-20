@@ -74,7 +74,7 @@ builder.Services.AddScoped<SweetAlertHelper>();
 // ========== BLAZOR ==========
 builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();
-
+builder.Services.AddScoped<proyecto_hospital_version_1.Services.DashboardService>();
 
 //
 // ============================
