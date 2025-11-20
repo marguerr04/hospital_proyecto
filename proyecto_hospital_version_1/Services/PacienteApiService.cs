@@ -1,10 +1,9 @@
-﻿using Hospital.Api.Data.DTOs;
-using Hospital.Api.DTOs;
+﻿using Hospital.Api.DTOs;
 using System.Net.Http.Json;
 
 namespace proyecto_hospital_version_1.Services
 {
-    public class PacienteApiService
+    public class PacienteApiService : IPacienteApiService
     {
         private readonly HttpClient _http;
 
@@ -34,7 +33,6 @@ namespace proyecto_hospital_version_1.Services
             if (!string.IsNullOrWhiteSpace(dv)) query.Add($"dv={dv}");
 
             var url = "api/Paciente/buscar";
-
             if (query.Any())
                 url += "?" + string.Join("&", query);
 
