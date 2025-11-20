@@ -14,14 +14,47 @@ namespace proyecto_hospital_version_1.Services
 
         public async Task<List<DiagnosticoDto>> GetDiagnosticosAsync()
         {
-            var result = await _httpClient.GetFromJsonAsync<List<DiagnosticoDto>>("api/diagnostico");
-            return result ?? new List<DiagnosticoDto>();
+            try
+            {
+                var result = await _httpClient.GetFromJsonAsync<List<DiagnosticoDto>>("api/diagnostico");
+                return result ?? new List<DiagnosticoDto>();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error obteniendo diagnósticos: {ex.Message}");
+                return new List<DiagnosticoDto>();
+            }
+        }
+
+        public async Task<List<DiagnosticoDto>> GetDiagnosticosGesAsync()
+        {
+            try
+            {
+                var result = await _httpClient.GetFromJsonAsync<List<DiagnosticoDto>>("api/diagnostico/ges");
+                return result ?? new List<DiagnosticoDto>();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error obteniendo diagnósticos GES: {ex.Message}");
+                return new List<DiagnosticoDto>();
+            }
         }
 
         public async Task<List<DiagnosticoDto>> BuscarDiagnosticosAsync(string texto)
         {
-            var result = await _httpClient.GetFromJsonAsync<List<DiagnosticoDto>>($"api/diagnostico/buscar?texto={texto}");
-            return result ?? new List<DiagnosticoDto>();
+            try
+            {
+                if (string.IsNullOrWhiteSpace(texto))
+                    return await GetDiagnosticosAsync();
+
+                var result = await _httpClient.GetFromJsonAsync<List<DiagnosticoDto>>($"api/diagnostico/buscar?texto={Uri.EscapeDataString(texto)}");
+                return result ?? new List<DiagnosticoDto>();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error buscando diagnósticos: {ex.Message}");
+                return new List<DiagnosticoDto>();
+            }
         }
     }
 }
