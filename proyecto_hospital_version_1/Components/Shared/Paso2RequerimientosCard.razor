@@ -1,5 +1,6 @@
 ﻿@using proyecto_hospital_version_1.Data._Legacy
 @using proyecto_hospital_version_1.Models
+@using Hospital.Api.Data.DTOs
 
 @* Ocupama models *@
 
@@ -63,11 +64,11 @@
                                                                                      @onchange="OnDiagnosticoInput"
                                                                                      placeholder="Escriba el diagnóstico..." />
 
-                               
+
                                 <datalist id="listaDiagnosticos-@EsGes.ToString()" @key="EsGes">
-                                    @foreach (var diagnostico in _diagnosticosSugeridos)
+                                    @foreach (var d in _diagnosticosSugeridos)
                                     {
-                                        <option value="@diagnostico"></option>
+                                        <option value="@d"></option>
                                     }
                                 </datalist>
                             </div>

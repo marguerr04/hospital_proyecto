@@ -1,10 +1,10 @@
-﻿using proyecto_hospital_version_1.Data._Legacy;
+﻿using Hospital.Api.Data.DTOs;
 
 namespace proyecto_hospital_version_1.Services
 {
     public interface IDiagnosticoService
     {
-        Task<List<Diagnostico>> GetDiagnosticosAsync();
-        Task<List<Diagnostico>> BuscarDiagnosticosAsync(string texto);
+        Task<List<DiagnosticoDto>> GetDiagnosticosAsync();
+        Task<List<DiagnosticoDto>> BuscarDiagnosticosAsync(string texto);
     }
 }

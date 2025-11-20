@@ -1,5 +1,5 @@
 ﻿using System.Net.Http.Json;
-using proyecto_hospital_version_1.Data._Legacy;
+using Hospital.Api.Data.DTOs;
 
 namespace proyecto_hospital_version_1.Services
 {
@@ -12,16 +12,16 @@ namespace proyecto_hospital_version_1.Services
             _httpClient = httpClient;
         }
 
-        public async Task<List<Diagnostico>> GetDiagnosticosAsync()
+        public async Task<List<DiagnosticoDto>> GetDiagnosticosAsync()
         {
-            var result = await _httpClient.GetFromJsonAsync<List<Diagnostico>>("api/diagnostico");
-            return result ?? new List<Diagnostico>();
+            var result = await _httpClient.GetFromJsonAsync<List<DiagnosticoDto>>("api/diagnostico");
+            return result ?? new List<DiagnosticoDto>();
         }
 
-        public async Task<List<Diagnostico>> BuscarDiagnosticosAsync(string texto)
+        public async Task<List<DiagnosticoDto>> BuscarDiagnosticosAsync(string texto)
         {
-            var result = await _httpClient.GetFromJsonAsync<List<Diagnostico>>($"api/diagnostico/buscar?texto={texto}");
-            return result ?? new List<Diagnostico>();
+            var result = await _httpClient.GetFromJsonAsync<List<DiagnosticoDto>>($"api/diagnostico/buscar?texto={texto}");
+            return result ?? new List<DiagnosticoDto>();
         }
     }
 }

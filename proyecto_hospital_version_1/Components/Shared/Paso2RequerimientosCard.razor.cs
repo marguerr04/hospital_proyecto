@@ -45,8 +45,7 @@ namespace proyecto_hospital_version_1.Components.Shared
         private List<Diagnostico> _todosLosDiagnosticos = new List<Diagnostico>(); // Contendrá todos los diagnósticos cargados una vez.
         private List<Diagnostico> _diagnosticosFiltrados = new List<Diagnostico>(); // Contendrá los diagnósticos para mostrar en la lista sugerida.
         private List<Diagnostico> DiagnosticosFiltrados => _diagnosticosFiltrados;
-        private List<string> _diagnosticosSugeridos = new List<string>(); // Nombres de los diagnósticos para el datalist.
-
+        private List<string> _diagnosticosSugeridos = new();
         protected override async Task OnInitializedAsync()
         {
             try
@@ -91,49 +90,43 @@ namespace proyecto_hospital_version_1.Components.Shared
         /// Aplica el filtro GES a la lista de diagnósticos y actualiza las sugerencias.
         /// Se llama al inicio y cuando el checkbox EsGes cambia.
         /// </summary>
-        private void AplicarFiltroDiagnosticos()
+        private async Task AplicarFiltroDiagnosticos()
         {
             Console.WriteLine($"--- Aplicando filtro GES. EsGes: {EsGes} ---");
-            List<Diagnostico> diagnosticosParaMostrar; // Variable local temporal
+            List<Diagnostico> diagnosticosParaMostrar;
 
             if (EsGes)
             {
-                // Filtrar _todosLosDiagnosticos para mostrar solo los que tienen al menos un MapeoGes
                 diagnosticosParaMostrar = _todosLosDiagnosticos
-                                            .Where(d => d.MapeosGes != null && d.MapeosGes.Any())
-                                            .ToList();
+                    .Where(d => d.MapeosGes != null && d.MapeosGes.Any())
+                    .ToList();
                 Console.WriteLine($"Diagnósticos filtrados (solo GES): {diagnosticosParaMostrar.Count}");
-                foreach (var diag in diagnosticosParaMostrar.Take(5))
-                {
-                    Console.WriteLine($"- GES: '{diag.Nombre}'");
-                }
             }
             else
             {
-                // Mostrar todos los diagnósticos si EsGes no está marcado
                 diagnosticosParaMostrar = _todosLosDiagnosticos;
                 Console.WriteLine($"Diagnósticos sin filtrar (todos): {diagnosticosParaMostrar.Count}");
-                foreach (var diag in diagnosticosParaMostrar.Take(5))
-                {
-                    Console.WriteLine($"- NO GES (todos): '{diag.Nombre}'");
-                }
             }
 
-            // Actualizar las listas del componente
             _diagnosticosFiltrados = diagnosticosParaMostrar;
-            _diagnosticosSugeridos = _diagnosticosFiltrados.Select(d => d.Nombre).ToList();
+
+            // ⬅️ AQUÍ: _diagnosticosSugeridos es List<string>, no objetos
+            _diagnosticosSugeridos = _diagnosticosFiltrados
+                .Select(d => d.Nombre ?? string.Empty)
+                .ToList();
 
             // Lógica para deseleccionar el diagnóstico principal si ya no está en la lista filtrada
-            if (!string.IsNullOrEmpty(DiagnosticoPrincipal) && !_diagnosticosSugeridos.Contains(DiagnosticoPrincipal))
+            if (!string.IsNullOrEmpty(DiagnosticoPrincipal) &&
+                !_diagnosticosSugeridos.Contains(DiagnosticoPrincipal, StringComparer.OrdinalIgnoreCase))
             {
                 Console.WriteLine($"El diagnóstico '{DiagnosticoPrincipal}' ya no es válido para el filtro actual. Reiniciando campo.");
                 DiagnosticoPrincipal = "";
                 CodigoAsociado = "";
-                // Notificar al componente padre que los valores han cambiado (si es necesario)
-                DiagnosticoPrincipalChanged.InvokeAsync("");
-                CodigoAsociadoChanged.InvokeAsync("");
+                await DiagnosticoPrincipalChanged.InvokeAsync("");
+                await CodigoAsociadoChanged.InvokeAsync("");
             }
-            StateHasChanged(); // Forzar el re-renderizado del componente para actualizar el datalist
+
+            await InvokeAsync(StateHasChanged);
             Console.WriteLine($"Datalist actualizado con {_diagnosticosSugeridos.Count} sugerencias para el estado EsGes={EsGes}.");
         }
 
