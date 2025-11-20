@@ -1,5 +1,5 @@
 ﻿// Hospital.Api/Services/ISolicitudQuirurgicaDashboardService.cs
-using Hospital.Api.Data.DTOs; // Referencia a tus DTOs
+using Hospital.Api.DTOs; // Referencia a tus DTOs
 
 namespace Hospital.Api.Data.Services // ¡Namespace que coincide con SolicitudQuirurgicaRealService!
 {

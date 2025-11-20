@@ -1,4 +1,4 @@
-﻿using Hospital.Api.Data.DTOs;
+﻿using Hospital.Api.DTOs;
 
 namespace proyecto_hospital_version_1.Services
 {

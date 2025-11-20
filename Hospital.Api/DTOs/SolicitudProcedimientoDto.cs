@@ -1,4 +1,4 @@
-namespace Hospital.Api.Data.DTOs
+namespace Hospital.Api.DTOs
 {
     public class SolicitudProcedimientoDto
     {
@@ -12,11 +12,5 @@ namespace Hospital.Api.Data.DTOs
         public string? Observaciones { get; set; }
     }
 
-    public class SolicitudProcedimientoCrearDto
-    {
-        public int ProcedimientoId { get; set; }
-        public bool EsPrincipal { get; set; } = false;
-        public int? Orden { get; set; }
-        public string? Observaciones { get; set; }
-    }
+
 }

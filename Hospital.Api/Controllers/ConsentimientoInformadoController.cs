@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Hospital.Api.Data;
 using Hospital.Api.Data.Entities;
-using Hospital.Api.Data.DTOs; // Agregar este using para el DTO
+using Hospital.Api.DTOs; // Agregar este using para el DTO
 
 [Route("api/[controller]")]
 [ApiController]

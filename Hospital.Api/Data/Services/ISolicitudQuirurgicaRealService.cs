@@ -1,4 +1,4 @@
-﻿using Hospital.Api.Data.DTOs;
+﻿using Hospital.Api.DTOs;
 using System.Threading.Tasks;
 
 namespace Hospital.Api.Data.Services

@@ -1,4 +1,4 @@
-﻿namespace Hospital.Api.Data.DTOs
+﻿namespace Hospital.Api.DTOs
 {
     public class SolicitudDetalleDto
     {

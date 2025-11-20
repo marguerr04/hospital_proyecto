@@ -1,5 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Hospital.Api.Data.DTOs;
+using Hospital.Api.DTOs;
 using Hospital.Api.Data.Services;
 
 namespace Hospital.Api.Controllers

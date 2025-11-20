@@ -1,5 +1,5 @@
 using Hospital.Api.Data;
-using Hospital.Api.Data.DTOs;
+using Hospital.Api.DTOs;
 using Hospital.Api.Data.Entities;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;

@@ -1,5 +1,5 @@
 ﻿// Hospital.Api/DTOs/FechaProgramadaDto.cs
-namespace Hospital.Api.Data.DTOs // ¡Namespace corregido!
+namespace Hospital.Api.DTOs // ¡Namespace corregido!
 {
     public class FechaProgramadaDto
     {

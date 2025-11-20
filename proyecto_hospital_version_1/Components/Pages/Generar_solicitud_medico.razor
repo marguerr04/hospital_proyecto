@@ -8,7 +8,9 @@
 @using proyecto_hospital_version_1.Components.Shared
 @using Microsoft.EntityFrameworkCore
 @using System.Linq
-@using Hospital.Api.Data.DTOs
+
+@using Hospital.Api.DTOs
+
 @using proyecto_hospital_version_1.Helpers
 @using proyecto_hospital_version_1.Models
 @using ApiEntities = Hospital.Api.Data.Entities;
@@ -22,7 +24,7 @@
 @inject IJSRuntime JsRuntime // Para posibles alertas o interacciones JS
 @inject HttpClient Http // para http
 @inject SweetAlertHelper SweetAlert
-@inject IPacienteService PacienteApi
+@inject IPacienteApiService PacienteApi
 
 <PageTitle>Nueva Solicitud Quirúrgica</PageTitle>
 
@@ -186,6 +188,9 @@
 @code {
     // Variables existentes
     private proyecto_hospital_version_1.Data._Legacy.PacienteHospital? _pacienteSeleccionado = null;
+    private PacienteDto? _pacienteSeleccionadoApi = null;
+
+
     private string _procedenciaSeleccionada = "Ambulatorio"; 
     private int? NumeroBusqueda { get; set; }
     private string TextoBusqueda { get; set; } = string.Empty;
@@ -354,40 +359,45 @@
 
         try
         {
-            // ✅ USAR LA API
-            var resultados = await PacienteApi.BuscarPacientesApiAsync(
+            // ✅ USAR LA API TIPADA (IPacienteApiService)
+            var resultados = await PacienteApi.BuscarPacientesAsync(
                 texto: _busquedaTexto,
                 rut: null,
                 dv: _busquedaDv
             );
 
+            Console.WriteLine($"[Generar_Solicitud_Medico] Pacientes encontrados: {resultados.Count}");
+
             if (resultados != null && resultados.Any())
             {
-                var pacienteData = resultados.First();
+                // Tomamos el primero por ahora (como antes)
+                var paciente = resultados.First();
+                _pacienteSeleccionadoApi = paciente;
 
-                // Mapear a PacienteHospital (temporal para compatibilidad)
+                // 🔁 MAPEAMOS AL LEGACY SOLO PARA QUE LOS COMPONENTES HIJOS SIGAN FUNCIONANDO
                 _pacienteSeleccionado = new proyecto_hospital_version_1.Data._Legacy.PacienteHospital
                 {
-                    id = Convert.ToInt32(pacienteData.GetType().GetProperty("Id")?.GetValue(pacienteData, null) ?? 0),
-                    rut = pacienteData.GetType().GetProperty("Rut")?.GetValue(pacienteData, null)?.ToString() ?? "",
-                    dv = pacienteData.GetType().GetProperty("Dv")?.GetValue(pacienteData, null)?.ToString() ?? "",
-                    primerNombre = pacienteData.GetType().GetProperty("PrimerNombre")?.GetValue(pacienteData, null)?.ToString() ?? "",
-                    segundoNombre = pacienteData.GetType().GetProperty("SegundoNombre")?.GetValue(pacienteData, null)?.ToString() ?? "",
-                    apellidoPaterno = pacienteData.GetType().GetProperty("ApellidoPaterno")?.GetValue(pacienteData, null)?.ToString() ?? "",
-                    apellidoMaterno = pacienteData.GetType().GetProperty("ApellidoMaterno")?.GetValue(pacienteData, null)?.ToString() ?? "",
-                    fechaNacimiento = Convert.ToDateTime(pacienteData.GetType().GetProperty("FechaNacimiento")?.GetValue(pacienteData, null) ?? DateTime.MinValue),
-                    sexo = pacienteData.GetType().GetProperty("Sexo")?.GetValue(pacienteData, null)?.ToString() ?? "",
-                    telefonoMovil = pacienteData.GetType().GetProperty("TelefonoMovil")?.GetValue(pacienteData, null)?.ToString() ?? "",
-                    mail = pacienteData.GetType().GetProperty("Mail")?.GetValue(pacienteData, null)?.ToString() ?? "",
-                    PRAIS = pacienteData.GetType().GetProperty("PRAIS")?.GetValue(pacienteData, null) as bool?,
-                    telefonoFijo = pacienteData.GetType().GetProperty("TelefonoFijo")?.GetValue(pacienteData, null)?.ToString()
+                    id = paciente.Id,
+                    rut = paciente.Rut,
+                    dv = paciente.Dv,
+                    primerNombre = paciente.PrimerNombre,
+                    segundoNombre = paciente.SegundoNombre ?? "",
+                    apellidoPaterno = paciente.ApellidoPaterno,
+                    apellidoMaterno = paciente.ApellidoMaterno ?? "",
+                    fechaNacimiento = paciente.FechaNacimiento,
+                    sexo = paciente.Sexo,
+                    telefonoMovil = paciente.TelefonoMovil,
+                    mail = paciente.Mail,
+                    PRAIS = paciente.PRAIS,
+                    telefonoFijo = paciente.TelefonoFijo
                 };
 
-                _nombrePacienteParaMostrar = pacienteData.GetType().GetProperty("NombreCompleto")?.GetValue(pacienteData, null)?.ToString() ?? "";
-                _rutPacienteParaMostrar = pacienteData.GetType().GetProperty("RutCompleto")?.GetValue(pacienteData, null)?.ToString() ?? "";
+                _nombrePacienteParaMostrar = paciente.NombreCompleto;
+                _rutPacienteParaMostrar = paciente.RutCompleto;
             }
             else
             {
+                _pacienteSeleccionadoApi = null;
                 _pacienteSeleccionado = null;
                 _nombrePacienteParaMostrar = "Paciente no encontrado";
                 _rutPacienteParaMostrar = "";
@@ -399,11 +409,12 @@
         {
             _estado = "error";
             _error = ex.Message;
-            Console.WriteLine($"Error al buscar pacientes: {ex.Message}");
+            Console.WriteLine($"[Generar_Solicitud_Medico] Error al buscar pacientes: {ex.Message}");
         }
 
         StateHasChanged();
     }
+
 
     private async Task BuscarPacientes()
     {
