@@ -1,4 +1,6 @@
-﻿using System.Threading.Tasks;
+﻿using System.Collections.Generic;
+using System.Threading.Tasks;
+using Hospital.Api.Data.DTOs;   // <- DTO REAL DE LA API
 
 namespace proyecto_hospital_version_1.Services
 {

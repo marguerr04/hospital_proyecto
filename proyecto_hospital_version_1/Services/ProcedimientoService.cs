@@ -1,5 +1,5 @@
 ﻿using System.Net.Http.Json;
-
+using Hospital.Api.Data.DTOs;
 namespace proyecto_hospital_version_1.Services
 {
     public class ProcedimientoService : IProcedimientoService
@@ -27,12 +27,5 @@ namespace proyecto_hospital_version_1.Services
         }
     }
 
-    // DTO para transportar datos desde la API
-    public class ProcedimientoDto
-    {
-        public int Id { get; set; }
-        public int Codigo { get; set; }
-        public string Nombre { get; set; } = string.Empty;
-        public string? Descripcion { get; set; }
-    }
+
 }
