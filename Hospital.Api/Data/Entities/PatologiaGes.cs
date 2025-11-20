@@ -1,12 +1,11 @@
 ﻿namespace Hospital.Api.Data.Entities
 {
-    public class Diagnostico
+    public class PatologiaGes
     {
         public int Id { get; set; }
         public string Nombre { get; set; } = string.Empty;
-        public string CodigoCie { get; set; } = string.Empty;
 
-        // Navigation property for GES
+        // 
         public virtual ICollection<MapeoGes> MapeosGes { get; set; } = new List<MapeoGes>();
     }
 }

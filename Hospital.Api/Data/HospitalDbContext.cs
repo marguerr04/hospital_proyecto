@@ -58,6 +58,15 @@ namespace Hospital.Api.Data
         public DbSet<SolicitudProfesional> SOLICITUD_PROFESIONAL { get; set; }
 
 
+
+
+        // mapeo ges
+
+
+        public DbSet<PatologiaGes> PatologiasGes { get; set; } = null!;
+        public DbSet<MapeoGes> MapeosGes { get; set; } = null!;
+
+
         // falta
 
         public DbSet<RolHospital> ROL_HOSPITAL { get; set; }
@@ -173,9 +182,49 @@ namespace Hospital.Api.Data
 
             // egreso soliciutd
 
-            
 
 
+            // mapeo ges
+
+
+            modelBuilder.Entity<Diagnostico>(entity =>
+            {
+                entity.ToTable("DIAGNOSTICO");
+                entity.HasKey(d => d.Id);
+                entity.Property(d => d.Id).HasColumnName("id");
+                entity.Property(d => d.Nombre).HasColumnName("nombre");
+                entity.Property(d => d.CodigoCie).HasColumnName("codigo_cie"); // ¡IMPORTANTE!
+            });
+
+            // Mapeo correcto para PATOLOGIA_GES
+            modelBuilder.Entity<PatologiaGes>(entity =>
+            {
+                entity.ToTable("PATOLOGIA_GES");
+                entity.HasKey(p => p.Id);
+                entity.Property(p => p.Id).HasColumnName("id");
+                entity.Property(p => p.Nombre).HasColumnName("nombre");
+            });
+
+            // Mapeo correcto para MAPEO_GES
+            modelBuilder.Entity<MapeoGes>(entity =>
+            {
+                entity.ToTable("MAPEO_GES"); // ¡Nombre correcto de tabla!
+                entity.HasKey(m => m.Id);
+                entity.Property(m => m.Id).HasColumnName("id");
+                entity.Property(m => m.DiagnosticoId).HasColumnName("DIAGNOSTICO_id");
+                entity.Property(m => m.PatologiaGesId).HasColumnName("PATOLOGIA_GES_id");
+                entity.Property(m => m.FechaVigenciaInicial).HasColumnName("fechaVigenciaInicial");
+                entity.Property(m => m.FechaVigenciaFinal).HasColumnName("fechaVigenciaFinal");
+
+                // Relaciones
+                entity.HasOne(m => m.Diagnostico)
+                      .WithMany(d => d.MapeosGes)
+                      .HasForeignKey(m => m.DiagnosticoId);
+
+                entity.HasOne(m => m.PatologiaGes)
+                      .WithMany(p => p.MapeosGes)
+                      .HasForeignKey(m => m.PatologiaGesId);
+            });
 
 
 

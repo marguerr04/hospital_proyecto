@@ -56,7 +56,7 @@ builder.Services.AddScoped<IEspecialidadHospital, EspecialidadHospitalService>()
 builder.Services.AddScoped<IDiagnosticoService, DiagnosticoService>();
 builder.Services.AddScoped<IProcedimientoService, ProcedimientoService>();
 builder.Services.AddScoped<ISolicitudQuirurgicaService, SolicitudQuirurgicaService>();
-builder.Services.AddScoped<IPacienteService, PacienteService>(); // <- se eliminará más adelante
+
 
 
 // ========== SERVICIOS API REALES ==========
