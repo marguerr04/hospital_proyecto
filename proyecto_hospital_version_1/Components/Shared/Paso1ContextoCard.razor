@@ -1,9 +1,4 @@
-﻿@using proyecto_hospital_version_1.Data._Legacy
-@using proyecto_hospital_version_1.Components.Shared
-@using Microsoft.EntityFrameworkCore
-@using Hospital.Api.DTOs;
-@inject HospitalDbContextLegacy HospitalDb
-@inject IJSRuntime JsRuntime
+﻿@using Hospital.Api.DTOs
 
 <!-- NAVEGACIÓN DEL PASO -->
 <div class="alert alert-primary p-3 mb-4 d-flex align-items-center"
@@ -55,7 +50,13 @@
             {
                 <div class="mt-3">
                     <h3>Información del Paciente Seleccionado</h3>
-                    <InfoPacienteCard Paciente="PacienteSeleccionado" />
+                    <div class="mb-3 p-3 bg-light border rounded">
+                        <h6 class="mb-2 text-primary"><i class="bi bi-person-circle me-2"></i>Paciente Seleccionado</h6>
+                        <p><strong>Nombre:</strong> @PacienteSeleccionado.NombreCompleto</p>
+                        <p><strong>RUT:</strong> @PacienteSeleccionado.RutCompleto</p>
+                        <p><strong>Edad:</strong> @CalcularEdad(PacienteSeleccionado.FechaNacimiento) años</p>
+                        <p><strong>Sexo:</strong> @PacienteSeleccionado.Sexo</p>
+                    </div>
                 </div>
             }
         }
@@ -65,11 +66,16 @@
 <!-- TARJETA PRINCIPAL DE CONTENIDO -->
 <div class="card shadow-sm">
     <div class="card-body p-4">
-        <div class="info-paciente mb-4">
-            <strong>Paciente:</strong> @_nombrePacienteParaMostrar - <strong>RUT:</strong> @_rutPacienteParaMostrar
-        </div>
+        @if (PacienteSeleccionado != null)
+        {
+            <div class="info-paciente mb-4">
+                <strong>Paciente:</strong> @PacienteSeleccionado.NombreCompleto - <strong>RUT:</strong> @PacienteSeleccionado.RutCompleto
+            </div>
+        }
 
         <h5 class="mb-3 border-bottom pb-2">1. Procedencia y Diagnóstico</h5>
+
+        <!-- PROCEDENCIA CON BOTONES DE RADIO -->
         <div class="btn-group w-100 mb-3" role="group">
             <!-- Ambulatorio -->
             <input type="radio"
@@ -105,19 +111,26 @@
             <label class="btn btn-outline-primary" for="btn-urgencia">Urgencia</label>
         </div>
 
+        <!-- PROCEDIMIENTO, LATERALIDAD Y EXTREMIDAD EN FILA -->
         <div class="row mb-4">
             <div class="col-md-6">
-                
-                <label for="procedimiento" class="form-label">Procedimiento</label>
-                <select class="form-select" id="procedimiento"
-                        value="@ProcedimientoSeleccionado"
-                        @onchange="@((e) => UpdateProcedimiento(e.Value?.ToString() ?? ""))">
-                    <option value="">Seleccione un procedimiento</option>
-                    @foreach (var proc in ListaProcedimientos)
-                    {
-                        <option value="@proc.Nombre">@proc.Nombre</option>
-                    }
-                </select>
+                <label for="procedimiento" class="form-label">Procedimiento Principal</label>
+                @if (ListaProcedimientos == null || !ListaProcedimientos.Any())
+                {
+                    <p class="text-danger">No hay procedimientos disponibles.</p>
+                }
+                else
+                {
+                    <select class="form-select" id="procedimiento"
+                            value="@ProcedimientoSeleccionado"
+                            @onchange="@((e) => UpdateProcedimiento(e.Value?.ToString() ?? ""))">
+                        <option value="">Seleccione un procedimiento</option>
+                        @foreach (var proc in ListaProcedimientos)
+                        {
+                            <option value="@proc.Nombre">@proc.Nombre</option>
+                        }
+                    </select>
+                }
             </div>
             <div class="col-md-3">
                 <label for="lateralidad" class="form-label">Lateralidad</label>
@@ -127,6 +140,7 @@
                     <option value="">-</option>
                     <option value="Derecha">Derecha</option>
                     <option value="Izquierda">Izquierda</option>
+                    <option value="No Aplica">No Aplica</option>
                 </select>
             </div>
             <div class="col-md-3">
@@ -137,6 +151,7 @@
                     <option value="">-</option>
                     <option value="Superior">Superior</option>
                     <option value="Inferior">Inferior</option>
+                    <option value="No Aplica">No Aplica</option>
                 </select>
             </div>
         </div>
@@ -154,20 +169,13 @@
                 </label>
             </div>
 
+            <!-- BOTÓN PDF NO FUNCIONAL -->
             <button class="btn btn-success"
-                    @onclick="GenerarPDF"
                     disabled="@(!PuedeGenerarPDF)"
                     title="@(PuedeGenerarPDF ? "Generar PDF de consentimiento" : "Debe seleccionar paciente, procedimiento y aceptar el consentimiento")">
                 <i class="bi bi-file-earmark-pdf-fill me-2"></i> Generar PDF
             </button>
         </div>
-
-        <!-- Componente PDF con referencia -->
-        <ConsentimientoPDF @ref="_consentimientoPdfRef"
-                           Paciente="@PacienteSeleccionado"
-                           Procedimiento="@ProcedimientoSeleccionado"
-                           Lateralidad="@LateralidadSeleccionada"
-                           Extremidad="@ExtremidadSeleccionada" />
     </div>
 </div>
 
@@ -178,9 +186,8 @@
 </style>
 
 @code {
-    // PARAMETERS - Para comunicarse con el componente padre
-    [Parameter] public PacienteHospital? PacienteSeleccionado { get; set; }
-    [Parameter] public EventCallback<PacienteHospital?> PacienteSeleccionadoChanged { get; set; }
+    [Parameter] public PacienteDto? PacienteSeleccionado { get; set; }
+    [Parameter] public EventCallback<PacienteDto?> PacienteSeleccionadoChanged { get; set; }
 
     [Parameter] public string ProcedenciaSeleccionada { get; set; } = "Ambulatorio";
     [Parameter] public EventCallback<string> ProcedenciaSeleccionadaChanged { get; set; }
@@ -197,20 +204,13 @@
     [Parameter] public bool ConsentimientoAceptado { get; set; } = false;
     [Parameter] public EventCallback<bool> ConsentimientoAceptadoChanged { get; set; }
 
-    [Parameter] public List<ProcedimientoDto> ListaProcedimientos { get; set; } = new();
+    [Parameter] public List<ProcedimientoDto>? ListaProcedimientos { get; set; }
 
     // Variables internas para búsqueda
     private string _busquedaTexto = "";
     private string _busquedaDv = "";
     private string _estado = "inicial";
     private string? _error;
-
-    // Variables para mostrar info del paciente
-    private string _nombrePacienteParaMostrar = "";
-    private string _rutPacienteParaMostrar = "";
-
-    // Referencia al componente PDF
-    private ConsentimientoPDF? _consentimientoPdfRef;
 
     private bool PuedeGenerarPDF =>
         PacienteSeleccionado != null &&
@@ -248,66 +248,26 @@
         await ConsentimientoAceptadoChanged.InvokeAsync(value);
     }
 
+    private int CalcularEdad(DateTime fecha)
+    {
+        var hoy = DateTime.Today;
+        var edad = hoy.Year - fecha.Year;
+        if (fecha.Date > hoy.AddYears(-edad)) edad--;
+        return edad;
+    }
+
+    // Métodos de búsqueda (necesitarás implementar la lógica real)
     private async Task CargarPacientes()
     {
-        if (string.IsNullOrWhiteSpace(_busquedaTexto) && string.IsNullOrWhiteSpace(_busquedaDv))
-        {
-            return;
-        }
+        // TODO: Implementar la búsqueda real usando IPacienteService
+        // Por ahora es un placeholder
         _estado = "cargando";
         StateHasChanged();
 
-        try
-        {
-            var query = HospitalDb.Pacientes
-                .Include(p => p.Ubicaciones)
-                .AsQueryable();
+        // Simular carga
+        await Task.Delay(500);
 
-            if (!string.IsNullOrWhiteSpace(_busquedaTexto))
-            {
-                var busqueda = _busquedaTexto.ToLower();
-                query = query.Where(p =>
-                    p.primerNombre.ToLower().Contains(busqueda) ||
-                    (p.segundoNombre != null && p.segundoNombre.ToLower().Contains(busqueda)) ||
-                    p.apellidoPaterno.ToLower().Contains(busqueda) ||
-                    (p.apellidoMaterno != null && p.apellidoMaterno.ToLower().Contains(busqueda)) ||
-                    p.rut.Contains(busqueda)
-                );
-            }
-
-            if (!string.IsNullOrWhiteSpace(_busquedaDv))
-            {
-                var dvUpper = _busquedaDv.ToUpper();
-                query = query.Where(p => p.dv.ToUpper() == dvUpper);
-            }
-
-            var pacienteEncontrado = await query.FirstOrDefaultAsync();
-
-            if (pacienteEncontrado != null)
-            {
-                PacienteSeleccionado = pacienteEncontrado;
-                await PacienteSeleccionadoChanged.InvokeAsync(pacienteEncontrado);
-
-                _nombrePacienteParaMostrar = $"{pacienteEncontrado.primerNombre} {pacienteEncontrado.apellidoPaterno}";
-                _rutPacienteParaMostrar = $"{pacienteEncontrado.rut}-{pacienteEncontrado.dv}";
-            }
-            else
-            {
-                PacienteSeleccionado = null;
-                await PacienteSeleccionadoChanged.InvokeAsync(null);
-                _nombrePacienteParaMostrar = "Paciente no encontrado";
-                _rutPacienteParaMostrar = "";
-            }
-
-            _estado = "ok";
-        }
-        catch (Exception ex)
-        {
-            _estado = "error";
-            _error = ex.Message;
-            Console.WriteLine($"Error al buscar pacientes: {ex}");
-        }
-
+        _estado = "ok";
         StateHasChanged();
     }
 
@@ -316,59 +276,7 @@
         _busquedaTexto = "";
         _busquedaDv = "";
         _estado = "inicial";
-        PacienteSeleccionado = null;
         await PacienteSeleccionadoChanged.InvokeAsync(null);
-
-        _nombrePacienteParaMostrar = "";
-        _rutPacienteParaMostrar = "";
-
         StateHasChanged();
     }
-
-    public async Task GenerarPDF()
-    {
-        if (_consentimientoPdfRef != null && PuedeGenerarPDF)
-        {
-            await _consentimientoPdfRef.GenerarPdf();
-        }
-        else
-        {
-            string mensaje = "No se puede generar el PDF. Asegúrese de:\n" +
-                           "1. Haber seleccionado un paciente.\n" +
-                           "2. Haber seleccionado un procedimiento principal.\n" +
-                           "3. Haber marcado la casilla de consentimiento.";
-            await JsRuntime.InvokeVoidAsync("alert", mensaje);
-        }
-    }
-
-    // Actualizar info cuando el paciente cambie desde el padre
-    protected override void OnParametersSet()
-    {
-        if (PacienteSeleccionado != null)
-        {
-            _nombrePacienteParaMostrar = $"{PacienteSeleccionado.primerNombre} {PacienteSeleccionado.apellidoPaterno}";
-            _rutPacienteParaMostrar = $"{PacienteSeleccionado.rut}-{PacienteSeleccionado.dv}";
-        }
-    }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 }

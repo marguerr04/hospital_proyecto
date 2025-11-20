@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Components;
+﻿using Hospital.Api.DTOs;
+using Microsoft.AspNetCore.Components;
 using proyecto_hospital_version_1.Data._Legacy;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,7 +10,7 @@ namespace proyecto_hospital_version_1.Components.Shared
     public partial class Paso3GenerarSolicitudCard : ComponentBase
     {
         [Parameter]
-        public PacienteHospital? Paciente { get; set; }
+        public PacienteDto? Paciente { get; set; }
 
         [Parameter]
         public string? ProcedimientoPrincipal { get; set; }

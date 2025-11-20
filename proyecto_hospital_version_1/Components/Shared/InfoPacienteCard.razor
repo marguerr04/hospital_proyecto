@@ -1,4 +1,4 @@
-﻿@using proyecto_hospital_version_1.Data._Legacy
+﻿@using Hospital.Api.DTOs
 
 <div class="card shadow-sm mb-4">
     <div class="card-body">
@@ -11,37 +11,38 @@
                 <div class="col-md-6 mb-2">
                     <strong>Nombre Paciente:</strong> @Paciente.NombreCompleto
                 </div>
-                <div class="col-md-6 mb-2">
-                    <strong>RUT:</strong> @(Paciente.rut)-@(Paciente.dv)
-                </div>
-            </div>
-            <div class="row">
-                <div class="col-md-6 mb-2">
-                    <strong>Edad:</strong> @Paciente.EdadCompleta
-                </div>
-                <div class="col-md-6 mb-2">
-                    <strong>Sexo Biológico:</strong> @Paciente.sexo
-                </div>
-            </div>
-            <div class="row">
-                <div class="col-md-6 mb-2">
-                    <strong>PRAIS:</strong> @(Paciente.PRAIS.GetValueOrDefault() ? "Sí" : "No")
-                </div>
-                <div class="col-md-6 mb-2">
-                    @if (Paciente.Ubicaciones != null && Paciente.Ubicaciones.Any())
-                    {
-                        <strong>Dirección: </strong> @Paciente.Ubicaciones.First().DireccionCompleta
-                    }
-                    else
-                    {
-                        <strong>Dirección:</strong>
 
-                        <div class="col-md-6 mb-2">
-                            No registrada
-                        </div>
-                    }
+                <div class="col-md-6 mb-2">
+                    <strong>RUT:</strong> @Paciente.RutCompleto
                 </div>
             </div>
+
+            <div class="row">
+                <div class="col-md-6 mb-2">
+                    <strong>Fecha de nacimiento:</strong> @Paciente.FechaNacimiento.ToString("dd-MM-yyyy")
+                </div>
+
+                <div class="col-md-6 mb-2">
+                    <strong>Sexo Biológico:</strong> @Paciente.Sexo
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6 mb-2">
+                    <strong>PRAIS:</strong> @(Paciente.PRAIS.HasValue && Paciente.PRAIS.Value ? "Sí" : "No")
+                </div>
+
+                <div class="col-md-6 mb-2">
+                    <strong>Teléfono:</strong> @Paciente.TelefonoMovil
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-12 mb-2">
+                    <strong>Email:</strong> @Paciente.Mail
+                </div>
+            </div>
+
         }
         else
         {
@@ -51,7 +52,8 @@
         }
     </div>
 </div>
+
 @code {
     [Parameter]
-    public PacienteHospital? Paciente { get; set; }
+    public PacienteDto? Paciente { get; set; }
 }

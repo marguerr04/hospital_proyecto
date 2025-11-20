@@ -40,6 +40,56 @@
 
             @if (_pasoActual == 1)
             {
+                <div class="card shadow-sm mb-3">
+                    <div class="card-body">
+                        <h5 class="card-title">Buscar paciente</h5>
+
+                        <div class="row g-2 align-items-end">
+                            <div class="col-md-6">
+                                <label class="form-label">Nombre / RUT / Texto</label>
+                                <input class="form-control"
+                                       @bind="_busquedaTexto" />
+                            </div>
+
+                            <div class="col-md-2">
+                                <label class="form-label">DV (opcional)</label>
+                                <input class="form-control"
+                                       maxlength="1"
+                                       @bind="_busquedaDv" />
+                            </div>
+
+                            <div class="col-md-4 mt-2 mt-md-0">
+                                <button class="btn btn-primary me-2"
+                                        @onclick="BuscarPacientes">
+                                    Buscar
+                                </button>
+                                <button class="btn btn-outline-secondary"
+                                        @onclick="LimpiarBusqueda">
+                                    Limpiar
+                                </button>
+                            </div>
+                        </div>
+
+                        @* Resultado básico *@
+                        @if (!string.IsNullOrWhiteSpace(_nombrePacienteParaMostrar))
+                        {
+                            <hr />
+                            <p class="mb-1">
+                                <strong>Resultado:</strong>
+                                @_nombrePacienteParaMostrar (@_rutPacienteParaMostrar)
+                            </p>
+                        }
+
+                        @if (!string.IsNullOrEmpty(_error))
+                        {
+                            <div class="alert alert-danger mt-2">@_error</div>
+                        }
+                    </div>
+                </div>
+
+
+
+
                 <Paso1ContextoCard @bind-PacienteSeleccionado="_pacienteSeleccionado"
                                    @bind-ProcedenciaSeleccionada="_procedenciaSeleccionada"
                                    @bind-ProcedimientoSeleccionado="_procedimientoSeleccionado"
@@ -187,8 +237,8 @@
 
 @code {
     // Variables existentes
-    private proyecto_hospital_version_1.Data._Legacy.PacienteHospital? _pacienteSeleccionado = null;
-    private PacienteDto? _pacienteSeleccionadoApi = null;
+    private PacienteDto? _pacienteSeleccionado = null;
+    private PacienteDto? _pacienteSeleccionadoApi = null;   // 👈 AGREGA ESTA
 
 
     private string _procedenciaSeleccionada = "Ambulatorio"; 
@@ -204,7 +254,7 @@
     private string _extremidadSeleccionada = "";
 
     // Variables para búsqueda de pacientes
-    private List<PacienteHospital> _pacientes = new();
+    private List<PacienteDto> _pacientes = new();
     private string _estado = "inicial";
     private string? _error;
     private int _cantidadMostrar = 10;
@@ -359,7 +409,6 @@
 
         try
         {
-            // ✅ USAR LA API TIPADA (IPacienteApiService)
             var resultados = await PacienteApi.BuscarPacientesAsync(
                 texto: _busquedaTexto,
                 rut: null,
@@ -370,27 +419,10 @@
 
             if (resultados != null && resultados.Any())
             {
-                // Tomamos el primero por ahora (como antes)
-                var paciente = resultados.First();
-                _pacienteSeleccionadoApi = paciente;
+                var paciente = resultados.First();      // PacienteDto
 
-                // 🔁 MAPEAMOS AL LEGACY SOLO PARA QUE LOS COMPONENTES HIJOS SIGAN FUNCIONANDO
-                _pacienteSeleccionado = new proyecto_hospital_version_1.Data._Legacy.PacienteHospital
-                {
-                    id = paciente.Id,
-                    rut = paciente.Rut,
-                    dv = paciente.Dv,
-                    primerNombre = paciente.PrimerNombre,
-                    segundoNombre = paciente.SegundoNombre ?? "",
-                    apellidoPaterno = paciente.ApellidoPaterno,
-                    apellidoMaterno = paciente.ApellidoMaterno ?? "",
-                    fechaNacimiento = paciente.FechaNacimiento,
-                    sexo = paciente.Sexo,
-                    telefonoMovil = paciente.TelefonoMovil,
-                    mail = paciente.Mail,
-                    PRAIS = paciente.PRAIS,
-                    telefonoFijo = paciente.TelefonoFijo
-                };
+                _pacienteSeleccionadoApi = paciente;    // opcional
+                _pacienteSeleccionado = paciente;       // ← ESTE es el que usa el wizard
 
                 _nombrePacienteParaMostrar = paciente.NombreCompleto;
                 _rutPacienteParaMostrar = paciente.RutCompleto;
@@ -436,9 +468,9 @@
         StateHasChanged();
     }
 
-    private void SeleccionarPaciente(PacienteHospital paciente)
+    private void SeleccionarPaciente(PacienteDto paciente)
     {
-        Console.WriteLine($"Paciente seleccionado: {paciente.primerNombre} {paciente.apellidoPaterno}");
+        Console.WriteLine($"Paciente seleccionado: {paciente.PrimerNombre} {paciente.ApellidoPaterno}");
     }
 
     private void Buscar()
@@ -490,14 +522,14 @@
         {
             Console.WriteLine("🔍 === ENVIANDO SOLICITUD A API ===");
             Console.WriteLine($"   - ConsentimientoId: {_consentimientoInformadoApiId}");
-            Console.WriteLine($"   - PacienteId: {_pacienteSeleccionado.id}");
+            Console.WriteLine($"   - PacienteId: {_pacienteSeleccionado.Id}");
 
             // ✅ SIMPLIFICADO: Ya no necesitas calificar completamente el tipo
             var solicitudDto = new SolicitudCrearDto
             {
                 // ✅ CAMPOS CRÍTICOS para FKs
                 ConsentimientoId = _consentimientoInformadoApiId,
-                PacienteId = _pacienteSeleccionado.id,
+                PacienteId = _pacienteSeleccionado.Id,
                 DiagnosticoPrincipal = _diagnosticoPrincipal,
                 Procedencia = _procedenciaSeleccionada,
                 EspecialidadDestino = string.IsNullOrWhiteSpace(_especialidadDestino)
@@ -709,7 +741,7 @@
             FechaGeneracion = DateTime.Now,
             Estado = true, // O el estado inicial que desees
             Observacion = _comentariosAdicionales, // Si tienes algún comentario relacionado con el consentimiento
-            PacienteId = _pacienteSeleccionado.id, // ¡Importante! Asegúrate que es '.id' o '.Id' según tu PacienteHospital legacy
+            PacienteId = _pacienteSeleccionado.Id, // ¡Importante! Asegúrate que es '.id' o '.Id' según tu PacienteHospital legacy
             ProcedimientoId = procedimientoApiId,
             LateralidadId = lateralidadApiId,
             ExtremidadId = extremidadApiId,
@@ -824,7 +856,7 @@
         catch (Exception ex)
         {
             Console.WriteLine($"Error al cargar procedimientos desde API: {ex.Message}");
-            await JsRuntime.InvokeVoidAsync("alert", $"Error al cargar procedimientos: {ex.Message}");
+            await SweetAlert.Error("Error", $"Error al cargar procedimientos: {ex.Message}");
         }
     }
 

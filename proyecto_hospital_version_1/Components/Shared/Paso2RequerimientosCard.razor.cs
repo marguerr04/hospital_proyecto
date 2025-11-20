@@ -1,13 +1,14 @@
-﻿using Microsoft.AspNetCore.Components;
+﻿using Hospital.Api.DTOs;
+using Microsoft.AspNetCore.Components;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.JSInterop;
+using proyecto_hospital_version_1.Data._Legacy; // Añadir esto para usar Include y ToListAsync
+using proyecto_hospital_version_1.Models;
 using proyecto_hospital_version_1.Services;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
-using proyecto_hospital_version_1.Data._Legacy; // Añadir esto para usar Include y ToListAsync
-using proyecto_hospital_version_1.Models;
 
 namespace proyecto_hospital_version_1.Components.Shared
 {
@@ -19,7 +20,7 @@ namespace proyecto_hospital_version_1.Components.Shared
         [Inject] private HospitalDbContextLegacy HospitalDb { get; set; } = default!; // Inyectar DbContext para acceder directamente a las entidades
 
         // --- PARÁMETROS ---
-        [Parameter] public PacienteHospital? Paciente { get; set; }
+        [Parameter] public PacienteDto? Paciente { get; set; }
         [Parameter] public string DiagnosticoPrincipal { get; set; } = "";
         [Parameter] public EventCallback<string> DiagnosticoPrincipalChanged { get; set; }
         [Parameter] public bool EsGes { get; set; }

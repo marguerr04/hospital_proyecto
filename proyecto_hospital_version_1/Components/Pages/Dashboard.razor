@@ -5,6 +5,7 @@
 @inject HospitalDbContextLegacy HospitalDb
 @inject NavigationManager Navigation
 @inject HttpClient Http
+@using Hospital.Api.DTOs
 
 <PageTitle>Panel de Trabajo Quirúrgico</PageTitle>
 
@@ -112,13 +113,13 @@
                         </h6>
                         <div class="row">
                             <div class="col-md-4">
-                                <p class="mb-1 small"><strong>Nombre:</strong> @_pacienteSeleccionado.primerNombre @_pacienteSeleccionado.apellidoPaterno</p>
+                                <p class="mb-1 small"><strong>Nombre:</strong> @_pacienteSeleccionado.PrimerNombre @_pacienteSeleccionado.ApellidoPaterno</p>
                             </div>
                             <div class="col-md-4">
-                                <p class="mb-1 small"><strong>RUT:</strong> @_pacienteSeleccionado.rut-@_pacienteSeleccionado.dv</p>
+                                <p class="mb-1 small"><strong>RUT:</strong> @_pacienteSeleccionado.Rut-@_pacienteSeleccionado.Dv</p>
                             </div>
                             <div class="col-md-4">
-                                <p class="mb-1 small"><strong>Edad:</strong> @CalcularEdad(_pacienteSeleccionado.fechaNacimiento) años</p>
+                                <p class="mb-1 small"><strong>Edad:</strong> @CalcularEdad(_pacienteSeleccionado.FechaNacimiento) años</p>
                             </div>
                         </div>
                     </div>
@@ -262,7 +263,7 @@
                 <div class="modal-header bg-success text-white">
                     <h5 class="modal-title">
                         <i class="bi bi-clipboard2-pulse me-2"></i>
-                        Solicitudes Quirúrgicas - @_pacienteSeleccionado.primerNombre @_pacienteSeleccionado.apellidoPaterno
+                        Solicitudes Quirúrgicas - @_pacienteSeleccionado.PrimerNombre @_pacienteSeleccionado.ApellidoPaterno
                     </h5>
                     <button type="button" class="btn-close btn-close-white" @onclick="CerrarModalSolicitudes"></button>
                 </div>
@@ -452,7 +453,7 @@
 }
 
 @code {
-    private PacienteHospital? _pacienteSeleccionado;
+    private PacienteDto? _pacienteSeleccionado;
     private List<Profesional>? _profesionales;
     private bool _cargando = true;
     private bool _mostrarInfoPaciente = false;
@@ -495,7 +496,7 @@
         }
     }
 
-    private async void HandlePacienteSeleccionado(PacienteHospital? paciente)
+    private void HandlePacienteSeleccionado(PacienteDto? paciente)
     {
         _pacienteSeleccionado = paciente;
         _mostrarInfoPaciente = false;
@@ -533,7 +534,7 @@
 
             if (todasSolicitudes != null)
             {
-                var rutPaciente = $"{_pacienteSeleccionado!.rut}-{_pacienteSeleccionado.dv}";
+                var rutPaciente = $"{_pacienteSeleccionado!.Rut}-{_pacienteSeleccionado.Dv}";
 
                 // Filtrar por el paciente seleccionado
                 var solicitudesPaciente = todasSolicitudes

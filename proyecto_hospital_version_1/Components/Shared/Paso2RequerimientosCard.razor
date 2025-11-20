@@ -1,4 +1,4 @@
-﻿@using proyecto_hospital_version_1.Data._Legacy
+﻿
 @using proyecto_hospital_version_1.Models
 @using Hospital.Api.DTOs
 
@@ -14,7 +14,8 @@
         @if (Paciente != null)
         {
             <div class="info-paciente mb-4 p-3 bg-light border rounded">
-                <strong>Paciente:</strong> @Paciente.NombreCompleto - <strong>RUT:</strong> @(Paciente.rut)-@(Paciente.dv)
+                <strong>Paciente:</strong> @Paciente.NombreCompleto
+                - <strong>RUT:</strong> @Paciente.RutCompleto
             </div>
 
             <div class="row mb-4 align-items-end">

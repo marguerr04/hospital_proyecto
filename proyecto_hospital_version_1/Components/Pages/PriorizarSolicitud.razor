@@ -5,6 +5,7 @@
 
 @using Hospital.Api.Data.Entities
 @using Hospital.Api.Data 
+@using Hospital.Api.DTOs
 
 
 @using Microsoft.EntityFrameworkCore
@@ -651,7 +652,7 @@
         }
     }
     // se cambio el filtrar por paciente
-    private async Task FiltrarPorPaciente(PacienteHospital? paciente)
+    private async Task FiltrarPorPaciente(PacienteDto? paciente)
     {
         if (paciente == null)
         {
@@ -661,11 +662,9 @@
 
         try
         {
-            // Primero cargamos todas las solicitudes
-            await CargarSolicitudes();
+            await CargarSolicitudes(); // trae pendientes y priorizadas
 
-            // Luego filtramos localmente por RUT
-            var rutFull = $"{paciente.rut}-{paciente.dv}";
+            var rutFull = paciente.RutCompleto;
 
             _solicitudesPendientes = _solicitudesPendientes
                 .Where(s => s.Rut == rutFull)

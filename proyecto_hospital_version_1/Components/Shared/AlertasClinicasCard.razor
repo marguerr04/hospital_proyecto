@@ -1,18 +1,16 @@
-﻿@using proyecto_hospital_version_1.Data._Legacy
+﻿@using Hospital.Api.DTOs
 
 <div class="card alert-widget-sticky shadow-sm">
     <div class="card-body">
         <h5 class="card-title mb-3"><i class="bi bi-exclamation-triangle-fill me-2"></i> Alertas Clínicas Clave</h5>
-        
-        @* Este componente NO ES FUNCIONAL y SOLO MUESTRA EJEMPLOS ESTÁTICOS por ahora.
-           El parámetro 'Paciente' se acepta, pero no se utiliza para determinar las alertas.
-           Esto se hará en una fase posterior de desarrollo. *@
+
+        @* Componente estático por ahora. El parámetro Paciente (PacienteDto) se usará más adelante para lógica real. *@
 
         <p class="alert-item ges mb-1">⚠️ Paciente GES</p>
         <p class="alert-item alergia mb-1">❗ Alergia a Penicilina</p>
         <p class="alert-item">🩸 Diabetes Tipo 2</p>
         <p class="alert-item">❤️ Historial Cardíaco</p>
-        <p class="alert-item prais mb-0">⭐ Paciente PRAIS</p> 
+        <p class="alert-item prais mb-0">⭐ Paciente PRAIS</p>
     </div>
 </div>
 
@@ -21,25 +19,37 @@
         position: sticky;
         top: 20px;
     }
+
     .alert-item {
         padding: 5px 10px;
         margin-bottom: 5px;
         border-radius: 5px;
         font-size: 0.9em;
-        background-color: #ffeeba; /* Color de fondo general para alertas */
-        color: #856404; /* Color de texto general para alertas */
+        background-color: #ffeeba;
+        color: #856404;
         border: 1px solid #ffeeba;
     }
-    /* Estilos específicos para tipos de alerta si los quieres, basados en tu código anterior */
-    .alert-item.ges { background-color: #f8d7da; color: #721c24; border-color: #f5c6cb; } /* Rojo suave */
-    .alert-item.alergia { background-color: #fff3cd; color: #856404; border-color: #ffeeba; } /* Amarillo suave */
-    .alert-item.prais { background-color: #d1ecf1; color: #0c5460; border-color: #bee5eb; } /* Azul suave */
-    /* Añadir más estilos si es necesario */
+
+        .alert-item.ges {
+            background-color: #f8d7da;
+            color: #721c24;
+            border-color: #f5c6cb;
+        }
+
+        .alert-item.alergia {
+            background-color: #fff3cd;
+            color: #856404;
+            border-color: #ffeeba;
+        }
+
+        .alert-item.prais {
+            background-color: #d1ecf1;
+            color: #0c5460;
+            border-color: #bee5eb;
+        }
 </style>
 
 @code {
-    // Aceptamos el parámetro Paciente, pero no lo usamos para la lógica de las alertas
-    // ya que este componente es estático por ahora.
     [Parameter]
-    public PacienteHospital? Paciente { get; set; }
+    public PacienteDto? Paciente { get; set; }
 }

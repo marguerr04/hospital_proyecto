@@ -19,5 +19,8 @@
         public string Mail { get; set; } = "";
         public bool? PRAIS { get; set; }
         public List<UbicacionDto> Ubicaciones { get; set; } = new();
+
+        // 👇 Nueva propiedad de conveniencia para las vistas
+        public string EdadCompleta => $"{Edad} años";
     }
 }

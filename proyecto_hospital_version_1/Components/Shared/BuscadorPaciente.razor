@@ -1,7 +1,7 @@
 ﻿@* Components/Shared/BuscadorPaciente.razor *@
+@using Hospital.Api.DTOs
 @using proyecto_hospital_version_1.Services
-@using proyecto_hospital_version_1.Data._Legacy
-@inject IPacienteService PacienteService
+@inject IPacienteApiService PacienteApi
 
 <div class="card shadow-sm mb-4">
     <div class="card-body">
@@ -12,7 +12,8 @@
             </div>
             <div class="col-md-2">
                 <label class="form-label">DV</label>
-                <input type="text" class="form-control text-center" maxlength="1" @bind="_dvBusqueda" style="text-transform: uppercase;" />
+                <input type="text" class="form-control text-center"
+                       maxlength="1" @bind="_dvBusqueda" style="text-transform: uppercase;" />
             </div>
             <div class="col-md-2">
                 <button class="btn btn-primary w-100" @onclick="Buscar">Buscar</button>
@@ -21,6 +22,7 @@
                 <button class="btn btn-outline-secondary w-100" @onclick="Limpiar">Limpiar</button>
             </div>
         </div>
+
         @if (!string.IsNullOrEmpty(_mensajeBusqueda))
         {
             <div class="alert @(_pacienteEncontrado ? "alert-success" : "alert-warning") mt-3 mb-0">
@@ -32,7 +34,8 @@
 
 @code {
     [Parameter]
-    public EventCallback<PacienteHospital?> OnPacienteEncontrado { get; set; }
+    public EventCallback<PacienteDto?> OnPacienteEncontrado { get; set; }
+
     private string _rutBusqueda = "";
     private string _dvBusqueda = "";
     private string _mensajeBusqueda = "";
@@ -41,12 +44,19 @@
     private async Task Buscar()
     {
         _mensajeBusqueda = "Buscando...";
-        var paciente = await PacienteService.BuscarPacientePorRutAsync(_rutBusqueda, _dvBusqueda);
+
+        var resultados = await PacienteApi.BuscarPacientesAsync(
+            texto: "",
+            rut: _rutBusqueda,
+            dv: _dvBusqueda
+        );
+
+        var paciente = resultados.FirstOrDefault();
 
         if (paciente != null)
         {
             _pacienteEncontrado = true;
-            _mensajeBusqueda = $"Paciente encontrado: {paciente.primerNombre} {paciente.apellidoPaterno}";
+            _mensajeBusqueda = $"Paciente encontrado: {paciente.NombreCompleto}";
             await OnPacienteEncontrado.InvokeAsync(paciente);
         }
         else

@@ -8,6 +8,8 @@ using System;
 using System.Threading.Tasks;
 using proyecto_hospital_version_1.Data._Legacy; // Añadir esto si no está
 
+using Hospital.Api.DTOs;
+
 namespace proyecto_hospital_version_1.Components.Shared
 {
     public partial class ConsentimientoPDF
@@ -17,7 +19,7 @@ namespace proyecto_hospital_version_1.Components.Shared
 
         // Aseguramos inicialización para evitar nulls, aunque Blazor inyecta si están en el padre.
         [Parameter]
-        public PacienteHospital? Paciente { get; set; } = new PacienteHospital(); // Inicializar para evitar NRE al acceder a propiedades si es null
+        public PacienteDto? Paciente { get; set; } // Inicializar para evitar NRE al acceder a propiedades si es null
         // ******* NOTA: Este Paciente = new PacienteHospital() es un truco de inicialización.
         // ******* Si Paciente real es null en el padre, se seguirá usando la instancia default.
         // ******* El check "Paciente == null" DEBE usarse.
@@ -50,7 +52,7 @@ namespace proyecto_hospital_version_1.Components.Shared
             Console.WriteLine($"[ConsentimientoPDF.GenerarPdf] DEBUG: Paciente (en GenerarPdf): {Paciente?.NombreCompleto ?? "NULL"}");
             Console.WriteLine($"[ConsentimientoPDF.GenerarPdf] DEBUG: Procedimiento (en GenerarPdf): {Procedimiento ?? "NULL"}");
 
-            if (Paciente == null || string.IsNullOrWhiteSpace(Paciente.rut)) // Añadir rut como criterio básico
+            if (Paciente == null || string.IsNullOrWhiteSpace(Paciente.Rut)) // Añadir rut como criterio básico
             {
                 await JSRuntime.InvokeVoidAsync("alert", "Error: No hay datos válidos del paciente para generar el PDF. Por favor, asegúrese de seleccionar un paciente.");
                 Console.Error.WriteLine("[ConsentimientoPDF.GenerarPdf] ERROR: Paciente es nulo o no tiene RUT.");
@@ -99,13 +101,13 @@ namespace proyecto_hospital_version_1.Components.Shared
                                         grid.Item().Text($"{Paciente.NombreCompleto ?? "N/A"}"); // Uso de ?? "N/A" para seguridad
 
                                         grid.Item().Text($"RUT:").Bold();
-                                        grid.Item().Text($"{Paciente.rut ?? "N/A"}-{Paciente.dv ?? "N/A"}");
+                                        grid.Item().Text($"{Paciente.Rut ?? "N/A"}-{Paciente.Dv ?? "N/A"}");
 
                                         grid.Item().Text($"Edad:").Bold();
                                         grid.Item().Text($"{Paciente.EdadCompleta ?? "N/A"}"); // Asumiendo que EdadCompleta es string o tiene ToString
                                                                                                // Si es int, Paciente.EdadCompleta.ToString()
                                         grid.Item().Text($"Sexo:").Bold();
-                                        grid.Item().Text($"{Paciente.sexo ?? "N/A"}");
+                                        grid.Item().Text($"{Paciente.Sexo ?? "N/A"}");
                                     });
                                 });
 
@@ -144,7 +146,7 @@ namespace proyecto_hospital_version_1.Components.Shared
                                         txt.Span("Yo, ");
                                         txt.Span($"{Paciente.NombreCompleto ?? "N/A"}").Bold();
                                         txt.Span(", RUT ");
-                                        txt.Span($"{Paciente.rut ?? "N/A"}-{Paciente.dv ?? "N/A"}").Bold();
+                                        txt.Span($"{Paciente.Rut ?? "N/A"}-{Paciente.Dv ?? "N/A"}").Bold();
                                         txt.Span(", en pleno uso de mis facultades, declaro que he sido informado(a) y doy mi consentimiento para la realización del procedimiento: ");
                                         txt.Span($"'{Procedimiento}'").Bold();
                                         txt.Span(".");
@@ -187,7 +189,7 @@ namespace proyecto_hospital_version_1.Components.Shared
                 var fileContent = stream.ToArray();
                 Console.WriteLine($"[ConsentimientoPDF.GenerarPdf] PDF generado. Tamaño: {fileContent.Length} bytes.");
 
-                await DescargarArchivo(fileContent, $"Consentimiento_{Paciente.rut}_{DateTime.Now:yyyyMMdd}.pdf");
+                await DescargarArchivo(fileContent, $"Consentimiento_{Paciente.Rut}_{DateTime.Now:yyyyMMdd}.pdf");
                 Console.WriteLine("[ConsentimientoPDF.GenerarPdf] Intento de descarga de archivo JS invocado.");
             }
             catch (Exception ex)
