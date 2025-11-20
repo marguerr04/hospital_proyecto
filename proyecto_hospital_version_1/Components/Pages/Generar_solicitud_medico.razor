@@ -543,7 +543,7 @@
                     }
                 }
 
-                await JsRuntime.InvokeVoidAsync("alert", "✅ Solicitud guardada correctamente en la base real.");
+                await SweetAlert.Success("Éxito", "Solicitud guardada correctamente en la base real.");
                 ResetFormulario();
                 _pasoActual = 1;
                 StateHasChanged();

@@ -70,7 +70,7 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    @foreach (var s in Priorizadas)
+                                    @foreach (var s in PriorizadasPagina)
                                     {
                                         <tr>
                                             <td class="fw-semibold">@s.Id</td>
@@ -92,6 +92,45 @@
                                 </tbody>
                             </table>
                         </div>
+
+                        <!-- PAGINACIÓN PARA PRIORIZADAS -->
+                        @if (TotalPaginasPriorizadas > 1)
+                        {
+                            <div class="card-footer d-flex justify-content-between align-items-center py-2">
+                                <small class="text-muted">
+                                    Mostrando @PriorizadasPagina.Count de @Priorizadas.Count registros
+                                </small>
+                                <nav>
+                                    <ul class="pagination pagination-sm mb-0">
+                                        <li class="page-item @(PaginaActualPriorizadas == 1 ? "disabled" : "")">
+                                            <button class="page-link" @onclick="() => CambiarPaginaPriorizadas(1)" title="Primera página">
+                                                <i class="bi bi-chevron-double-left"></i>
+                                            </button>
+                                        </li>
+                                        <li class="page-item @(PaginaActualPriorizadas == 1 ? "disabled" : "")">
+                                            <button class="page-link" @onclick="() => CambiarPaginaPriorizadas(PaginaActualPriorizadas - 1)" title="Página anterior">
+                                                <i class="bi bi-chevron-left"></i>
+                                            </button>
+                                        </li>
+
+                                        <li class="page-item active">
+                                            <span class="page-link">@PaginaActualPriorizadas de @TotalPaginasPriorizadas</span>
+                                        </li>
+
+                                        <li class="page-item @(PaginaActualPriorizadas == TotalPaginasPriorizadas ? "disabled" : "")">
+                                            <button class="page-link" @onclick="() => CambiarPaginaPriorizadas(PaginaActualPriorizadas + 1)" title="Página siguiente">
+                                                <i class="bi bi-chevron-right"></i>
+                                            </button>
+                                        </li>
+                                        <li class="page-item @(PaginaActualPriorizadas == TotalPaginasPriorizadas ? "disabled" : "")">
+                                            <button class="page-link" @onclick="() => CambiarPaginaPriorizadas(TotalPaginasPriorizadas)" title="Última página">
+                                                <i class="bi bi-chevron-double-right"></i>
+                                            </button>
+                                        </li>
+                                    </ul>
+                                </nav>
+                            </div>
+                        }
                     }
                 </div>
             </div>
@@ -115,7 +154,7 @@
                     }
                     else
                     {
-                        @foreach (var p in Programadas)
+                        @foreach (var p in ProgramadasPagina)
                         {
                             var pct = GetSlaPctProgramada(p);      // 0-100
                             var dias = p.DiasRestantes ?? 0;
@@ -135,6 +174,45 @@
                                         @pct%
                                     </div>
                                 </div>
+                            </div>
+                        }
+
+                        <!-- PAGINACIÓN PARA PROGRAMADAS -->
+                        @if (TotalPaginasProgramadas > 1)
+                        {
+                            <div class="card-footer d-flex justify-content-between align-items-center py-2">
+                                <small class="text-muted">
+                                    Mostrando @ProgramadasPagina.Count de @Programadas.Count registros
+                                </small>
+                                <nav>
+                                    <ul class="pagination pagination-sm mb-0">
+                                        <li class="page-item @(PaginaActualProgramadas == 1 ? "disabled" : "")">
+                                            <button class="page-link" @onclick="() => CambiarPaginaProgramadas(1)" title="Primera página">
+                                                <i class="bi bi-chevron-double-left"></i>
+                                            </button>
+                                        </li>
+                                        <li class="page-item @(PaginaActualProgramadas == 1 ? "disabled" : "")">
+                                            <button class="page-link" @onclick="() => CambiarPaginaProgramadas(PaginaActualProgramadas - 1)" title="Página anterior">
+                                                <i class="bi bi-chevron-left"></i>
+                                            </button>
+                                        </li>
+
+                                        <li class="page-item active">
+                                            <span class="page-link">@PaginaActualProgramadas de @TotalPaginasProgramadas</span>
+                                        </li>
+
+                                        <li class="page-item @(PaginaActualProgramadas == TotalPaginasProgramadas ? "disabled" : "")">
+                                            <button class="page-link" @onclick="() => CambiarPaginaProgramadas(PaginaActualProgramadas + 1)" title="Página siguiente">
+                                                <i class="bi bi-chevron-right"></i>
+                                            </button>
+                                        </li>
+                                        <li class="page-item @(PaginaActualProgramadas == TotalPaginasProgramadas ? "disabled" : "")">
+                                            <button class="page-link" @onclick="() => CambiarPaginaProgramadas(TotalPaginasProgramadas)" title="Última página">
+                                                <i class="bi bi-chevron-double-right"></i>
+                                            </button>
+                                        </li>
+                                    </ul>
+                                </nav>
                             </div>
                         }
                     }
@@ -239,6 +317,15 @@
     private List<SolicitudResumenVM> Priorizadas = new();
     private List<SolicitudResumenVM> Programadas = new();
 
+    // Variables de paginación
+    private List<SolicitudResumenVM> PriorizadasPagina = new();
+    private List<SolicitudResumenVM> ProgramadasPagina = new();
+    private int PaginaActualPriorizadas = 1;
+    private int PaginaActualProgramadas = 1;
+    private const int ElementosPorPagina = 5;
+    private int TotalPaginasPriorizadas;
+    private int TotalPaginasProgramadas;
+
     // KPIs
     private int KpiTotal => Resumen.Count;
     private int KpiPendientes => Resumen.Count(s => !s.Estado.Contains("Priorizada"));
@@ -252,6 +339,9 @@
         // Particionar los datos
         Priorizadas = Resumen.Where(s => s.Estado.Contains("Priorizada")).ToList();
         Programadas = Resumen.Where(s => s.FechaProgramada.HasValue).OrderBy(s => s.FechaProgramada).ToList();
+
+        // Calcular paginación inicial
+        CalcularPaginacion();
     }
 
     // ✅ NUEVO: Cargar solicitudes desde la API
@@ -300,6 +390,10 @@
             new(){ Id=106, NombrePaciente="Martín Ramos", Rut="17.654.321-0", Diagnostico="Artroscopía rodilla", Procedimiento="Artroscopía", Estado="Pendiente", FechaCreacion=DateTime.Now.AddDays(-2) },
             new(){ Id=107, NombrePaciente="Ana María P.", Rut="9.111.222-3", Diagnostico="Hernia", Procedimiento="Hernioplastía", Estado="Pendiente", FechaCreacion=DateTime.Now.AddDays(-20) },
             new(){ Id=108, NombrePaciente="Pedro Ruiz", Rut="7.555.111-9", Diagnostico="Cataratas", Procedimiento="Facoemulsificación", Estado="Pendiente", FechaCreacion=DateTime.Now.AddDays(-30) },
+            new(){ Id=109, NombrePaciente="Laura Mendoza", Rut="6.666.777-8", Diagnostico="Apéndice", Procedimiento="Apendicectomía", Estado="Priorizada", FechaCreacion=DateTime.Now.AddDays(-3) },
+            new(){ Id=110, NombrePaciente="Roberto Silva", Rut="4.444.555-6", Diagnostico="Vesícula", Procedimiento="Colecistectomía", Estado="Pendiente", FechaCreacion=DateTime.Now.AddDays(-25) },
+            new(){ Id=111, NombrePaciente="Carmen Ríos", Rut="3.333.222-1", Diagnostico="Hernia inguinal", Procedimiento="Herniorrafía", Estado="Priorizada", FechaCreacion=DateTime.Now.AddDays(-6) },
+            new(){ Id=112, NombrePaciente="Diego Castro", Rut="2.222.333-4", Diagnostico="Problema cardíaco", Procedimiento="Cateterismo", Estado="Pendiente", FechaCreacion=DateTime.Now.AddDays(-18) }
         };
 
         SeedFechasYContacto();
@@ -330,6 +424,48 @@
 
             s.Contactabilidad = contactos[i % contactos.Length];
             i++;
+        }
+    }
+
+    // ===== PAGINACIÓN =====
+    private void CalcularPaginacion()
+    {
+        // PAGINACIÓN PARA PRIORIZADAS
+        TotalPaginasPriorizadas = (int)Math.Ceiling(Priorizadas.Count / (double)ElementosPorPagina);
+        if (TotalPaginasPriorizadas == 0) TotalPaginasPriorizadas = 1;
+
+        PriorizadasPagina = Priorizadas
+            .Skip((PaginaActualPriorizadas - 1) * ElementosPorPagina)
+            .Take(ElementosPorPagina)
+            .ToList();
+
+        // PAGINACIÓN PARA PROGRAMADAS
+        TotalPaginasProgramadas = (int)Math.Ceiling(Programadas.Count / (double)ElementosPorPagina);
+        if (TotalPaginasProgramadas == 0) TotalPaginasProgramadas = 1;
+
+        ProgramadasPagina = Programadas
+            .Skip((PaginaActualProgramadas - 1) * ElementosPorPagina)
+            .Take(ElementosPorPagina)
+            .ToList();
+    }
+
+    private void CambiarPaginaPriorizadas(int nuevaPagina)
+    {
+        if (nuevaPagina >= 1 && nuevaPagina <= TotalPaginasPriorizadas)
+        {
+            PaginaActualPriorizadas = nuevaPagina;
+            CalcularPaginacion();
+            StateHasChanged();
+        }
+    }
+
+    private void CambiarPaginaProgramadas(int nuevaPagina)
+    {
+        if (nuevaPagina >= 1 && nuevaPagina <= TotalPaginasProgramadas)
+        {
+            PaginaActualProgramadas = nuevaPagina;
+            CalcularPaginacion();
+            StateHasChanged();
         }
     }
 
