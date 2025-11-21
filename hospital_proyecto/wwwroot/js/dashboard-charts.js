@@ -113,19 +113,19 @@ window.dashboardCharts = (function () {
       panel.style.boxShadow = '0 8px 24px rgba(0,0,0,0.2)';
 
       const title = document.createElement('h3');
-      title.innerText = `Detalle: ${label} (${value})`;
+      title.innerText = `Detalle: ${label} (${value ?? ''})`;
       panel.appendChild(title);
 
       const info = document.createElement('div');
       info.style.fontSize = '0.9rem';
       info.style.marginBottom = '8px';
-      info.innerText = `Filtros — Sexo: ${sexo || 'Todos'}, GES: ${ges || 'Todos'}`;
+      info.innerText = `Filtros — Sexo: ${sexo || 'Todos'}, GES: ${ges ?? 'Todos'}`;
       panel.appendChild(info);
 
       const canvas = document.createElement('canvas');
       canvas.id = 'dc-detail-chart';
       canvas.style.width = '100%';
-      canvas.style.height = '320px';
+      canvas.style.height = '360px';
       panel.appendChild(canvas);
 
       const close = document.createElement('button');
@@ -137,13 +137,37 @@ window.dashboardCharts = (function () {
       root.appendChild(panel);
       document.body.appendChild(root);
 
-      // render simple chart con el valor (puede reemplazarse por fetch a API para detalle real)
-      const ctxD = canvas.getContext('2d');
-      new Chart(ctxD, {
-        type: 'bar',
-        data: { labels: [label], datasets: [{ label: 'Valor', data: [value], backgroundColor: ['rgba(33,150,243,0.8)'] }] },
-        options: { responsive: true, scales: { y: { beginAtZero: true } }, plugins: { legend: { display: false } } }
-      });
+      // Intentar obtener detalle desde el backend (si existe endpoint)
+      const base = window.location.origin;
+      const params = new URLSearchParams();
+      if (label) params.append('nombre', label);
+      if (sexo) params.append('sexo', sexo);
+      if (ges !== undefined && ges !== null) params.append('ges', String(ges));
+      // opcional: podríamos enviar fechas si el cliente las expone
+
+      fetch(`${base}/api/dashboard/procedimiento-detalle?${params.toString()}`)
+        .then(r => r.json())
+        .then(data => {
+          // data esperada: [{ Mes: 'Ene', Valor: 10 }, ...]
+          const labels = (data || []).map(x => x.Mes || x.mes || '');
+          const values = (data || []).map(x => x.Valor ?? x.valor ?? 0);
+          const ctxD = canvas.getContext('2d');
+          new Chart(ctxD, {
+            type: 'line',
+            data: { labels: labels, datasets: [{ label: label, data: values, borderColor: 'rgb(33,150,243)', backgroundColor: 'rgba(33,150,243,0.15)', fill: true }] },
+            options: { responsive: true, scales: { y: { beginAtZero: true } }, plugins: { legend: { display: false } } }
+          });
+        })
+        .catch(err => {
+          console.error('fetch detalle error', err);
+          // si falla, mostrar una barra simple con el valor
+          const ctxD = canvas.getContext('2d');
+          new Chart(ctxD, {
+            type: 'bar',
+            data: { labels: [label], datasets: [{ label: 'Valor', data: [value ?? 0], backgroundColor: ['rgba(33,150,243,0.8)'] }] },
+            options: { responsive: true, scales: { y: { beginAtZero: true } }, plugins: { legend: { display: false } } }
+          });
+        });
     }
     catch (e) { console.error('showDetail error', e); }
   }
