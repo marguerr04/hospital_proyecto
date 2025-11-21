@@ -29,6 +29,7 @@ namespace Hospital.Api.Data
         // Contactabilidad
         public DbSet<Contactabilidad> CONTACTABILIDAD { get; set; } = null!;
         public DbSet<MotivoContacto> MOTIVO_CONTACTO { get; set; } = null!;
+        public DbSet<ContactoSolicitud> CONTACTO_SOLICITUD { get; set; } = null!;
 
         // Procedimientos
         public DbSet<Procedimiento> PROCEDIMIENTO { get; set; } = null!;
