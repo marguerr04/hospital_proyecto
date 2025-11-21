@@ -105,33 +105,41 @@
             <MudGrid Spacing="1">
                 <!-- Estados (Procedimientos) -->
                 <MudItem xs="12" sm="6">
-                    <MudPaper Class="pa-2" Style="height:240px;">
-                        <MudText Typo="Typo.h6">Estados</MudText>
-                        <canvas id="chartEstado" style="width:100%;height:180px;"></canvas>
+                    <MudPaper Class="pa-3 chart-paper" Style="height:320px;display:flex;flex-direction:column;">
+                        <MudText Typo="Typo.h6" Class="chart-title">Estados</MudText>
+                        <div class="chart-wrapper">
+                            <canvas id="chartEstado"></canvas>
+                        </div>
                     </MudPaper>
                 </MudItem>
 
                 <!-- Contactabilidad -->
                 <MudItem xs="12" sm="6">
-                    <MudPaper Class="pa-2" Style="height:240px;">
-                        <MudText Typo="Typo.h6">Contactabilidad</MudText>
-                        <canvas id="chartContacto" style="width:100%;height:180px;"></canvas>
+                    <MudPaper Class="pa-3 chart-paper" Style="height:320px;display:flex;flex-direction:column;">
+                        <MudText Typo="Typo.h6" Class="chart-title">Contactabilidad</MudText>
+                        <div class="chart-wrapper">
+                            <canvas id="chartContacto"></canvas>
+                        </div>
                     </MudPaper>
                 </MudItem>
 
                 <!-- Evolución Percentil 75 -->
                 <MudItem xs="12" sm="6">
-                    <MudPaper Class="pa-2" Style="height:240px;">
-                        <MudText Typo="Typo.h6">Evolución Percentil 75</MudText>
-                        <canvas id="chartEvolucion" style="width:100%;height:180px;"></canvas>
+                    <MudPaper Class="pa-3 chart-paper" Style="height:320px;display:flex;flex-direction:column;">
+                        <MudText Typo="Typo.h6" Class="chart-title">Evolución Percentil 75</MudText>
+                        <div class="chart-wrapper">
+                            <canvas id="chartEvolucion"></canvas>
+                        </div>
                     </MudPaper>
                 </MudItem>
 
                 <!-- Causal de Egreso -->
                 <MudItem xs="12" sm="6">
-                    <MudPaper Class="pa-2" Style="height:240px;">
-                        <MudText Typo="Typo.h6">Causal de Egreso</MudText>
-                        <canvas id="chartEgreso" style="width:100%;height:180px;"></canvas>
+                    <MudPaper Class="pa-3 chart-paper" Style="height:320px;display:flex;flex-direction:column;">
+                        <MudText Typo="Typo.h6" Class="chart-title">Causal de Egreso</MudText>
+                        <div class="chart-wrapper">
+                            <canvas id="chartEgreso"></canvas>
+                        </div>
                     </MudPaper>
                 </MudItem>
             </MudGrid>
@@ -234,10 +242,11 @@
                 {
                     var labels = procedimientos.Keys.ToArray();
                     var data = procedimientos.Values.Select(v => (double)v).ToArray();
+                    var colors = GenerarColores(procedimientos.Count);
                     
                     if (token.IsCancellationRequested) return;
                     
-                    await JS.InvokeVoidAsync("dashboardCharts.renderBar", token, "chartEstado", labels, data, GenerarColores(procedimientos.Count));
+                    await JS.InvokeVoidAsync("dashboardCharts.renderBar", "chartEstado", labels, data, colors);
                     procedimientosList = procedimientos.Select(kv => new KeyValuePair<string,int>(kv.Key, kv.Value)).ToList();
                 }
                 catch (TaskCanceledException) { return; }
@@ -255,10 +264,11 @@
                 {
                     var labels = contactabilidad.Keys.ToArray();
                     var data = contactabilidad.Values.ToArray();
+                    var colors = GenerarColores(contactabilidad.Count);
                     
                     if (token.IsCancellationRequested) return;
                     
-                    await JS.InvokeVoidAsync("dashboardCharts.renderDonut", token, "chartContacto", labels, data, GenerarColores(contactabilidad.Count));
+                    await JS.InvokeVoidAsync("dashboardCharts.renderDonut", "chartContacto", labels, data, colors);
                 }
                 catch (TaskCanceledException) { return; }
                 catch (JSDisconnectedException) { return; }
@@ -274,11 +284,12 @@
                 try
                 {
                     var labels = evolucion.Select(e => e.Mes).ToArray();
-                    var data = evolucion.Select(e => e.Valor).ToArray();
+                    var data = evolucion.Select(e => (double)e.Valor).ToArray();
+                    var options = new { label = "Percentil 75" };
                     
                     if (token.IsCancellationRequested) return;
                     
-                    await JS.InvokeVoidAsync("dashboardCharts.renderLine", token, "chartEvolucion", labels, data, new { label = "Percentil 75" });
+                    await JS.InvokeVoidAsync("dashboardCharts.renderLine", "chartEvolucion", labels, data, options);
                 }
                 catch (TaskCanceledException) { return; }
                 catch (JSDisconnectedException) { return; }
@@ -295,10 +306,11 @@
                 {
                     var labels = causales.Keys.ToArray();
                     var data = causales.Values.Select(v => (double)v).ToArray();
+                    var colors = GenerarColores(causales.Count);
                     
                     if (token.IsCancellationRequested) return;
                     
-                    await JS.InvokeVoidAsync("dashboardCharts.renderPie", token, "chartEgreso", labels, data, GenerarColores(causales.Count));
+                    await JS.InvokeVoidAsync("dashboardCharts.renderPie", "chartEgreso", labels, data, colors);
                 }
                 catch (TaskCanceledException) { return; }
                 catch (JSDisconnectedException) { return; }

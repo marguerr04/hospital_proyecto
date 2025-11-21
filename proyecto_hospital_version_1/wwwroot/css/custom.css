@@ -140,3 +140,39 @@ select.form-select {
 .mud-icon {
     color: var(--color-primario) !important;
 }
+
+/* ========= ESTILOS PARA GRÁFICOS ========= */
+canvas {
+    max-height: 100%;
+    width: 100% !important;
+    height: auto !important;
+}
+
+.chart-container {
+    position: relative;
+    flex: 1;
+    min-height: 250px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.chart-wrapper {
+    width: 100%;
+    height: 100%;
+    position: relative;
+}
+
+/* Estilos para las tarjetas de gráficos */
+.chart-paper {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.chart-title {
+    font-weight: 600;
+    margin-bottom: 1rem;
+    color: #333;
+}
+/* ========= FIN ESTILOS GRÁFICOS ========= */
