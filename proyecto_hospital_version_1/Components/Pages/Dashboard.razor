@@ -1,62 +1,90 @@
-Ôªø@page "/dashboard"
+@page "/dashboard"
 @using proyecto_hospital_version_1.Shared
 @using proyecto_hospital_version_1.Components.Shared
+@using proyecto_hospital_version_1.Services
 @inject NavigationManager Navigation
 @inject HttpClient Http
+@inject IJSRuntime JS
+@inject PriorizacionApiService PriorizacionApi
 @using Hospital.Api.DTOs
 
-<PageTitle>Panel de Trabajo Quir√∫rgico</PageTitle>
+<PageTitle>Panel de Trabajo Quir˙rgico</PageTitle>
 
 <div class="container-fluid">
     <div class="row mb-3">
         <div class="col">
-            <h1 class="h3 mb-0">Panel de Trabajo Quir√∫rgico</h1>
+            <h1 class="h3 mb-0">Panel de Trabajo Quir˙rgico</h1>
         </div>
     </div>
 
-    <!-- BOT√ìN ROJO PARA DASHBOARD ANAL√çTICO -->
     <div class="row mb-3">
-        <div class="col-12">
+        <div class="col-md-6">
             <div class="card shadow-sm border-0">
                 <div class="card-body p-3">
-                    <button class="btn btn-danger btn-lg w-100 d-flex align-items-center justify-content-center"
-                            style="height: 60px; font-size: 1.1rem; font-weight: 600;"
-                            onclick="@(() => Navigation.NavigateTo("/dashboard_verdadero"))">
+                    <button class="btn btn-secondary btn-lg w-100 d-flex align-items-center justify-content-center dashboard-action-btn"
+                            style="height: 80px; font-size: 1.1rem; font-weight: 600;"
+                            @onclick="IrAlHistorialLogs">
+                        <i class="bi bi-clock-history me-2" style="font-size: 1.3rem;"></i>
+                        HISTORIAL DE LOGS
+                    </button>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card shadow-sm border-0">
+                <div class="card-body p-3">
+                    <button class="btn btn-danger btn-lg w-100 d-flex align-items-center justify-content-center dashboard-action-btn"
+                            style="height: 80px; font-size: 1.1rem; font-weight: 600;"
+                            @onclick="IrAlDashboardAnalÌtico">
                         <i class="bi bi-graph-up-arrow me-2" style="font-size: 1.3rem;"></i>
-                        IR A DASHBOARD ANAL√çTICO
+                        DASHBOARD ANALÕTICO
                     </button>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- TABLA DE PROFESIONALES -->
     <div class="row mb-3">
         <div class="col-12">
-            <div class="card shadow-sm border-0">
+            <div class="card shadow-sm border-0 professional-card">
                 <div class="card-body p-3">
-                    <h5 class="card-title mb-3">Profesionales M√©dicos</h5>
+                    <h5 class="card-title mb-3">
+                        <i class="bi bi-stethoscope me-2 icon-header"></i>
+                        Profesionales MÈdicos
+                    </h5>
 
                     @if (_profesionales?.Any() == true)
                     {
                         <div class="table-responsive">
-                            <table class="table table-striped table-hover table-sm">
-                                <thead class="table-dark">
+                            <table class="table table-hover table-sm enhanced-table">
+                                <thead class="table-header-enhanced">
                                     <tr>
-                                        <th>Nombre Completo</th>
-                                        <th>RUT</th>
-                                        <th>Rol</th>
-                                        <th>Especialidad</th>
+                                        <th>
+                                            <i class="bi bi-person-fill me-1"></i>
+                                            Nombre Completo
+                                        </th>
+                                        <th>
+                                            <i class="bi bi-credit-card-2-front me-1"></i>
+                                            RUT
+                                        </th>
+                                        <th>
+                                            <i class="bi bi-briefcase-fill me-1"></i>
+                                            Rol
+                                        </th>
+                                        <th>
+                                            <i class="bi bi-clipboard2 me-1"></i>
+                                            Especialidad
+                                        </th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     @foreach (var profesional in _profesionales)
                                     {
-                                        <tr>
-                                            <td>@profesional.NombreCompleto</td>
-                                            <td>@profesional.RutCompleto</td>
-                                            <td>@profesional.Rol</td>
-                                            <td>@profesional.Especialidad</td>
+                                        <tr class="table-row-enhanced">
+                                            <td class="fw-500">@profesional.NombreCompleto</td>
+                                            <td><span class="badge bg-light text-dark">@profesional.RutCompleto</span></td>
+                                            <td><span class="badge bg-primary">@profesional.Rol</span></td>
+                                            <td><span class="badge bg-info">@profesional.Especialidad</span></td>
                                         </tr>
                                     }
                                 </tbody>
@@ -84,13 +112,30 @@
         </div>
     </div>
 
-    <!-- NUEVA DISTRIBUCI√ìN: BUSCADOR A LA IZQUIERDA, INFO A LA DERECHA -->
-    <div class="row" style="align-items: flex-start;">
-        <!-- BUSCADOR DE PACIENTES - COLUMNA IZQUIERDA (4 columnas) -->
-        <div class="col-lg-4">
-            <div class="card shadow-sm border-0" style="height: fit-content;">
+    <div class="row mb-3">
+        <div class="col-lg-8">
+            <div class="card shadow-sm border-0 professional-card">
                 <div class="card-body p-3">
-                    <h5 class="card-title mb-3">Buscar Paciente</h5>
+                    <h5 class="card-title mb-3">
+                        <i class="bi bi-graph-up me-2 icon-header"></i>
+                        EvoluciÛn de Profesionales MÈdicos por PerÌodo
+                    </h5>
+                    <div style="position: relative; height: 300px;">
+                        <canvas id="chartProfesionalesEvolucion"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row" style="align-items: flex-start;">
+        <div class="col-lg-4">
+            <div class="card shadow-sm border-0 search-card" style="height: fit-content;">
+                <div class="card-body p-3">
+                    <h5 class="card-title mb-3">
+                        <i class="bi bi-search me-2 icon-header"></i>
+                        Buscar Paciente
+                    </h5>
                     <div>
                         <BuscadorPaciente OnPacienteEncontrado="HandlePacienteSeleccionado" />
                     </div>
@@ -98,12 +143,10 @@
             </div>
         </div>
 
-        <!-- INFORMACI√ìN DEL PACIENTE - COLUMNA DERECHA (8 columnas) -->
         <div class="col-lg-8">
             @if (_pacienteSeleccionado != null)
             {
-                <!-- RESUMEN R√ÅPIDO DEL PACIENTE -->
-                <div class="card shadow-sm border-info mb-3">
+                <div class="card shadow-sm border-info mb-3 summary-card">
                     <div class="card-body p-3">
                         <h6 class="card-title text-info mb-2">
                             <i class="bi bi-person-circle me-2"></i>
@@ -117,81 +160,90 @@
                                 <p class="mb-1 small"><strong>RUT:</strong> @_pacienteSeleccionado.Rut-@_pacienteSeleccionado.Dv</p>
                             </div>
                             <div class="col-md-4">
-                                <p class="mb-1 small"><strong>Edad:</strong> @CalcularEdad(_pacienteSeleccionado.FechaNacimiento) a√±os</p>
+                                <p class="mb-1 small"><strong>Edad:</strong> @CalcularEdad(_pacienteSeleccionado.FechaNacimiento) aÒos</p>
                             </div>
                         </div>
                     </div>
                 </div>
+            }
 
-                <div class="row g-3">
-                    <!-- INFORMACI√ìN DEL PACIENTE SELECCIONADO - CON BORDE AZUL Y CLICK -->
-                    <div class="col-12">
-                        <div class="card shadow-sm border-primary" style="border-width: 2px; cursor: pointer;"
-                             @onclick="AbrirModalInfoPaciente">
-                            <div class="card-body p-3">
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <h5 class="card-title mb-0 text-primary">
-                                        <i class="bi bi-person-badge me-2"></i>
-                                        Informaci√≥n del Paciente
-                                    </h5>
-                                    <i class="bi bi-chevron-down text-primary"></i>
-                                </div>
+            <div class="row g-3">
+                <div class="col-12">
+                    <div class="card shadow-sm border-primary action-card action-card-primary" 
+                         @onclick="AbrirModalInfoPaciente"
+                         style="@(_pacienteSeleccionado == null ? "opacity: 0.6; cursor: not-allowed;" : "cursor: pointer;")">
+                        <div class="card-body p-3">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <h5 class="card-title mb-0 text-primary">
+                                    <i class="bi bi-person-badge me-2 action-icon"></i>
+                                    InformaciÛn del Paciente
+                                </h5>
+                                <i class="bi bi-chevron-down text-primary action-chevron"></i>
+                            </div>
+                            @if (_pacienteSeleccionado != null)
+                            {
                                 <p class="text-muted mb-0 mt-1 small">Haz clic para ver detalles completos</p>
-                            </div>
+                            }
+                            else
+                            {
+                                <p class="text-secondary mb-0 mt-1 small"><i class="bi bi-info-circle me-1"></i>Selecciona un paciente para ver informaciÛn</p>
+                            }
                         </div>
                     </div>
+                </div>
 
-                    <!-- ALERTAS CL√çNICAS DEL PACIENTE - CON BORDE ROJO Y CLICK -->
-                    <div class="col-12">
-                        <div class="card shadow-sm border-danger" style="border-width: 2px; cursor: pointer;"
-                             @onclick="AbrirModalAlertasClinicas">
-                            <div class="card-body p-3">
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <h5 class="card-title mb-0 text-danger">
-                                        <i class="bi bi-exclamation-triangle me-2"></i>
-                                        Alertas Cl√≠nicas
-                                    </h5>
-                                    <i class="bi bi-chevron-down text-danger"></i>
-                                </div>
+                <div class="col-12">
+                    <div class="card shadow-sm border-danger action-card action-card-danger" 
+                         @onclick="AbrirModalAlertasClinicas"
+                         style="@(_pacienteSeleccionado == null ? "opacity: 0.6; cursor: not-allowed;" : "cursor: pointer;")">
+                        <div class="card-body p-3">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <h5 class="card-title mb-0 text-danger">
+                                    <i class="bi bi-exclamation-triangle me-2 action-icon"></i>
+                                    Alertas ClÌnicas
+                                </h5>
+                                <i class="bi bi-chevron-down text-danger action-chevron"></i>
+                            </div>
+                            @if (_pacienteSeleccionado != null)
+                            {
                                 <p class="text-muted mb-0 mt-1 small">Haz clic para ver alertas importantes</p>
-                            </div>
+                            }
+                            else
+                            {
+                                <p class="text-secondary mb-0 mt-1 small"><i class="bi bi-info-circle me-1"></i>Selecciona un paciente para ver alertas</p>
+                            }
                         </div>
                     </div>
+                </div>
 
-                    <!-- SOLICITUDES QUIR√öRGICAS - CON BORDE VERDE Y CLICK -->
-                    <div class="col-12">
-                        <div class="card shadow-sm border-success" style="border-width: 2px; cursor: pointer;"
-                             @onclick="AbrirModalSolicitudes">
-                            <div class="card-body p-3">
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <h5 class="card-title mb-0 text-success">
-                                        <i class="bi bi-clipboard2-pulse me-2"></i>
-                                        Solicitudes Quir√∫rgicas
-                                    </h5>
-                                    <i class="bi bi-chevron-down text-success"></i>
-                                </div>
-                                <p class="text-muted mb-0 mt-1 small">Haz clic para ver solicitudes del paciente</p>
+                <div class="col-12">
+                    <div class="card shadow-sm border-success action-card action-card-success" 
+                         @onclick="AbrirModalSolicitudes"
+                         style="@(_pacienteSeleccionado == null ? "opacity: 0.6; cursor: not-allowed;" : "cursor: pointer;")">
+                        <div class="card-body p-3">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <h5 class="card-title mb-0 text-success">
+                                    <i class="bi bi-clipboard2-pulse me-2 action-icon"></i>
+                                    Solicitudes Quir˙rgicas
+                                </h5>
+                                <i class="bi bi-chevron-down text-success action-chevron"></i>
                             </div>
+                            @if (_pacienteSeleccionado != null)
+                            {
+                                <p class="text-muted mb-0 mt-1 small">Haz clic para ver solicitudes del paciente</p>
+                            }
+                            else
+                            {
+                                <p class="text-secondary mb-0 mt-1 small"><i class="bi bi-info-circle me-1"></i>Selecciona un paciente para ver solicitudes</p>
+                            }
                         </div>
                     </div>
                 </div>
-            }
-            else
-            {
-                <div class="card shadow-sm border-0" style="height: 200px; display: flex; align-items: center; justify-content: center;">
-                    <div class="card-body text-center">
-                        <div class="alert alert-info mb-0">
-                            <i class="bi bi-search me-2"></i>
-                            No se ha seleccionado ning√∫n paciente. Use el buscador para iniciar.
-                        </div>
-                    </div>
-                </div>
-            }
+            </div>
         </div>
     </div>
 </div>
 
-<!-- MODAL PARA INFORMACI√ìN DEL PACIENTE -->
 @if (_mostrarInfoPaciente && _pacienteSeleccionado != null)
 {
     <div class="modal-backdrop fade show" style="z-index: 1050;"></div>
@@ -201,7 +253,7 @@
                 <div class="modal-header bg-primary text-white">
                     <h5 class="modal-title">
                         <i class="bi bi-person-badge me-2"></i>
-                        Informaci√≥n Completa del Paciente
+                        InformaciÛn Completa del Paciente
                     </h5>
                     <button type="button" class="btn-close btn-close-white" @onclick="CerrarModalInfoPaciente"></button>
                 </div>
@@ -221,7 +273,6 @@
     </div>
 }
 
-<!-- MODAL PARA ALERTAS CL√çNICAS -->
 @if (_mostrarAlertasClinicas && _pacienteSeleccionado != null)
 {
     <div class="modal-backdrop fade show" style="z-index: 1050;"></div>
@@ -231,7 +282,7 @@
                 <div class="modal-header bg-danger text-white">
                     <h5 class="modal-title">
                         <i class="bi bi-exclamation-triangle me-2"></i>
-                        Alertas Cl√≠nicas del Paciente
+                        Alertas ClÌnicas del Paciente
                     </h5>
                     <button type="button" class="btn-close btn-close-white" @onclick="CerrarModalAlertasClinicas"></button>
                 </div>
@@ -251,7 +302,6 @@
     </div>
 }
 
-<!-- MODAL PARA SOLICITUDES QUIR√öRGICAS -->
 @if (_mostrarSolicitudes && _pacienteSeleccionado != null)
 {
     <div class="modal-backdrop fade show" style="z-index: 1050;"></div>
@@ -261,12 +311,11 @@
                 <div class="modal-header bg-success text-white">
                     <h5 class="modal-title">
                         <i class="bi bi-clipboard2-pulse me-2"></i>
-                        Solicitudes Quir√∫rgicas - @_pacienteSeleccionado.PrimerNombre @_pacienteSeleccionado.ApellidoPaterno
+                        Solicitudes Quir˙rgicas - @_pacienteSeleccionado.PrimerNombre @_pacienteSeleccionado.ApellidoPaterno
                     </h5>
                     <button type="button" class="btn-close btn-close-white" @onclick="CerrarModalSolicitudes"></button>
                 </div>
                 <div class="modal-body" style="overflow-y: auto; max-height: 70vh;">
-
                     @if (_cargandoSolicitudes)
                     {
                         <div class="text-center py-4">
@@ -278,7 +327,6 @@
                     }
                     else if (_solicitudesPendientes?.Any() == true || _solicitudesPriorizadas?.Any() == true || _solicitudesEgresadas?.Any() == true)
                     {
-                        <!-- SECCI√ìN 1: SOLICITUDES PRIORIZADAS -->
                         @if (_solicitudesPriorizadas?.Any() == true)
                         {
                             <div class="card shadow-sm border-success mb-4">
@@ -296,30 +344,33 @@
                                                 <tr>
                                                     <th>ID</th>
                                                     <th>Procedimiento</th>
-                                                    <th>Diagn√≥stico</th>
+                                                    <th>DiagnÛstico</th>
                                                     <th>Prioridad</th>
                                                     <th>Fecha</th>
                                                 </tr>
                                             </thead>
                                             <tbody>
-                                                @foreach (var solicitud in _solicitudesPriorizadas.Take(5))
+                                                @foreach (var solicitud in ObtenerSolicitudesActuales(_solicitudesPriorizadas))
                                                 {
                                                     <tr>
                                                         <td class="fw-bold">@solicitud.Id</td>
                                                         <td>@solicitud.Procedimiento</td>
                                                         <td>@solicitud.Diagnostico</td>
                                                         <td>
-                                                            @if (solicitud.Prioridad == 1)
+                                                            @{
+                                                                var prioridad = solicitud.Prioridad ?? 3;
+                                                            }
+                                                            @if (prioridad == 1)
                                                             {
                                                                 <span class="badge bg-danger">P1</span>
                                                             }
-                                                            else if (solicitud.Prioridad == 2)
+                                                            else if (prioridad == 2)
                                                             {
                                                                 <span class="badge bg-warning text-dark">P2</span>
                                                             }
                                                             else
                                                             {
-                                                                <span class="badge bg-primary">P@solicitud.Prioridad</span>
+                                                                <span class="badge bg-primary">P@prioridad</span>
                                                             }
                                                         </td>
                                                         <td>@solicitud.FechaCreacion.ToString("dd/MM/yyyy")</td>
@@ -328,17 +379,10 @@
                                             </tbody>
                                         </table>
                                     </div>
-                                    @if (_solicitudesPriorizadas.Count > 5)
-                                    {
-                                        <div class="card-footer text-center py-2">
-                                            <small class="text-muted">Mostrando 5 de @_solicitudesPriorizadas.Count solicitudes priorizadas</small>
-                                        </div>
-                                    }
                                 </div>
                             </div>
                         }
 
-                        <!-- SECCI√ìN 2: SOLICITUDES PENDIENTES -->
                         @if (_solicitudesPendientes?.Any() == true)
                         {
                             <div class="card shadow-sm border-warning mb-4">
@@ -356,13 +400,13 @@
                                                 <tr>
                                                     <th>ID</th>
                                                     <th>Procedimiento</th>
-                                                    <th>Diagn√≥stico</th>
+                                                    <th>DiagnÛstico</th>
                                                     <th>Estado</th>
                                                     <th>Fecha</th>
                                                 </tr>
                                             </thead>
                                             <tbody>
-                                                @foreach (var solicitud in _solicitudesPendientes.Take(5))
+                                                @foreach (var solicitud in ObtenerSolicitudesActuales(_solicitudesPendientes))
                                                 {
                                                     <tr>
                                                         <td class="fw-bold">@solicitud.Id</td>
@@ -375,17 +419,10 @@
                                             </tbody>
                                         </table>
                                     </div>
-                                    @if (_solicitudesPendientes.Count > 5)
-                                    {
-                                        <div class="card-footer text-center py-2">
-                                            <small class="text-muted">Mostrando 5 de @_solicitudesPendientes.Count solicitudes pendientes</small>
-                                        </div>
-                                    }
                                 </div>
                             </div>
                         }
 
-                        <!-- SECCI√ìN 3: SOLICITUDES EGRESADAS -->
                         @if (_solicitudesEgresadas?.Any() == true)
                         {
                             <div class="card shadow-sm border-info">
@@ -403,13 +440,13 @@
                                                 <tr>
                                                     <th>ID</th>
                                                     <th>Procedimiento</th>
-                                                    <th>Diagn√≥stico</th>
+                                                    <th>DiagnÛstico</th>
                                                     <th>Estado</th>
                                                     <th>Fecha Egreso</th>
                                                 </tr>
                                             </thead>
                                             <tbody>
-                                                @foreach (var solicitud in _solicitudesEgresadas.Take(5))
+                                                @foreach (var solicitud in ObtenerSolicitudesActuales(_solicitudesEgresadas))
                                                 {
                                                     <tr>
                                                         <td class="fw-bold">@solicitud.Id</td>
@@ -422,12 +459,6 @@
                                             </tbody>
                                         </table>
                                     </div>
-                                    @if (_solicitudesEgresadas.Count > 5)
-                                    {
-                                        <div class="card-footer text-center py-2">
-                                            <small class="text-muted">Mostrando 5 de @_solicitudesEgresadas.Count solicitudes egresadas</small>
-                                        </div>
-                                    }
                                 </div>
                             </div>
                         }
@@ -436,11 +467,26 @@
                     {
                         <div class="text-center py-4">
                             <i class="bi bi-clipboard-x text-muted" style="font-size: 3rem;"></i>
-                            <p class="text-muted mt-2">No se encontraron solicitudes quir√∫rgicas para este paciente.</p>
+                            <p class="text-muted mt-2">No se encontraron solicitudes quir˙rgicas para este paciente.</p>
                         </div>
                     }
                 </div>
-                <div class="modal-footer">
+                <div class="modal-footer d-flex justify-content-between align-items-center">
+                    <div class="btn-group">
+                        <button type="button" class="btn btn-sm btn-outline-primary" 
+                                @onclick="IrAPaginaAnterior"
+                                disabled="@(_paginaActual <= 1)">
+                            Anterior
+                        </button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary" disabled="true">
+                            P·gina @_paginaActual de @ObtenerTotalPaginas(ObtenerListaPaginada())
+                        </button>
+                        <button type="button" class="btn btn-sm btn-outline-primary" 
+                                @onclick="@(() => IrAPaginaSiguiente(ObtenerListaPaginada()))"
+                                disabled="@(_paginaActual >= ObtenerTotalPaginas(ObtenerListaPaginada()))">
+                            Siguiente
+                        </button>
+                    </div>
                     <button type="button" class="btn btn-secondary" @onclick="CerrarModalSolicitudes">
                         Cerrar
                     </button>
@@ -459,14 +505,43 @@
     private bool _mostrarSolicitudes = false;
     private bool _cargandoSolicitudes = false;
 
-    // Nuevas variables para solicitudes
     private List<SolicitudDto>? _solicitudesPendientes;
     private List<SolicitudDto>? _solicitudesPriorizadas;
     private List<SolicitudDto>? _solicitudesEgresadas;
 
+    private int _paginaActual = 1;
+    private int _itemsPorPagina = 5;
+
     protected override async Task OnInitializedAsync()
     {
         await CargarProfesionales();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await RenderizarGrafico();
+        }
+    }
+
+    private async Task RenderizarGrafico()
+    {
+        try
+        {
+            var labels = new[] { "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio" };
+            var data = new[] { 8, 10, 12, 15, 18, 20 };
+
+            await JS.InvokeVoidAsync("dashboardCharts.renderLine", 
+                "chartProfesionalesEvolucion", 
+                labels, 
+                data, 
+                new { label = "Cantidad de MÈdicos Activos" });
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error renderizando gr·fico: {ex.Message}");
+        }
     }
 
     private async Task CargarProfesionales()
@@ -474,16 +549,15 @@
         try
         {
             _cargando = true;
-            _profesionales = await Http.GetFromJsonAsync<List<Profesional>>("http://localhost:5227/api/profesional");
+            _profesionales = await Http.GetFromJsonAsync<List<Profesional>>("api/profesional");
         }
         catch (Exception ex)
         {
             Console.WriteLine($"Error cargando profesionales: {ex.Message}");
-            // Datos de ejemplo si falla la conexi√≥n
             _profesionales = new List<Profesional>
             {
-                new Profesional { NombreCompleto = "Andr√©s Felipe Moreno Guti√©rrez", RutCompleto = "11223344-5", Rol = "Cirujano Principal", Especialidad = "Solicitante" },
-                new Profesional { NombreCompleto = "Valentina Paz Campos N√∫√±ez", RutCompleto = "22334455-6", Rol = "Cirujano Principal", Especialidad = "Solicitante" },
+                new Profesional { NombreCompleto = "AndrÈs Felipe Moreno GutiÈrrez", RutCompleto = "11223344-5", Rol = "Cirujano Principal", Especialidad = "Solicitante" },
+                new Profesional { NombreCompleto = "Valentina Paz Campos N˙Òez", RutCompleto = "22334455-6", Rol = "Cirujano Principal", Especialidad = "Solicitante" },
                 new Profesional { NombreCompleto = "Francisco Javier Bravo Santana", RutCompleto = "33445566-7", Rol = "Cirujano Principal", Especialidad = "Solicitante" }
             };
         }
@@ -500,8 +574,8 @@
         _mostrarInfoPaciente = false;
         _mostrarAlertasClinicas = false;
         _mostrarSolicitudes = false;
+        _paginaActual = 1;
 
-        // Limpiar solicitudes anteriores
         _solicitudesPendientes = null;
         _solicitudesPriorizadas = null;
         _solicitudesEgresadas = null;
@@ -515,6 +589,7 @@
         {
             _mostrarSolicitudes = true;
             _cargandoSolicitudes = true;
+            _paginaActual = 1;
             StateHasChanged();
 
             await CargarSolicitudesPaciente();
@@ -527,49 +602,63 @@
     {
         try
         {
-            // Obtener todas las solicitudes del m√©dico (por ahora todas)
-            var todasSolicitudes = await Http.GetFromJsonAsync<List<SolicitudDto>>("http://localhost:5227/api/solicitud/medico/1");
+            if (_pacienteSeleccionado == null)
+                return;
 
-            if (todasSolicitudes != null)
-            {
-                var rutPaciente = $"{_pacienteSeleccionado!.Rut}-{_pacienteSeleccionado.Dv}";
+            Console.WriteLine($"CargarSolicitudesPaciente: Iniciando para paciente {_pacienteSeleccionado.PrimerNombre} {_pacienteSeleccionado.ApellidoPaterno}");
+            
+            var pendientes = await PriorizacionApi.GetPendientesAsync() ?? new List<PriorizacionApiService.SolicitudMedicoDto>();
+            var priorizadas = await PriorizacionApi.GetPriorizadasAsync() ?? new List<PriorizacionApiService.SolicitudMedicoDto>();
 
-                // Filtrar por el paciente seleccionado
-                var solicitudesPaciente = todasSolicitudes
-                    .Where(s => s.Rut == rutPaciente)
-                    .ToList();
+            Console.WriteLine($"CargarSolicitudesPaciente: Pendientes totales: {pendientes.Count}, Priorizadas totales: {priorizadas.Count}");
 
-                // Separar por estado
-                _solicitudesPendientes = solicitudesPaciente
-                    .Where(s => s.Estado == "Pendiente")
-                    .Take(5)
-                    .ToList();
+            var rutFull = _pacienteSeleccionado.RutCompleto;
+            Console.WriteLine($"CargarSolicitudesPaciente: Filtrando por RUT: {rutFull}");
 
-                _solicitudesPriorizadas = solicitudesPaciente
-                    .Where(s => s.Estado == "Priorizada")
-                    .Take(5)
-                    .ToList();
+            var pendientesFiltradas = pendientes.Where(s => s.Rut == rutFull).ToList();
+            var priorizadasFiltradas = priorizadas.Where(s => s.Rut == rutFull).ToList();
 
-                // Para egresadas, usar un estado diferente o l√≥gica espec√≠fica
-                _solicitudesEgresadas = solicitudesPaciente
-                    .Where(s => s.Estado == "Egresada" || s.Estado == "Completada")
-                    .Take(5)
-                    .ToList();
-            }
+            Console.WriteLine($"CargarSolicitudesPaciente: DespuÈs de filtro - Pendientes: {pendientesFiltradas.Count}, Priorizadas: {priorizadasFiltradas.Count}");
+
+            _solicitudesPendientes = pendientesFiltradas
+                .OrderByDescending(s => s.FechaCreacion)
+                .Select(s => new SolicitudDto
+                {
+                    Id = s.Id,
+                    Rut = s.Rut,
+                    Procedimiento = s.Procedimiento,
+                    Diagnostico = s.Diagnostico,
+                    Estado = s.Estado,
+                    Prioridad = s.Prioridad,
+                    FechaCreacion = s.FechaCreacion
+                })
+                .ToList();
+
+            _solicitudesPriorizadas = priorizadasFiltradas
+                .OrderByDescending(s => s.FechaCreacion)
+                .Select(s => new SolicitudDto
+                {
+                    Id = s.Id,
+                    Rut = s.Rut,
+                    Procedimiento = s.Procedimiento,
+                    Diagnostico = s.Diagnostico,
+                    Estado = s.Estado,
+                    Prioridad = s.Prioridad,
+                    FechaCreacion = s.FechaCreacion
+                })
+                .ToList();
+
+            _solicitudesEgresadas = new List<SolicitudDto>();
+
+            Console.WriteLine($"CargarSolicitudesPaciente: Datos cargados exitosamente");
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Error cargando solicitudes: {ex.Message}");
-            // Datos de ejemplo si falla la API
-            _solicitudesPendientes = new List<SolicitudDto>
-            {
-                new SolicitudDto { Id = 1, Procedimiento = "Cirug√≠a de Cadera", Diagnostico = "Artrosis", Estado = "Pendiente", FechaCreacion = DateTime.Now.AddDays(-2) },
-                new SolicitudDto { Id = 2, Procedimiento = "Artroscop√≠a Rodilla", Diagnostico = "Lesi√≥n Meniscal", Estado = "Pendiente", FechaCreacion = DateTime.Now.AddDays(-5) }
-            };
-            _solicitudesPriorizadas = new List<SolicitudDto>
-            {
-                new SolicitudDto { Id = 3, Procedimiento = "Colecistectom√≠a", Diagnostico = "Colelitiasis", Estado = "Priorizada", Prioridad = 1, FechaCreacion = DateTime.Now.AddDays(-1) }
-            };
+            Console.WriteLine($"CargarSolicitudesPaciente Error: {ex.Message}");
+            Console.WriteLine($"CargarSolicitudesPaciente StackTrace: {ex.StackTrace}");
+            _solicitudesPendientes = new List<SolicitudDto>();
+            _solicitudesPriorizadas = new List<SolicitudDto>();
+            _solicitudesEgresadas = new List<SolicitudDto>();
         }
     }
 
@@ -609,6 +698,61 @@
         StateHasChanged();
     }
 
+    private void IrAlDashboardAnalÌtico()
+    {
+        Navigation.NavigateTo("/dashboard_verdadero");
+    }
+
+    private void IrAlHistorialLogs()
+    {
+        Navigation.NavigateTo("/historial-priorizaciones");
+    }
+
+    private List<SolicitudDto> ObtenerSolicitudesActuales(List<SolicitudDto>? lista)
+    {
+        if (lista == null || !lista.Any())
+            return new List<SolicitudDto>();
+
+        var totalPaginas = ObtenerTotalPaginas(lista);
+        _paginaActual = Math.Max(1, Math.Min(_paginaActual, totalPaginas));
+
+        return lista
+            .Skip((_paginaActual - 1) * _itemsPorPagina)
+            .Take(_itemsPorPagina)
+            .ToList();
+    }
+
+    private List<SolicitudDto> ObtenerListaPaginada()
+    {
+        if (_solicitudesPendientes?.Any() == true)
+            return _solicitudesPendientes;
+        if (_solicitudesPriorizadas?.Any() == true)
+            return _solicitudesPriorizadas;
+        return _solicitudesEgresadas ?? new List<SolicitudDto>();
+    }
+
+    private int ObtenerTotalPaginas(List<SolicitudDto>? lista)
+    {
+        if (lista == null || !lista.Any())
+            return 1;
+        return (int)Math.Ceiling((double)lista.Count / _itemsPorPagina);
+    }
+
+    private void IrAPaginaAnterior()
+    {
+        if (_paginaActual > 1)
+            _paginaActual--;
+        StateHasChanged();
+    }
+
+    private void IrAPaginaSiguiente(List<SolicitudDto>? lista)
+    {
+        var totalPaginas = ObtenerTotalPaginas(lista);
+        if (_paginaActual < totalPaginas)
+            _paginaActual++;
+        StateHasChanged();
+    }
+
     private int CalcularEdad(DateTime fechaNacimiento)
     {
         var today = DateTime.Today;
@@ -617,7 +761,6 @@
         return age;
     }
 
-    // CLASE INTERNA para mapear la respuesta de profesionales
     public class Profesional
     {
         public int Id { get; set; }
@@ -627,15 +770,14 @@
         public string Especialidad { get; set; } = string.Empty;
     }
 
-    // CLASE INTERNA para mapear solicitudes
     public class SolicitudDto
     {
         public int Id { get; set; }
-        public string Rut { get; set; } = string.Empty;
-        public string Procedimiento { get; set; } = string.Empty;
-        public string Diagnostico { get; set; } = string.Empty;
-        public string Estado { get; set; } = string.Empty;
-        public int Prioridad { get; set; }
+        public string? Rut { get; set; } = string.Empty;
+        public string? Procedimiento { get; set; } = string.Empty;
+        public string? Diagnostico { get; set; } = string.Empty;
+        public string? Estado { get; set; } = string.Empty;
+        public int? Prioridad { get; set; }
         public DateTime FechaCreacion { get; set; }
     }
 }

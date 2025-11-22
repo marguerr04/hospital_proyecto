@@ -314,6 +314,64 @@ namespace Hospital.Api.Data.Services
             }
         }
 
+        public async Task<List<SolicitudMedicoDto>> ObtenerSolicitudesPorPacienteAsync(string rut)
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(rut))
+                {
+                    Console.WriteLine("ObtenerSolicitudesPorPacienteAsync: RUT vacío");
+                    return new List<SolicitudMedicoDto>();
+                }
+
+                var rutLimpio = rut.Replace(".", "").Replace("-", "").ToUpper();
+                
+                Console.WriteLine($"ObtenerSolicitudesPorPacienteAsync: Buscando RUT limpio: {rutLimpio}");
+
+                var todasSolicitudes = await _context.SOLICITUD_QUIRURGICA
+                    .Include(s => s.Consentimiento)
+                    .ThenInclude(c => c.Paciente)
+                    .Include(s => s.Consentimiento)
+                    .ThenInclude(c => c.Procedimiento)
+                    .Include(s => s.Diagnostico)
+                    .ToListAsync();
+
+                Console.WriteLine($"ObtenerSolicitudesPorPacienteAsync: Total solicitudes en BD: {todasSolicitudes.Count}");
+
+                var coincidentes = todasSolicitudes.Where(s =>
+                {
+                    var rutBD = (s.Consentimiento?.Paciente?.Rut ?? "") + (s.Consentimiento?.Paciente?.Dv ?? "");
+                    var rutBDLimpio = rutBD.Replace(".", "").Replace("-", "").ToUpper();
+                    return rutBDLimpio == rutLimpio;
+                }).ToList();
+
+                Console.WriteLine($"ObtenerSolicitudesPorPacienteAsync: Solicitudes encontradas: {coincidentes.Count}");
+
+                var resultado = coincidentes.Select(s => new SolicitudMedicoDto
+                {
+                    Id = s.IdSolicitud,
+                    NombrePaciente = $"{s.Consentimiento?.Paciente?.PrimerNombre ?? ""} {s.Consentimiento?.Paciente?.ApellidoPaterno ?? ""}".Trim(),
+                    Rut = FormatearRut(s.Consentimiento?.Paciente?.Rut ?? "", s.Consentimiento?.Paciente?.Dv ?? ""),
+                    Diagnostico = s.Diagnostico?.Nombre ?? "Sin diagnóstico",
+                    Procedimiento = s.Consentimiento?.Procedimiento?.Nombre ?? "Sin procedimiento",
+                    Estado = (s.ValidacionGES.HasValue && s.ValidacionGES.Value) ? "Priorizada" : "Pendiente",
+                    FechaCreacion = s.FechaCreacion,
+                    FechaProgramada = null,
+                    DiasRestantes = null,
+                    Contactabilidad = "Por Contactar"
+                }).ToList();
+
+                Console.WriteLine($"ObtenerSolicitudesPorPacienteAsync: DTOs retornados: {resultado.Count}");
+                return resultado;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"ObtenerSolicitudesPorPacienteAsync Error: {ex.Message}");
+                Console.WriteLine($"ObtenerSolicitudesPorPacienteAsync StackTrace: {ex.StackTrace}");
+                return new List<SolicitudMedicoDto>();
+            }
+        }
+
         // 🔹 MÉTODO SIMPLIFICADO 1: Solo datos básicos (CON DATOS REALES O DUMMY)
         public async Task<IEnumerable<SolicitudRecienteDto>> GetSolicitudesRecientesAsync()
         {
@@ -602,15 +660,28 @@ namespace Hospital.Api.Data.Services
         {
             try
             {
-                var solicitudes = await _context.SOLICITUD_QUIRURGICA
-                    .Include(s => s.Consentimiento).ThenInclude(c => c.Paciente)
-                    .Include(s => s.Consentimiento).ThenInclude(c => c.Procedimiento)
+                Console.WriteLine("ObtenerSolicitudesPendientesAsync: Iniciando");
+
+                var todasLasSolicitudes = await _context.SOLICITUD_QUIRURGICA
+                    .Include(s => s.Consentimiento)
+                    .ThenInclude(c => c.Paciente)
+                    .Include(s => s.Consentimiento)
+                    .ThenInclude(c => c.Procedimiento)
                     .Include(s => s.Diagnostico)
-                    .Where(s => !s.ValidacionGES.HasValue || !s.ValidacionGES.Value)
-                    .OrderBy(s => s.FechaCreacion)
                     .ToListAsync();
 
-                return solicitudes.Select(s => new SolicitudMedicoDto
+                var idsConPriorizacion = await _context.PRIORIZACION_SOLICITUD
+                    .Select(p => p.SolicitudQuirurgicaId)
+                    .Distinct()
+                    .ToListAsync();
+
+                var solicitudesPendientes = todasLasSolicitudes
+                    .Where(s => !idsConPriorizacion.Contains(s.IdSolicitud))
+                    .ToList();
+
+                Console.WriteLine($"ObtenerSolicitudesPendientesAsync: {solicitudesPendientes.Count} solicitudes encontradas");
+
+                var resultado = solicitudesPendientes.Select(s => new SolicitudMedicoDto
                 {
                     Id = s.IdSolicitud,
                     NombrePaciente = $"{s.Consentimiento?.Paciente?.PrimerNombre ?? ""} {s.Consentimiento?.Paciente?.ApellidoPaterno ?? ""}".Trim(),
@@ -618,59 +689,67 @@ namespace Hospital.Api.Data.Services
                     Diagnostico = s.Diagnostico?.Nombre ?? "Sin diagnóstico",
                     Procedimiento = s.Consentimiento?.Procedimiento?.Nombre ?? "Sin procedimiento",
                     Estado = "Pendiente",
+                    Prioridad = null,
                     FechaCreacion = s.FechaCreacion
-                }).ToList();
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"❌ Error: {ex.Message}");
-                return new List<SolicitudMedicoDto>();
-            }
-        }
-
-
-
-
-        public async Task<IEnumerable<SolicitudMedicoDto>> ObtenerSolicitudesPriorizadasAsync()
-        {
-            try
-            {
-                var solicitudes = await _context.SOLICITUD_QUIRURGICA
-                    .Include(s => s.Consentimiento).ThenInclude(c => c.Paciente)
-                    .Include(s => s.Consentimiento).ThenInclude(c => c.Procedimiento)
-                    .Include(s => s.Diagnostico)
-                    .Where(s => s.ValidacionGES.HasValue && s.ValidacionGES.Value)
-                    .OrderByDescending(s => s.FechaCreacion)
-                    .ToListAsync();
-
-                // Para cada solicitud priorizada, obtener la prioridad (P1/P2/P3) desde PRIORIZACION_SOLICITUD
-                var resultado = solicitudes.Select(s => new SolicitudMedicoDto
-                {
-                    Id = s.IdSolicitud,
-                    NombrePaciente = $"{s.Consentimiento?.Paciente?.PrimerNombre ?? ""} {s.Consentimiento?.Paciente?.ApellidoPaterno ?? ""}".Trim(),
-                    Rut = FormatearRut(s.Consentimiento?.Paciente?.Rut ?? "", s.Consentimiento?.Paciente?.Dv ?? ""),
-                    Diagnostico = s.Diagnostico?.Nombre ?? "Sin diagnóstico",
-                    Procedimiento = s.Consentimiento?.Procedimiento?.Nombre ?? "Sin procedimiento",
-                    Estado = "Priorizada",
-                    FechaCreacion = s.FechaCreacion,
-                    Prioridad = (byte?)_context.PRIORIZACION_SOLICITUD
-                                .Where(p => p.SolicitudQuirurgicaId == s.IdSolicitud && p.SolicitudConsentimientoId == s.ConsentimientoId)
-                                .OrderByDescending(p => p.FechaPriorizacion)
-                                .Select(p => p.Prioridad)
-                                .FirstOrDefault() ?? (byte)3
                 }).ToList();
 
                 return resultado;
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"❌ Error: {ex.Message}");
+                Console.WriteLine($"ObtenerSolicitudesPendientesAsync Error: {ex.Message}");
                 return new List<SolicitudMedicoDto>();
             }
         }
 
+        public async Task<IEnumerable<SolicitudMedicoDto>> ObtenerSolicitudesPriorizadasAsync()
+        {
+            try
+            {
+                Console.WriteLine("ObtenerSolicitudesPriorizadasAsync: Iniciando");
 
+                var priorizacionesAgrupadas = await _context.PRIORIZACION_SOLICITUD
+                    .GroupBy(p => p.SolicitudQuirurgicaId)
+                    .Select(g => new {
+                        SolicitudId = g.Key,
+                        UltimaPriorizacion = g.OrderByDescending(p => p.FechaPriorizacion).FirstOrDefault()
+                    })
+                    .ToListAsync();
 
+                var solicitudes = await _context.SOLICITUD_QUIRURGICA
+                    .Include(s => s.Consentimiento)
+                    .ThenInclude(c => c.Paciente)
+                    .Include(s => s.Consentimiento)
+                    .ThenInclude(c => c.Procedimiento)
+                    .Include(s => s.Diagnostico)
+                    .Where(s => priorizacionesAgrupadas.Select(p => p.SolicitudId).Contains(s.IdSolicitud))
+                    .ToListAsync();
+
+                Console.WriteLine($"ObtenerSolicitudesPriorizadasAsync: {solicitudes.Count} solicitudes encontradas");
+
+                var resultado = (from solicitud in solicitudes
+                                 join priorizacion in priorizacionesAgrupadas
+                                 on solicitud.IdSolicitud equals priorizacion.SolicitudId
+                                 select new SolicitudMedicoDto
+                                 {
+                                     Id = solicitud.IdSolicitud,
+                                     NombrePaciente = $"{solicitud.Consentimiento?.Paciente?.PrimerNombre ?? ""} {solicitud.Consentimiento?.Paciente?.ApellidoPaterno ?? ""}".Trim(),
+                                     Rut = FormatearRut(solicitud.Consentimiento?.Paciente?.Rut ?? "", solicitud.Consentimiento?.Paciente?.Dv ?? ""),
+                                     Diagnostico = solicitud.Diagnostico?.Nombre ?? "Sin diagnóstico",
+                                     Procedimiento = solicitud.Consentimiento?.Procedimiento?.Nombre ?? "Sin procedimiento",
+                                     Estado = "Priorizada",
+                                     Prioridad = priorizacion.UltimaPriorizacion != null ? priorizacion.UltimaPriorizacion.Prioridad : null,
+                                     FechaCreacion = solicitud.FechaCreacion
+                                 }).ToList();
+
+                return resultado;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"ObtenerSolicitudesPriorizadasAsync Error: {ex.Message}");
+                return new List<SolicitudMedicoDto>();
+            }
+        }
 
         public async Task<SolicitudDetalleDto?> ObtenerSolicitudDetalleAsync(int solicitudId)
 {

@@ -161,6 +161,9 @@ canvas {
     width: 100%;
     height: 100%;
     position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 /* Estilos para las tarjetas de gráficos */
@@ -168,11 +171,224 @@ canvas {
     display: flex;
     flex-direction: column;
     overflow: hidden;
+    height: 280px !important; /* Reducido de 320px */
+    padding: 12px 16px !important; /* Padding más compacto */
 }
 
 .chart-title {
     font-weight: 600;
-    margin-bottom: 1rem;
+    margin-bottom: 8px !important; /* Reducido de 1rem */
     color: #333;
+    font-size: 0.95rem; /* Título más pequeño */
+}
+
+/* Wrapper interno para mejor control */
+.chart-wrapper {
+    flex: 1;
+    min-height: 200px;
+    position: relative;
+}
+
+/* Mejorar espaciado de MudGrid para gráficos */
+.chart-grid-item {
+    padding: 4px !important; /* Reducir padding entre items */
+}
+
+/* Canvas más compacto */
+.chart-paper canvas {
+    margin: 0;
+    padding: 0;
 }
 /* ========= FIN ESTILOS GRÁFICOS ========= */
+
+/* ========= ESTILOS MEJORADOS DEL DASHBOARD ========= */
+
+/* Tabla mejorada con iconos */
+.enhanced-table {
+    border-collapse: collapse;
+    margin-bottom: 0;
+}
+
+.table-header-enhanced {
+    background: linear-gradient(135deg, var(--color-primario) 0%, #004a70 100%);
+    color: white;
+    font-weight: 600;
+    border-bottom: 3px solid var(--color-primario);
+}
+
+.table-header-enhanced th {
+    padding: 1rem 0.75rem !important;
+    white-space: nowrap;
+    border: none;
+    letter-spacing: 0.5px;
+}
+
+.table-header-enhanced th i {
+    font-size: 1.1rem;
+    vertical-align: -2px;
+}
+
+.table-row-enhanced {
+    transition: all 0.2s ease;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.table-row-enhanced:hover {
+    background-color: rgba(0, 90, 135, 0.08);
+    transform: translateX(4px);
+}
+
+.table-row-enhanced td {
+    padding: 0.75rem !important;
+    vertical-align: middle;
+}
+
+.table-row-enhanced .badge {
+    font-weight: 500;
+    padding: 0.4rem 0.8rem;
+    font-size: 0.85rem;
+}
+
+.fw-500 {
+    font-weight: 500 !important;
+}
+
+/* Tarjetas de acciones SIEMPRE VISIBLES */
+.action-card {
+    border-width: 2px !important;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+    min-height: 100px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+/* Efecto brillo en hover */
+.action-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+    transition: left 0.5s;
+    z-index: 0;
+}
+
+.action-card:hover::before {
+    left: 100%;
+}
+
+/* ESTADO ACTIVO (cuando hay paciente seleccionado) */
+.action-card:not([style*="opacity: 0.6"]):hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15) !important;
+}
+
+/* ESTADO DESHABILITADO (cuando no hay paciente) */
+.action-card[style*="opacity: 0.6"] {
+    background-color: #f8f9fa;
+    border-color: #dee2e6 !important;
+}
+
+.action-card[style*="opacity: 0.6"] .text-primary,
+.action-card[style*="opacity: 0.6"] .text-danger,
+.action-card[style*="opacity: 0.6"] .text-success {
+    opacity: 0.7;
+}
+
+/* Estilos por color de tarjeta */
+.action-card-primary {
+    border-color: var(--color-primario) !important;
+}
+
+.action-card-primary:not([style*="opacity: 0.6"]):hover {
+    border-color: #003d5c !important;
+    background-color: rgba(0, 90, 135, 0.02);
+}
+
+.action-card-danger {
+    border-color: #dc3545 !important;
+}
+
+.action-card-danger:not([style*="opacity: 0.6"]):hover {
+    border-color: #c82333 !important;
+    background-color: rgba(220, 53, 69, 0.02);
+}
+
+.action-card-success {
+    border-color: #28a745 !important;
+}
+
+.action-card-success:not([style*="opacity: 0.6"]):hover {
+    border-color: #25672a !important;
+    background-color: rgba(46, 133, 64, 0.02);
+}
+
+/* Iconos con animación */
+.action-icon {
+    transition: transform 0.3s ease;
+    font-size: 1.3rem;
+    position: relative;
+    z-index: 1;
+}
+
+.action-card:not([style*="opacity: 0.6"]):hover .action-icon {
+    transform: scale(1.15);
+}
+
+.action-chevron {
+    transition: transform 0.3s ease;
+    position: relative;
+    z-index: 1;
+}
+
+.action-card:not([style*="opacity: 0.6"]):hover .action-chevron {
+    transform: translateY(3px);
+}
+
+/* Iconos en encabezados */
+.icon-header {
+    font-size: 1.2rem;
+    opacity: 0.9;
+}
+
+/* Tarjetas especiales */
+.professional-card {
+    border-top: 4px solid var(--color-primario);
+}
+
+.search-card {
+    border-left: 4px solid var(--color-primario);
+}
+
+.summary-card {
+    border-left: 4px solid #17a2b8;
+    background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+}
+
+.empty-state-card {
+    background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+    border: 2px dashed #dee2e6;
+}
+
+/* Botón de acción */
+.dashboard-action-btn {
+    transition: all 0.3s ease;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+}
+
+.dashboard-action-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(220, 53, 69, 0.3);
+}
+
+.dashboard-action-btn:active {
+    transform: translateY(0);
+}
+
+/* ========= FIN ESTILOS MEJORADOS DEL DASHBOARD ========= */

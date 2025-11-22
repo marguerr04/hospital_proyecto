@@ -102,11 +102,11 @@
 
         <!-- Columna Derecha: 4 Gráficos -->
         <MudItem xs="12" md="8">
-            <MudGrid Spacing="1">
+            <MudGrid Spacing="0" Class="gx-1 gy-1">
                 <!-- Estados (Procedimientos) -->
-                <MudItem xs="12" sm="6">
-                    <MudPaper Class="pa-3 chart-paper" Style="height:320px;display:flex;flex-direction:column;">
-                        <MudText Typo="Typo.h6" Class="chart-title">Estados</MudText>
+                <MudItem xs="12" sm="6" Class="chart-grid-item">
+                    <MudPaper Class="chart-paper" Elevation="2">
+                        <MudText Typo="Typo.subtitle2" Class="chart-title mb-0">Estados</MudText>
                         <div class="chart-wrapper">
                             <canvas id="chartEstado"></canvas>
                         </div>
@@ -114,9 +114,9 @@
                 </MudItem>
 
                 <!-- Contactabilidad -->
-                <MudItem xs="12" sm="6">
-                    <MudPaper Class="pa-3 chart-paper" Style="height:320px;display:flex;flex-direction:column;">
-                        <MudText Typo="Typo.h6" Class="chart-title">Contactabilidad</MudText>
+                <MudItem xs="12" sm="6" Class="chart-grid-item">
+                    <MudPaper Class="chart-paper" Elevation="2">
+                        <MudText Typo="Typo.subtitle2" Class="chart-title mb-0">Contactabilidad</MudText>
                         <div class="chart-wrapper">
                             <canvas id="chartContacto"></canvas>
                         </div>
@@ -124,9 +124,9 @@
                 </MudItem>
 
                 <!-- Evolución Percentil 75 -->
-                <MudItem xs="12" sm="6">
-                    <MudPaper Class="pa-3 chart-paper" Style="height:320px;display:flex;flex-direction:column;">
-                        <MudText Typo="Typo.h6" Class="chart-title">Evolución Percentil 75</MudText>
+                <MudItem xs="12" sm="6" Class="chart-grid-item">
+                    <MudPaper Class="chart-paper" Elevation="2">
+                        <MudText Typo="Typo.subtitle2" Class="chart-title mb-0">Evolución Percentil 75</MudText>
                         <div class="chart-wrapper">
                             <canvas id="chartEvolucion"></canvas>
                         </div>
@@ -134,9 +134,9 @@
                 </MudItem>
 
                 <!-- Causal de Egreso -->
-                <MudItem xs="12" sm="6">
-                    <MudPaper Class="pa-3 chart-paper" Style="height:320px;display:flex;flex-direction:column;">
-                        <MudText Typo="Typo.h6" Class="chart-title">Causal de Egreso</MudText>
+                <MudItem xs="12" sm="6" Class="chart-grid-item">
+                    <MudPaper Class="chart-paper" Elevation="2">
+                        <MudText Typo="Typo.subtitle2" Class="chart-title mb-0">Causal de Egreso</MudText>
                         <div class="chart-wrapper">
                             <canvas id="chartEgreso"></canvas>
                         </div>

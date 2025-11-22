@@ -1,0 +1,280 @@
+@page "/historial-priorizaciones"
+@using proyecto_hospital_version_1.Shared
+@using proyecto_hospital_version_1.Components.Shared
+@inject NavigationManager Navigation
+@inject HttpClient Http
+@using Hospital.Api.DTOs
+
+<PageTitle>Historial de Priorizaciones</PageTitle>
+
+<div class="container-fluid">
+    <div class="row mb-3">
+        <div class="col">
+            <h1 class="h3 mb-0">Historial de Priorizaciones</h1>
+        </div>
+    </div>
+
+    <!-- BOTONES PRINCIPALES: VOLVER AL DASHBOARD Y DASHBOARD ANALÍTICO -->
+    <div class="row mb-3">
+        <div class="col-md-6">
+            <div class="card shadow-sm border-0">
+                <div class="card-body p-3">
+                    <button class="btn btn-secondary btn-lg w-100 d-flex align-items-center justify-content-center dashboard-action-btn"
+                            style="height: 60px; font-size: 1.1rem; font-weight: 600;"
+                            onclick="@(() => Navigation.NavigateTo("/dashboard"))">
+                        <i class="bi bi-arrow-left me-2" style="font-size: 1.3rem;"></i>
+                        VOLVER AL PANEL
+                    </button>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card shadow-sm border-0">
+                <div class="card-body p-3">
+                    <button class="btn btn-danger btn-lg w-100 d-flex align-items-center justify-content-center dashboard-action-btn"
+                            style="height: 60px; font-size: 1.1rem; font-weight: 600;"
+                            onclick="@(() => Navigation.NavigateTo("/dashboard_verdadero"))">
+                        <i class="bi bi-graph-up-arrow me-2" style="font-size: 1.3rem;"></i>
+                        DASHBOARD ANALÍTICO
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- CONTENEDOR PRINCIPAL: TABLA DE PRIORIZACIONES -->
+    <div class="row mb-3">
+        <div class="col-12">
+            <div class="card shadow-sm border-0 professional-card">
+                <div class="card-body p-3">
+                    <h5 class="card-title mb-3">
+                        <i class="bi bi-clock-history me-2 icon-header"></i>
+                        Registro de Priorizaciones
+                    </h5>
+
+                    @if (_cargando)
+                    {
+                        <div class="text-center py-4">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="visually-hidden">Cargando...</span>
+                            </div>
+                            <p class="mt-2 mb-0">Cargando historial de priorizaciones...</p>
+                        </div>
+                    }
+                    else if (_priorizaciones?.Any() == true)
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-hover table-sm enhanced-table">
+                                <thead class="table-header-enhanced">
+                                    <tr>
+                                        <th>
+                                            <i class="bi bi-hash me-1"></i>
+                                            ID
+                                        </th>
+                                        <th>
+                                            <i class="bi bi-person-fill me-1"></i>
+                                            Paciente
+                                        </th>
+                                        <th>
+                                            <i class="bi bi-file-earmark me-1"></i>
+                                            Procedimiento
+                                        </th>
+                                        <th>
+                                            <i class="bi bi-bookmark-fill me-1"></i>
+                                            Prioridad
+                                        </th>
+                                        <th>
+                                            <i class="bi bi-calendar-event me-1"></i>
+                                            Fecha Priorización
+                                        </th>
+                                        <th>
+                                            <i class="bi bi-info-circle me-1"></i>
+                                            Estado
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var priorizacion in _priorizaciones)
+                                    {
+                                        <tr class="table-row-enhanced">
+                                            <td class="fw-500">@priorizacion.Id</td>
+                                            <td class="fw-500">@priorizacion.NombrePaciente</td>
+                                            <td>@priorizacion.Procedimiento</td>
+                                            <td>
+                                                @if (priorizacion.Prioridad == 1)
+                                                {
+                                                    <span class="badge bg-danger">P1 - URGENTE</span>
+                                                }
+                                                else if (priorizacion.Prioridad == 2)
+                                                {
+                                                    <span class="badge bg-warning text-dark">P2 - ALTA</span>
+                                                }
+                                                else if (priorizacion.Prioridad == 3)
+                                                {
+                                                    <span class="badge bg-info">P3 - MEDIA</span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="badge bg-secondary">P@priorizacion.Prioridad</span>
+                                                }
+                                            </td>
+                                            <td>@priorizacion.FechaPriorizacion.ToString("dd/MM/yyyy HH:mm")</td>
+                                            <td>
+                                                @if (priorizacion.Estado == "Activa")
+                                                {
+                                                    <span class="badge bg-success">
+                                                        <i class="bi bi-check-circle me-1"></i>Activa
+                                                    </span>
+                                                }
+                                                else if (priorizacion.Estado == "Completada")
+                                                {
+                                                    <span class="badge bg-primary">
+                                                        <i class="bi bi-check-all me-1"></i>Completada
+                                                    </span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="badge bg-secondary">
+                                                        <i class="bi bi-dash-circle me-1"></i>@priorizacion.Estado
+                                                    </span>
+                                                }
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- RESUMEN ESTADÍSTICO -->
+                        <div class="row mt-4">
+                            <div class="col-md-3">
+                                <div class="card border-danger shadow-sm">
+                                    <div class="card-body p-3 text-center">
+                                        <h6 class="text-danger mb-2">
+                                            <i class="bi bi-exclamation-circle me-1"></i>
+                                            Urgentes (P1)
+                                        </h6>
+                                        <h3 class="text-danger mb-0">@_priorizaciones.Count(p => p.Prioridad == 1)</h3>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="card border-warning shadow-sm">
+                                    <div class="card-body p-3 text-center">
+                                        <h6 class="text-warning mb-2">
+                                            <i class="bi bi-exclamation-triangle me-1"></i>
+                                            Altas (P2)
+                                        </h6>
+                                        <h3 class="text-warning mb-0">@_priorizaciones.Count(p => p.Prioridad == 2)</h3>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="card border-info shadow-sm">
+                                    <div class="card-body p-3 text-center">
+                                        <h6 class="text-info mb-2">
+                                            <i class="bi bi-info-circle me-1"></i>
+                                            Medias (P3)
+                                        </h6>
+                                        <h3 class="text-info mb-0">@_priorizaciones.Count(p => p.Prioridad == 3)</h3>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="card border-success shadow-sm">
+                                    <div class="card-body p-3 text-center">
+                                        <h6 class="text-success mb-2">
+                                            <i class="bi bi-check-all me-1"></i>
+                                            Completadas
+                                        </h6>
+                                        <h3 class="text-success mb-0">@_priorizaciones.Count(p => p.Estado == "Completada")</h3>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="alert alert-info text-center mb-0">
+                            <i class="bi bi-info-circle me-2"></i>
+                            No hay priorizaciones registradas en el sistema.
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private List<PriorizacionDto>? _priorizaciones;
+    private bool _cargando = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await CargarPriorizaciones();
+    }
+
+    private async Task CargarPriorizaciones()
+    {
+        try
+        {
+            _cargando = true;
+            // Ajusta la URL según tu API
+            _priorizaciones = await Http.GetFromJsonAsync<List<PriorizacionDto>>("http://localhost:5227/api/priorizacion") 
+                ?? new List<PriorizacionDto>();
+
+            // Ordenar por fecha descendente (más recientes primero)
+            _priorizaciones = _priorizaciones.OrderByDescending(p => p.FechaPriorizacion).ToList();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error cargando priorizaciones: {ex.Message}");
+            
+            // Datos de ejemplo si falla la conexión
+            _priorizaciones = new List<PriorizacionDto>
+            {
+                new PriorizacionDto { 
+                    Id = 1, 
+                    NombrePaciente = "Juan García López", 
+                    Procedimiento = "Colecistectomía", 
+                    Prioridad = 1, 
+                    FechaPriorizacion = DateTime.Now.AddDays(-5), 
+                    Estado = "Completada" 
+                },
+                new PriorizacionDto { 
+                    Id = 2, 
+                    NombrePaciente = "María Rodríguez Pérez", 
+                    Procedimiento = "Artroscopia de Rodilla", 
+                    Prioridad = 2, 
+                    FechaPriorizacion = DateTime.Now.AddDays(-3), 
+                    Estado = "Activa" 
+                },
+                new PriorizacionDto { 
+                    Id = 3, 
+                    NombrePaciente = "Carlos Fernández López", 
+                    Procedimiento = "Apendicectomía", 
+                    Prioridad = 1, 
+                    FechaPriorizacion = DateTime.Now.AddDays(-1), 
+                    Estado = "Activa" 
+                }
+            };
+        }
+        finally
+        {
+            _cargando = false;
+            StateHasChanged();
+        }
+    }
+
+    // DTO para priorizaciones
+    public class PriorizacionDto
+    {
+        public int Id { get; set; }
+        public string NombrePaciente { get; set; } = string.Empty;
+        public string Procedimiento { get; set; } = string.Empty;
+        public int Prioridad { get; set; }
+        public DateTime FechaPriorizacion { get; set; }
+        public string Estado { get; set; } = string.Empty;
+    }
+}

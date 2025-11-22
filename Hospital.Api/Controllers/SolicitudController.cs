@@ -100,5 +100,22 @@ namespace Hospital.Api.Controllers
                 return StatusCode(500, new { mensaje = "⚠️ Error al obtener solicitudes del médico", detalle = ex.Message });
             }
         }
+
+        [HttpGet("paciente/{rut}")]
+        public async Task<IActionResult> ObtenerSolicitudesPorPaciente(string rut)
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(rut))
+                    return BadRequest(new { mensaje = "El RUT del paciente es requerido" });
+
+                var solicitudes = await _solicitudService.ObtenerSolicitudesPorPacienteAsync(rut);
+                return Ok(solicitudes);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { mensaje = "Error al obtener solicitudes del paciente", detalle = ex.Message });
+            }
+        }
     }
 }

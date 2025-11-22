@@ -59,10 +59,24 @@ builder.Services.AddHttpClient<PriorizacionApiService>(client =>
     client.Timeout = TimeSpan.FromSeconds(30);
 });
 
-// ========== SERVICIOS MIGRADOS A API ==========
-builder.Services.AddScoped<IEspecialidadHospital, EspecialidadHospitalService>();
-builder.Services.AddScoped<IDiagnosticoService, DiagnosticoService>();
-builder.Services.AddScoped<IProcedimientoService, ProcedimientoService>();
+builder.Services.AddHttpClient<IProcedimientoService, ProcedimientoService>(client =>
+{
+    client.BaseAddress = new Uri("https://localhost:7032/");
+    client.Timeout = TimeSpan.FromSeconds(30);
+});
+
+
+builder.Services.AddHttpClient<IEspecialidadHospital, EspecialidadHospitalService>(client =>
+{
+    client.BaseAddress = new Uri("https://localhost:7032/");
+    client.Timeout = TimeSpan.FromSeconds(30);
+});
+
+builder.Services.AddHttpClient<IDiagnosticoService, DiagnosticoService>(client =>
+{
+    client.BaseAddress = new Uri("https://localhost:7032/");
+    client.Timeout = TimeSpan.FromSeconds(30);
+});
 
 // ========== SWEET ALERTS ==========
 builder.Services.AddScoped<SweetAlertHelper>();

@@ -29,8 +29,6 @@
         }
 
         const bg = colors || buildPalette(data.length);
-
-        // Destruir gráfico anterior si existe
         destroyChart(id);
 
         const canvasContainer = ctx.parentElement;
@@ -43,28 +41,44 @@
         charts[id] = new Chart(ctx, {
             type: 'bar',
             data: {
-                labels,
+                labels: labels.slice(0, 6), // Limitar etiquetas para mejor visualización
                 datasets: [{
                     label: 'Casos',
-                    data: data,
-                    backgroundColor: bg,
+                    data: data.slice(0, 6),
+                    backgroundColor: bg.slice(0, 6),
                     borderRadius: 4,
-                    hoverBackgroundColor: 'rgba(0,0,0,0.1)'
+                    hoverBackgroundColor: 'rgba(0,0,0,0.1)',
+                    borderSkipped: false
                 }]
             },
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
                 indexAxis: 'x',
+                layout: {
+                    padding: { top: 5, bottom: 5, left: 5, right: 5 }
+                },
                 scales: { 
                     y: { 
                         beginAtZero: true,
-                        max: Math.max(...data) + 2
+                        max: Math.max(...data.slice(0, 6)) + 1,
+                        ticks: { font: { size: 10 } }
+                    },
+                    x: {
+                        ticks: { font: { size: 9 } }
                     }
                 },
                 plugins: {
-                    legend: { display: true, position: 'top' },
-                    tooltip: { callbacks: { label: (ctx) => `${ctx.dataset.label}: ${ctx.parsed.y}` } }
+                    legend: { 
+                        display: true, 
+                        position: 'top',
+                        labels: { font: { size: 10 }, padding: 10 }
+                    },
+                    tooltip: { 
+                        callbacks: { label: (ctx) => `${ctx.dataset.label}: ${ctx.parsed.y}` },
+                        titleFont: { size: 10 },
+                        bodyFont: { size: 9 }
+                    }
                 }
             }
         });
@@ -78,8 +92,6 @@
         }
 
         const bg = colors || buildPalette(data.length);
-
-        // Destruir gráfico anterior si existe
         destroyChart(id);
 
         const canvasContainer = ctx.parentElement;
@@ -104,9 +116,19 @@
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
+                layout: {
+                    padding: { top: 5, bottom: 5, left: 5, right: 5 }
+                },
                 plugins: {
-                    legend: { position: 'right' },
-                    tooltip: { callbacks: { label: (ctx) => `${ctx.label}: ${ctx.parsed}` } }
+                    legend: { 
+                        position: 'right',
+                        labels: { font: { size: 10 }, padding: 12, boxWidth: 12 }
+                    },
+                    tooltip: { 
+                        callbacks: { label: (ctx) => `${ctx.label}: ${ctx.parsed}` },
+                        titleFont: { size: 10 },
+                        bodyFont: { size: 9 }
+                    }
                 }
             }
         });
@@ -121,8 +143,6 @@
 
         const defaultOptions = options || {};
         const label = defaultOptions.label || 'Datos';
-
-        // Destruir gráfico anterior si existe
         destroyChart(id);
 
         const canvasContainer = ctx.parentElement;
@@ -135,34 +155,50 @@
         charts[id] = new Chart(ctx, {
             type: 'line',
             data: {
-                labels,
+                labels: labels.slice(0, 12), // Limitar a últimos 12 meses
                 datasets: [{
                     label: label,
-                    data: data,
+                    data: data.slice(0, 12),
                     borderColor: '#4e79a7',
                     backgroundColor: 'rgba(78, 121, 167, 0.1)',
-                    borderWidth: 3,
+                    borderWidth: 2,
                     tension: 0.4,
                     fill: true,
-                    pointRadius: 5,
-                    pointHoverRadius: 7,
+                    pointRadius: 3,
+                    pointHoverRadius: 5,
                     pointBackgroundColor: '#4e79a7',
                     pointBorderColor: '#fff',
-                    pointBorderWidth: 2
+                    pointBorderWidth: 1.5
                 }]
             },
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
+                layout: {
+                    padding: { top: 5, bottom: 5, left: 5, right: 5 }
+                },
                 scales: {
                     y: {
                         beginAtZero: true,
-                        max: Math.max(...data) + 1
+                        max: Math.max(...data.slice(0, 12)) + 1,
+                        ticks: { font: { size: 10 } }
+                    },
+                    x: {
+                        ticks: { font: { size: 9 } }
                     }
                 },
                 plugins: {
-                    legend: { display: true, position: 'top' },
-                    tooltip: { mode: 'index', intersect: false }
+                    legend: { 
+                        display: true, 
+                        position: 'top',
+                        labels: { font: { size: 10 }, padding: 10 }
+                    },
+                    tooltip: { 
+                        mode: 'index', 
+                        intersect: false,
+                        titleFont: { size: 10 },
+                        bodyFont: { size: 9 }
+                    }
                 }
             }
         });
@@ -176,8 +212,6 @@
         }
 
         const bg = colors || buildPalette(data.length);
-
-        // Destruir gráfico anterior si existe
         destroyChart(id);
 
         const canvasContainer = ctx.parentElement;
@@ -202,9 +236,19 @@
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
+                layout: {
+                    padding: { top: 5, bottom: 5, left: 5, right: 5 }
+                },
                 plugins: {
-                    legend: { position: 'bottom' },
-                    tooltip: { callbacks: { label: (ctx) => `${ctx.label}: ${ctx.parsed}` } }
+                    legend: { 
+                        position: 'bottom',
+                        labels: { font: { size: 10 }, padding: 12, boxWidth: 12 }
+                    },
+                    tooltip: { 
+                        callbacks: { label: (ctx) => `${ctx.label}: ${ctx.parsed}` },
+                        titleFont: { size: 10 },
+                        bodyFont: { size: 9 }
+                    }
                 }
             }
         });
@@ -212,7 +256,6 @@
 
     function showDetail(label, value, sexoFilter, gesFilter) {
         console.log(`Detalle: ${label} = ${value} (Sexo: ${sexoFilter}, GES: ${gesFilter})`);
-        // Aquí puedes agregar lógica adicional si es necesario
     }
 
     return {
