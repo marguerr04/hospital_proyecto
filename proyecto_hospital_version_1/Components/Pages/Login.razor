@@ -1,5 +1,10 @@
 ﻿@layout Components.Layout.RazorVacio
 @page "/login"
+@using proyecto_hospital_version_1.Services
+@using System.Net.Http.Json
+@inject AuthStateService AuthStateService
+@inject NavigationManager Navigation
+@inject HttpClient Http
 
 <div class="login-container">
     <div class="login-card">
@@ -25,7 +30,17 @@
             </select>
         </div>
 
-        <button class="btn btn-primary w-100" @onclick="DoLogin">Ingresar</button>
+        <button class="btn btn-primary w-100" @onclick="DoLogin" disabled="@_cargando">
+            @if (_cargando)
+            {
+                <span class="spinner-border spinner-border-sm me-2"></span>
+                <span>Validando...</span>
+            }
+            else
+            {
+                <span>Ingresar</span>
+            }
+        </button>
 
         @if (!string.IsNullOrEmpty(ErrorMessage))
         {
@@ -41,51 +56,79 @@
 @code {
     private string Username = "";
     private string Password = "";
-    private string SelectedRole = ""; // NUEVA VARIABLE para el rol seleccionado
+    private string SelectedRole = "";
     private string ErrorMessage = "";
+    private bool _cargando = false;
 
-    [Inject] private NavigationManager Navigation { get; set; } = default!;
-
-    private void DoLogin()
+    private async Task DoLogin()
     {
-        // Limpiamos el mensaje de error anterior
         ErrorMessage = "";
+        _cargando = true;
+        StateHasChanged();
 
-        // VALIDACIÓN MEJORADA: Verificamos que todos los campos estén llenos
-        if (string.IsNullOrEmpty(Username) || string.IsNullOrEmpty(Password) || string.IsNullOrEmpty(SelectedRole))
+        try
         {
-            ErrorMessage = "Por favor, complete todos los campos";
+            if (string.IsNullOrEmpty(Username) || string.IsNullOrEmpty(Password) || string.IsNullOrEmpty(SelectedRole))
+            {
+                ErrorMessage = "Por favor, complete todos los campos";
+                return;
+            }
+
+            var loginRequest = new
+            {
+                Username = Username,
+                Password = Password,
+                Rol = SelectedRole
+            };
+
+            var response = await Http.PostAsJsonAsync("https://localhost:7032/api/Auth/login", loginRequest);
+
+            if (response.IsSuccessStatusCode)
+            {
+                var result = await response.Content.ReadFromJsonAsync<LoginResponse>();
+
+                if (result?.Exito == true)
+                {
+                    Console.WriteLine($"[Login] Login exitoso. Usuario: {result.Username}, Rol: {result.Rol}");
+                    
+                    // Guardar estado de autenticación
+                    AuthStateService.Login(result.Username!, result.Rol!);
+                    
+                    Console.WriteLine($"[Login] AuthStateService.IsAuthenticated: {AuthStateService.IsAuthenticated}");
+
+                    // Redirigir según rol (SIN forceLoad para mantener el servicio Scoped)
+                    string redirectUrl = result.Rol == "Administrador" ? "/dashboard" : "/home-medico";
+                    Console.WriteLine($"[Login] Redirigiendo a: {redirectUrl}");
+                    
+                    Navigation.NavigateTo(redirectUrl);
+                }
+                else
+                {
+                    ErrorMessage = result?.Mensaje ?? "Usuario, contraseña o rol incorrectos";
+                }
+            }
+            else
+            {
+                ErrorMessage = "Error al comunicarse con el servidor";
+            }
+        }
+        catch (Exception ex)
+        {
+            ErrorMessage = $"Error: {ex.Message}";
+            Console.WriteLine($"Error en login: {ex}");
+        }
+        finally
+        {
+            _cargando = false;
             StateHasChanged();
-            return;
         }
+    }
 
-        // LÓGICA MODIFICADA: Ahora verificamos usuario, contraseña Y rol
-        bool isValidCredentials = false;
-        string redirectUrl = "";
-
-        // Validación para Administrador
-        if (Username == "admin" && Password == "1234" && SelectedRole == "Administrador")
-        {
-            isValidCredentials = true;
-            redirectUrl = "/dashboard";
-        }
-        // Validación para Médico
-        else if (Username == "medico" && Password == "1234" && SelectedRole == "Medico")
-        {
-            isValidCredentials = true;
-            redirectUrl = "/home-medico";
-        }
-
-        // Si las credenciales son válidas, navegamos
-        if (isValidCredentials)
-        {
-            Navigation.NavigateTo(redirectUrl);
-        }
-        else
-        {
-            // MENSAJE DE ERROR MEJORADO
-            ErrorMessage = "Usuario, contraseña o rol incorrectos";
-            StateHasChanged();
-        }
+    private class LoginResponse
+    {
+        public bool Exito { get; set; }
+        public string? Mensaje { get; set; }
+        public string? Username { get; set; }
+        public string? Rol { get; set; }
     }
 }

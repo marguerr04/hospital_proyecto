@@ -55,4 +55,10 @@ app.UseHttpsRedirection();
 app.UseCors("AllowBlazorClient");
 app.UseAuthorization();
 app.MapControllers();
+
+// Forzar carga de controladores
+var controllerCount = app.Services.GetService<Microsoft.AspNetCore.Mvc.Infrastructure.IActionDescriptorCollectionProvider>()
+    ?.ActionDescriptors.Items.Count() ?? 0;
+Console.WriteLine($"? {controllerCount} endpoints registrados");
+
 app.Run();

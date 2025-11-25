@@ -588,11 +588,19 @@ else
 
     protected override async Task OnInitializedAsync()
     {
+        Console.WriteLine($"[Dashboard] OnInitializedAsync - Verificando autenticación...");
+        Console.WriteLine($"[Dashboard] AuthStateService.IsAuthenticated: {AuthStateService.IsAuthenticated}");
+        Console.WriteLine($"[Dashboard] AuthStateService.Username: {AuthStateService.Username}");
+        Console.WriteLine($"[Dashboard] AuthStateService.Role: {AuthStateService.Role}");
+        
         if (!AuthStateService.IsAuthenticated)
         {
+            Console.WriteLine("[Dashboard] Usuario NO autenticado, redirigiendo a /login");
             Navigation.NavigateTo("/login", forceLoad: true);
             return;
         }
+
+        Console.WriteLine("[Dashboard] Usuario autenticado correctamente, cargando datos...");
 
         await Task.WhenAll(
             CargarProfesionales(),

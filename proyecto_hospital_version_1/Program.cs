@@ -81,6 +81,9 @@ builder.Services.AddHttpClient<IDiagnosticoService, DiagnosticoService>(client =
 // ========== SWEET ALERTS ==========
 builder.Services.AddScoped<SweetAlertHelper>();
 
+// ========== AUTENTICACIÓN ==========
+builder.Services.AddScoped<AuthStateService>();
+
 // ========== BLAZOR ==========
 builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();

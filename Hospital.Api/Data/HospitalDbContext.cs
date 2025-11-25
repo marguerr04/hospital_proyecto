@@ -58,8 +58,8 @@ namespace Hospital.Api.Data
         public DbSet<Profesional> PROFESIONAL { get; set; }
         public DbSet<SolicitudProfesional> SOLICITUD_PROFESIONAL { get; set; }
 
-
-
+        // Usuario (Autenticación)
+        public DbSet<Usuario> USUARIO { get; set; }
 
         // mapeo ges
 
