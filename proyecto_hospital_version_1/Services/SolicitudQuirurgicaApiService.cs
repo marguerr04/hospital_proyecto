@@ -9,6 +9,7 @@ namespace proyecto_hospital_version_1.Services
         Task<bool> CrearSolicitudAsync(SolicitudCrearDto solicitudDto);
         Task<int> CrearSolicitudYDevolverIdAsync(SolicitudCrearDto solicitudDto);
         Task<List<SolicitudMedicoDto>> ObtenerSolicitudesPorMedicoAsync(int idMedico);
+        Task<List<SolicitudRecienteDto>> GetSolicitudesRecientesAsync();
     }
 
     // Implementación que SOLO habla con la API vía HttpClient
@@ -86,6 +87,26 @@ namespace proyecto_hospital_version_1.Services
             {
                 Console.WriteLine($"💥 Error al obtener solicitudes: {ex.Message}");
                 return new List<SolicitudMedicoDto>();
+            }
+        }
+
+        public async Task<List<SolicitudRecienteDto>> GetSolicitudesRecientesAsync()
+        {
+            try
+            {
+                Console.WriteLine("[SolicitudService] Obteniendo solicitudes recientes");
+
+                var solicitudes = await _http
+                    .GetFromJsonAsync<List<SolicitudRecienteDto>>("api/Solicitud/recientes");
+
+                Console.WriteLine($"[SolicitudService] Solicitudes recientes obtenidas: {solicitudes?.Count ?? 0}");
+
+                return solicitudes ?? new List<SolicitudRecienteDto>();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"💥 Error al obtener solicitudes recientes: {ex.Message}");
+                return new List<SolicitudRecienteDto>();
             }
         }
     }

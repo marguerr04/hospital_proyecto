@@ -160,5 +160,20 @@ namespace Hospital.Api.Controllers
                 return StatusCode(500, new { error = ex.Message });
             }
         }
+
+        // ✅ NUEVO: GET api/solicitud/recientes
+        [HttpGet("recientes")]
+        public async Task<IActionResult> ObtenerSolicitudesRecientes()
+        {
+            try
+            {
+                var solicitudes = await _solicitudService.GetSolicitudesRecientesAsync();
+                return Ok(solicitudes);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { mensaje = "Error al obtener solicitudes recientes", detalle = ex.Message });
+            }
+        }
     }
 }

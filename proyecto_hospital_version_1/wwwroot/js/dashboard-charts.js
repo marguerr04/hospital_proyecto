@@ -21,14 +21,20 @@
         }
     }
 
-    function renderBar(id, labels, data, colors) {
+    function renderBar(id, labels, data, options) {
         const ctx = document.getElementById(id);
         if (!ctx) {
             console.warn(`Canvas con id '${id}' no encontrado`);
             return;
         }
 
-        const bg = colors || buildPalette(data.length);
+        // Soporte para opciones de configuración o colores legacy
+        const config = options || {};
+        const label = config.label || 'Casos';
+        const backgroundColor = config.backgroundColor || buildPalette(data.length);
+        const borderColor = config.borderColor || backgroundColor;
+        const borderWidth = config.borderWidth || 1;
+
         destroyChart(id);
 
         const canvasContainer = ctx.parentElement;
@@ -41,11 +47,13 @@
         charts[id] = new Chart(ctx, {
             type: 'bar',
             data: {
-                labels: labels.slice(0, 6), // Limitar etiquetas para mejor visualización
+                labels: labels,
                 datasets: [{
-                    label: 'Casos',
-                    data: data.slice(0, 6),
-                    backgroundColor: bg.slice(0, 6),
+                    label: label,
+                    data: data,
+                    backgroundColor: backgroundColor,
+                    borderColor: borderColor,
+                    borderWidth: borderWidth,
                     borderRadius: 4,
                     hoverBackgroundColor: 'rgba(0,0,0,0.1)',
                     borderSkipped: false
@@ -61,8 +69,10 @@
                 scales: { 
                     y: { 
                         beginAtZero: true,
-                        max: Math.max(...data.slice(0, 6)) + 1,
-                        ticks: { font: { size: 10 } }
+                        ticks: { 
+                            font: { size: 10 },
+                            precision: 0
+                        }
                     },
                     x: {
                         ticks: { font: { size: 9 } }
