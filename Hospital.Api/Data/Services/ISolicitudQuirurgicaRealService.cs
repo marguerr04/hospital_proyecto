@@ -40,7 +40,7 @@ namespace Hospital.Api.Data.Services
         Task<IEnumerable<SolicitudMedicoDto>> ObtenerSolicitudesPriorizadasAsync();
         Task<SolicitudDetalleDto?> ObtenerSolicitudDetalleAsync(int solicitudId);
         Task<bool> GuardarPriorizacionAsync(PriorizacionDto priorizacion);
-
-
+        Task<int> ContarSolicitudesIncompletasAsync();
+        Task<int> ContarDuplicadosDenegadosAsync();
     }
 }

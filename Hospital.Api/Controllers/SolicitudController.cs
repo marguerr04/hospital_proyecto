@@ -117,5 +117,48 @@ namespace Hospital.Api.Controllers
                 return StatusCode(500, new { mensaje = "Error al obtener solicitudes del paciente", detalle = ex.Message });
             }
         }
+
+        // ✅ NUEVO ENDPOINT: GET api/solicitud/pendientes-reales
+        [HttpGet("pendientes-reales")]
+        public async Task<IActionResult> ObtenerSolicitudesPendientesReales()
+        {
+            try
+            {
+                var solicitudes = await _solicitudService.ObtenerSolicitudesPendientesRealesAsync();
+                return Ok(solicitudes);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { mensaje = "Error al obtener solicitudes pendientes", detalle = ex.Message });
+            }
+        }
+
+        [HttpGet("incompletas/contar")]
+        public async Task<IActionResult> ContarSolicitudesIncompletas()
+        {
+            try
+            {
+                var cantidad = await _solicitudService.ContarSolicitudesIncompletasAsync();
+                return Ok(new { cantidad });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { error = ex.Message });
+            }
+        }
+
+        [HttpGet("duplicados/contar")]
+        public async Task<IActionResult> ContarDuplicadosDenegados()
+        {
+            try
+            {
+                var cantidad = await _solicitudService.ContarDuplicadosDenegadosAsync();
+                return Ok(new { cantidad });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { error = ex.Message });
+            }
+        }
     }
 }

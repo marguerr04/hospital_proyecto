@@ -702,6 +702,44 @@ namespace Hospital.Api.Data.Services
             }
         }
 
+        // ✅ NUEVO MÉTODO: Obtener solicitudes pendientes reales (con paciente vía consentimiento)
+        public async Task<List<SolicitudMedicoDto>> ObtenerSolicitudesPendientesRealesAsync()
+        {
+            try
+            {
+                var solicitudes = await _context.SOLICITUD_QUIRURGICA
+                    .Include(sq => sq.Consentimiento)
+                        .ThenInclude(ci => ci.Paciente)
+                    .Include(sq => sq.Diagnostico)
+                    .Where(sq => sq.ValidacionGES != null)
+                    .OrderByDescending(sq => sq.FechaCreacion)
+                    .ToListAsync();
+
+                var resultado = solicitudes.Select(sq => new SolicitudMedicoDto
+                {
+                    Id = sq.IdSolicitud,
+                    NombrePaciente = $"{sq.Consentimiento?.Paciente?.PrimerNombre ?? ""} {sq.Consentimiento?.Paciente?.ApellidoPaterno ?? ""}".Trim(),
+                    Rut = FormatearRut(sq.Consentimiento?.Paciente?.Rut ?? "", sq.Consentimiento?.Paciente?.Dv ?? ""),
+                    Diagnostico = sq.Diagnostico?.Nombre ?? "Sin diagnóstico",
+                    Procedimiento = "",
+                    Estado = (sq.ValidacionGES == true) ? "GES" : "NO GES",
+                    FechaCreacion = sq.FechaCreacion,
+                    FechaProgramada = null,
+                    DiasRestantes = null,
+                    Contactabilidad = "Por Contactar",
+                    Prioridad = (byte?)((sq.ValidacionGES == true) ? 1 : 0)
+                }).ToList();
+
+                Console.WriteLine($"✅ ObtenerSolicitudesPendientesRealesAsync: {resultado.Count} solicitudes obtenidas");
+                return resultado;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"❌ Error en ObtenerSolicitudesPendientesRealesAsync: {ex.Message}");
+                return new List<SolicitudMedicoDto>();
+            }
+        }
+
         public async Task<IEnumerable<SolicitudMedicoDto>> ObtenerSolicitudesPriorizadasAsync()
         {
             try
@@ -795,7 +833,55 @@ namespace Hospital.Api.Data.Services
     }
 }
 
+public async Task<int> ContarSolicitudesIncompletasAsync()
+{
+    try
+    {
+        var todasLasSolicitudes = await _context.SOLICITUD_QUIRURGICA
+            .Select(sq => sq.IdSolicitud)
+            .ToListAsync();
 
+        var idsConDetalleClinico = await _context.Set<DetalleClinicoReal>()
+            .Where(dc => dc.SolicitudId > 0)
+            .Select(dc => dc.SolicitudId)
+            .Distinct()
+            .ToListAsync();
+
+        var idsConDetallePaciente = await _context.Set<DetallePacienteReal>()
+            .Where(dp => dp.SolicitudId > 0)
+            .Select(dp => dp.SolicitudId)
+            .Distinct()
+            .ToListAsync();
+
+        var incompletas = todasLasSolicitudes
+            .Where(id => !idsConDetalleClinico.Contains(id) || !idsConDetallePaciente.Contains(id))
+            .Count();
+
+        return incompletas;
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"Error ContarSolicitudesIncompletasAsync: {ex.Message}");
+        return 0;
+    }
+}
+
+public async Task<int> ContarDuplicadosDenegadosAsync()
+{
+    try
+    {
+        var duplicados = await _context.SOLICITUD_QUIRURGICA
+            .Where(sq => sq.ValidacionDuplicado == true)
+            .CountAsync();
+
+        return duplicados;
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"Error ContarDuplicadosDenegadosAsync: {ex.Message}");
+        return 0;
+    }
+}
 
     }
 }
