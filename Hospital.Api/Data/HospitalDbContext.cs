@@ -158,6 +158,18 @@ namespace Hospital.Api.Data
                 .WithMany(p => p.SolicitudesProfesionales)
                 .HasForeignKey(sp => sp.PROFESIONAL_id);
 
+            // Configurar relaciones con ROL_HOSPITAL y ROL_SOLICITUD (sin navegación)
+            modelBuilder.Entity<SolicitudProfesional>()
+                .HasOne<RolHospital>()
+                .WithMany()
+                .HasForeignKey(sp => sp.ROL_HOSPITAL_id)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<SolicitudProfesional>()
+                .HasOne<RolSolicitud>()
+                .WithMany()
+                .HasForeignKey(sp => sp.ROL_SOLICITUD_id)
+                .OnDelete(DeleteBehavior.Restrict);
 
             // egreso solicitud
 

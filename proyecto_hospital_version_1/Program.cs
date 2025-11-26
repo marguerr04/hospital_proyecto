@@ -78,6 +78,12 @@ builder.Services.AddHttpClient<IDiagnosticoService, DiagnosticoService>(client =
     client.Timeout = TimeSpan.FromSeconds(30);
 });
 
+builder.Services.AddHttpClient<IProfesionalApiService, ProfesionalApiService>(client =>
+{
+    client.BaseAddress = new Uri("https://localhost:7032/");
+    client.Timeout = TimeSpan.FromSeconds(30);
+});
+
 // ========== SWEET ALERTS ==========
 builder.Services.AddScoped<SweetAlertHelper>();
 

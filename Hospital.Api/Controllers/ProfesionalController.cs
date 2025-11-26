@@ -122,5 +122,85 @@ namespace Hospital.Api.Controllers
 
             return Ok(result);
         }
+
+        /// <summary>
+        /// Obtiene un profesional por su RUT.
+        /// </summary>
+        [HttpGet("by-rut/{rut}-{dv}")]
+        public async Task<ActionResult<ProfesionalDto>> GetProfesionalByRut(string rut, string dv)
+        {
+            // Asegúrate de que el RUT y el DV sean tratados correctamente, aquí se asume que dv es un string
+            var profesional = await _context.PROFESIONAL
+                .Where(p => p.rut == rut && p.dv == dv)
+                .Select(p => new ProfesionalDto
+                {
+                    Id = p.Id,
+                    NombreCompleto = $"{p.primerNombre} {p.segundoNombre ?? ""} {p.primerApellido} {p.segundoApellido ?? ""}".Trim(),
+                    RutCompleto = $"{p.rut}-{p.dv}",
+                    Rol = "Sin Rol Asignado", // Rol no disponible en esta consulta
+                    Especialidad = "Sin Especialidad Asignada" // Especialidad no disponible en esta consulta
+                })
+                .FirstOrDefaultAsync();
+
+            if (profesional == null)
+            {
+                return NotFound();
+            }
+
+            return Ok(profesional);
+        }
+
+        /// <summary>
+        /// Busca un profesional por su RUT (sin dígito verificador)
+        /// </summary>
+        /// <param name="rut">RUT del profesional sin puntos ni guión (solo números)</param>
+        /// <returns>DTO del profesional encontrado o NotFound si no existe</returns>
+        [HttpGet("buscar-por-rut/{rut}")]
+        public async Task<ActionResult<ProfesionalDto>> BuscarPorRut(string rut)
+        {
+            try
+            {
+                // Limpiar el RUT (remover puntos, guiones, espacios)
+                var rutLimpio = rut.Replace(".", "").Replace("-", "").Trim();
+
+                if (string.IsNullOrWhiteSpace(rutLimpio))
+                {
+                    return BadRequest(new { mensaje = "El RUT no puede estar vacío" });
+                }
+
+                Console.WriteLine($"[BuscarPorRut] Buscando profesional con RUT: {rutLimpio}");
+
+                // Buscar profesional por RUT (SIMPLE, sin joins)
+                var profesional = await _context.PROFESIONAL
+                    .FirstOrDefaultAsync(p => p.rut == rutLimpio);
+
+                if (profesional == null)
+                {
+                    Console.WriteLine($"[BuscarPorRut] No se encontró profesional con RUT: {rutLimpio}");
+                    return NotFound(new { mensaje = $"No se encontró profesional con RUT {rut}" });
+                }
+
+                Console.WriteLine($"[BuscarPorRut] Profesional encontrado: {profesional.primerNombre} {profesional.primerApellido}");
+
+                // Construir DTO de respuesta con valores por defecto
+                var profesionalDto = new ProfesionalDto
+                {
+                    Id = profesional.Id,
+                    NombreCompleto = $"{profesional.primerNombre ?? ""} {profesional.segundoNombre ?? ""} {profesional.primerApellido ?? ""} {profesional.segundoApellido ?? ""}".Trim(),
+                    RutCompleto = $"{profesional.rut}-{profesional.dv}",
+                    Rol = "Cirujano Principal", // Valor por defecto
+                    Especialidad = "Solicitante" // Valor por defecto
+                };
+
+                Console.WriteLine($"[BuscarPorRut] Retornando DTO: {profesionalDto.NombreCompleto}");
+                return Ok(profesionalDto);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[BuscarPorRut] Error: {ex.Message}");
+                Console.WriteLine($"[BuscarPorRut] StackTrace: {ex.StackTrace}");
+                return StatusCode(500, new { mensaje = "Error interno del servidor", detalle = ex.Message });
+            }
+        }
     }
 }
