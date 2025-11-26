@@ -84,6 +84,12 @@ builder.Services.AddHttpClient<IProfesionalApiService, ProfesionalApiService>(cl
     client.Timeout = TimeSpan.FromSeconds(30);
 });
 
+builder.Services.AddHttpClient<IAuditoriaPriorizacionApiService, AuditoriaPriorizacionApiService>(client =>
+{
+    client.BaseAddress = new Uri("https://localhost:7032/");
+    client.Timeout = TimeSpan.FromSeconds(30);
+});
+
 // ========== SWEET ALERTS ==========
 builder.Services.AddScoped<SweetAlertHelper>();
 

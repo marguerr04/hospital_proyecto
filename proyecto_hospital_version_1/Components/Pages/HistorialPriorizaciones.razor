@@ -1,16 +1,19 @@
-@page "/historial-priorizaciones"
-@using proyecto_hospital_version_1.Shared
-@using proyecto_hospital_version_1.Components.Shared
-@inject NavigationManager Navigation
-@inject HttpClient Http
+@page "/historial-logs"
+@using proyecto_hospital_version_1.Services
 @using Hospital.Api.DTOs
+@inject NavigationManager Navigation
+@inject IAuditoriaPriorizacionApiService AuditoriaApi
 
-<PageTitle>Historial de Priorizaciones</PageTitle>
+<PageTitle>Historial de Logs - Auditoría de Priorizaciones</PageTitle>
 
 <div class="container-fluid">
     <div class="row mb-3">
         <div class="col">
-            <h1 class="h3 mb-0">Historial de Priorizaciones</h1>
+            <h1 class="h3 mb-0">
+                <i class="bi bi-clock-history me-2"></i>
+                Historial de Logs - Auditoría de Priorizaciones
+            </h1>
+            <small class="text-muted">Registro completo de auditoría de priorizaciones de solicitudes quirúrgicas</small>
         </div>
     </div>
 
@@ -21,7 +24,7 @@
                 <div class="card-body p-3">
                     <button class="btn btn-secondary btn-lg w-100 d-flex align-items-center justify-content-center dashboard-action-btn"
                             style="height: 60px; font-size: 1.1rem; font-weight: 600;"
-                            onclick="@(() => Navigation.NavigateTo("/dashboard"))">
+                            @onclick="@(() => Navigation.NavigateTo("/dashboard"))">
                         <i class="bi bi-arrow-left me-2" style="font-size: 1.3rem;"></i>
                         VOLVER AL PANEL
                     </button>
@@ -33,7 +36,7 @@
                 <div class="card-body p-3">
                     <button class="btn btn-danger btn-lg w-100 d-flex align-items-center justify-content-center dashboard-action-btn"
                             style="height: 60px; font-size: 1.1rem; font-weight: 600;"
-                            onclick="@(() => Navigation.NavigateTo("/dashboard_verdadero"))">
+                            @onclick="@(() => Navigation.NavigateTo("/dashboard_verdadero"))">
                         <i class="bi bi-graph-up-arrow me-2" style="font-size: 1.3rem;"></i>
                         DASHBOARD ANALÍTICO
                     </button>
@@ -42,15 +45,20 @@
         </div>
     </div>
 
-    <!-- CONTENEDOR PRINCIPAL: TABLA DE PRIORIZACIONES -->
+    <!-- CONTENEDOR PRINCIPAL: TABLA DE AUDITORÍA -->
     <div class="row mb-3">
         <div class="col-12">
             <div class="card shadow-sm border-0 professional-card">
                 <div class="card-body p-3">
-                    <h5 class="card-title mb-3">
-                        <i class="bi bi-clock-history me-2 icon-header"></i>
-                        Registro de Priorizaciones
-                    </h5>
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="card-title mb-0">
+                            <i class="bi bi-clock-history me-2 icon-header"></i>
+                            Registro de Auditoría de Priorizaciones
+                        </h5>
+                        <span class="badge bg-info">
+                            Total: @_totalRegistros registros
+                        </span>
+                    </div>
 
                     @if (_cargando)
                     {
@@ -58,136 +66,104 @@
                             <div class="spinner-border text-primary" role="status">
                                 <span class="visually-hidden">Cargando...</span>
                             </div>
-                            <p class="mt-2 mb-0">Cargando historial de priorizaciones...</p>
+                            <p class="mt-2 mb-0">Cargando historial de auditoría...</p>
                         </div>
                     }
-                    else if (_priorizaciones?.Any() == true)
+                    else if (_auditoria?.Any() == true)
                     {
                         <div class="table-responsive">
                             <table class="table table-hover table-sm enhanced-table">
                                 <thead class="table-header-enhanced">
                                     <tr>
-                                        <th>
-                                            <i class="bi bi-hash me-1"></i>
-                                            ID
-                                        </th>
-                                        <th>
-                                            <i class="bi bi-person-fill me-1"></i>
-                                            Paciente
-                                        </th>
-                                        <th>
-                                            <i class="bi bi-file-earmark me-1"></i>
-                                            Procedimiento
-                                        </th>
-                                        <th>
-                                            <i class="bi bi-bookmark-fill me-1"></i>
-                                            Prioridad
-                                        </th>
-                                        <th>
-                                            <i class="bi bi-calendar-event me-1"></i>
-                                            Fecha Priorización
-                                        </th>
-                                        <th>
-                                            <i class="bi bi-info-circle me-1"></i>
-                                            Estado
-                                        </th>
+                                        <th><i class="bi bi-hash me-1"></i>Aud ID</th>
+                                        <th><i class="bi bi-calendar-event me-1"></i>Fecha Auditoría</th>
+                                        <th><i class="bi bi-info-circle me-1"></i>Acción</th>
+                                        <th><i class="bi bi-person-fill me-1"></i>Usuario</th>
+                                        <th><i class="bi bi-file-earmark me-1"></i>Solicitud ID</th>
+                                        <th><i class="bi bi-bookmark-fill me-1"></i>Prioridad</th>
+                                        <th><i class="bi bi-clock me-1"></i>Tiempo</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    @foreach (var priorizacion in _priorizaciones)
+                                    @foreach (var log in _auditoria)
                                     {
                                         <tr class="table-row-enhanced">
-                                            <td class="fw-500">@priorizacion.Id</td>
-                                            <td class="fw-500">@priorizacion.NombrePaciente</td>
-                                            <td>@priorizacion.Procedimiento</td>
+                                            <td class="fw-bold">#@log.AudId</td>
+                                            <td>@log.AudFecha.ToString("dd/MM/yyyy HH:mm")</td>
                                             <td>
-                                                @if (priorizacion.Prioridad == 1)
-                                                {
-                                                    <span class="badge bg-danger">P1 - URGENTE</span>
-                                                }
-                                                else if (priorizacion.Prioridad == 2)
-                                                {
-                                                    <span class="badge bg-warning text-dark">P2 - ALTA</span>
-                                                }
-                                                else if (priorizacion.Prioridad == 3)
-                                                {
-                                                    <span class="badge bg-info">P3 - MEDIA</span>
-                                                }
-                                                else
-                                                {
-                                                    <span class="badge bg-secondary">P@priorizacion.Prioridad</span>
-                                                }
+                                                <span class="badge bg-success">
+                                                    <i class="bi bi-plus-circle me-1"></i>@log.AudAccion
+                                                </span>
                                             </td>
-                                            <td>@priorizacion.FechaPriorizacion.ToString("dd/MM/yyyy HH:mm")</td>
-                                            <td>
-                                                @if (priorizacion.Estado == "Activa")
-                                                {
-                                                    <span class="badge bg-success">
-                                                        <i class="bi bi-check-circle me-1"></i>Activa
-                                                    </span>
-                                                }
-                                                else if (priorizacion.Estado == "Completada")
-                                                {
-                                                    <span class="badge bg-primary">
-                                                        <i class="bi bi-check-all me-1"></i>Completada
-                                                    </span>
-                                                }
-                                                else
-                                                {
-                                                    <span class="badge bg-secondary">
-                                                        <i class="bi bi-dash-circle me-1"></i>@priorizacion.Estado
-                                                    </span>
-                                                }
-                                            </td>
+                                            <td><i class="bi bi-person-badge me-1"></i>@log.AudUsuario</td>
+                                            <td class="fw-500">#@log.SolicitudQuirurgicaIdSolicitud</td>
+                                            <td><span class="@log.PrioridadCssClass">@log.PrioridadTexto</span></td>
+                                            <td><small class="text-muted">@log.TiempoTranscurrido</small></td>
                                         </tr>
                                     }
                                 </tbody>
                             </table>
                         </div>
 
+                        <!-- PAGINACIÓN -->
+                        @if (_totalPaginas > 1)
+                        {
+                            <div class="d-flex justify-content-between align-items-center mt-3">
+                                <small class="text-muted">
+                                    Mostrando @((_paginaActual - 1) * _registrosPorPagina + 1) 
+                                    - @(Math.Min(_paginaActual * _registrosPorPagina, _totalRegistros)) 
+                                    de @_totalRegistros registros
+                                </small>
+                                <div class="btn-group">
+                                    <button class="btn btn-sm btn-outline-primary" 
+                                            @onclick="PaginaAnterior"
+                                            disabled="@(_paginaActual <= 1)">
+                                        <i class="bi bi-chevron-left"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-secondary" disabled>
+                                        Página @_paginaActual de @_totalPaginas
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-primary" 
+                                            @onclick="PaginaSiguiente"
+                                            disabled="@(_paginaActual >= _totalPaginas)">
+                                        <i class="bi bi-chevron-right"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        }
+
                         <!-- RESUMEN ESTADÍSTICO -->
                         <div class="row mt-4">
-                            <div class="col-md-3">
+                            <div class="col-md-4">
                                 <div class="card border-danger shadow-sm">
                                     <div class="card-body p-3 text-center">
                                         <h6 class="text-danger mb-2">
                                             <i class="bi bi-exclamation-circle me-1"></i>
                                             Urgentes (P1)
                                         </h6>
-                                        <h3 class="text-danger mb-0">@_priorizaciones.Count(p => p.Prioridad == 1)</h3>
+                                        <h3 class="text-danger mb-0">@_auditoria.Count(p => p.Prioridad == 1)</h3>
                                     </div>
                                 </div>
                             </div>
-                            <div class="col-md-3">
+                            <div class="col-md-4">
                                 <div class="card border-warning shadow-sm">
                                     <div class="card-body p-3 text-center">
                                         <h6 class="text-warning mb-2">
                                             <i class="bi bi-exclamation-triangle me-1"></i>
                                             Altas (P2)
                                         </h6>
-                                        <h3 class="text-warning mb-0">@_priorizaciones.Count(p => p.Prioridad == 2)</h3>
+                                        <h3 class="text-warning mb-0">@_auditoria.Count(p => p.Prioridad == 2)</h3>
                                     </div>
                                 </div>
                             </div>
-                            <div class="col-md-3">
+                            <div class="col-md-4">
                                 <div class="card border-info shadow-sm">
                                     <div class="card-body p-3 text-center">
                                         <h6 class="text-info mb-2">
                                             <i class="bi bi-info-circle me-1"></i>
-                                            Medias (P3)
+                                            Otras Prioridades
                                         </h6>
-                                        <h3 class="text-info mb-0">@_priorizaciones.Count(p => p.Prioridad == 3)</h3>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-md-3">
-                                <div class="card border-success shadow-sm">
-                                    <div class="card-body p-3 text-center">
-                                        <h6 class="text-success mb-2">
-                                            <i class="bi bi-check-all me-1"></i>
-                                            Completadas
-                                        </h6>
-                                        <h3 class="text-success mb-0">@_priorizaciones.Count(p => p.Estado == "Completada")</h3>
+                                        <h3 class="text-info mb-0">@_auditoria.Count(p => p.Prioridad > 2)</h3>
                                     </div>
                                 </div>
                             </div>
@@ -197,7 +173,7 @@
                     {
                         <div class="alert alert-info text-center mb-0">
                             <i class="bi bi-info-circle me-2"></i>
-                            No hay priorizaciones registradas en el sistema.
+                            No hay registros de auditoría en el sistema.
                         </div>
                     }
                 </div>
@@ -207,58 +183,45 @@
 </div>
 
 @code {
-    private List<PriorizacionDto>? _priorizaciones;
+    private List<AuditoriaPriorizacionDto> _auditoria = new();
     private bool _cargando = true;
+    private int _paginaActual = 1;
+    private int _registrosPorPagina = 20;
+    private int _totalRegistros = 0;
+    private int _totalPaginas = 0;
 
     protected override async Task OnInitializedAsync()
     {
-        await CargarPriorizaciones();
+        await CargarAuditoria();
     }
 
-    private async Task CargarPriorizaciones()
+    private async Task CargarAuditoria()
     {
         try
         {
             _cargando = true;
-            // Ajusta la URL según tu API
-            _priorizaciones = await Http.GetFromJsonAsync<List<PriorizacionDto>>("http://localhost:5227/api/priorizacion") 
-                ?? new List<PriorizacionDto>();
-
-            // Ordenar por fecha descendente (más recientes primero)
-            _priorizaciones = _priorizaciones.OrderByDescending(p => p.FechaPriorizacion).ToList();
+            
+            var response = await AuditoriaApi.GetHistorialAuditoriaAsync(_paginaActual, _registrosPorPagina);
+            
+            if (response != null)
+            {
+                _auditoria = response.Data ?? new List<AuditoriaPriorizacionDto>();
+                _paginaActual = response.PaginaActual;
+                _registrosPorPagina = response.TamañoPagina;
+                _totalRegistros = response.TotalRegistros;
+                _totalPaginas = response.TotalPaginas;
+            }
+            else
+            {
+                _auditoria = new List<AuditoriaPriorizacionDto>();
+                _totalRegistros = 0;
+                _totalPaginas = 0;
+            }
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Error cargando priorizaciones: {ex.Message}");
-            
-            // Datos de ejemplo si falla la conexión
-            _priorizaciones = new List<PriorizacionDto>
-            {
-                new PriorizacionDto { 
-                    Id = 1, 
-                    NombrePaciente = "Juan García López", 
-                    Procedimiento = "Colecistectomía", 
-                    Prioridad = 1, 
-                    FechaPriorizacion = DateTime.Now.AddDays(-5), 
-                    Estado = "Completada" 
-                },
-                new PriorizacionDto { 
-                    Id = 2, 
-                    NombrePaciente = "María Rodríguez Pérez", 
-                    Procedimiento = "Artroscopia de Rodilla", 
-                    Prioridad = 2, 
-                    FechaPriorizacion = DateTime.Now.AddDays(-3), 
-                    Estado = "Activa" 
-                },
-                new PriorizacionDto { 
-                    Id = 3, 
-                    NombrePaciente = "Carlos Fernández López", 
-                    Procedimiento = "Apendicectomía", 
-                    Prioridad = 1, 
-                    FechaPriorizacion = DateTime.Now.AddDays(-1), 
-                    Estado = "Activa" 
-                }
-            };
+            Console.WriteLine($"Error cargando auditoría: {ex.Message}");
+            _auditoria = new List<AuditoriaPriorizacionDto>();
         }
         finally
         {
@@ -267,14 +230,21 @@
         }
     }
 
-    // DTO para priorizaciones
-    public class PriorizacionDto
+    private async Task PaginaAnterior()
     {
-        public int Id { get; set; }
-        public string NombrePaciente { get; set; } = string.Empty;
-        public string Procedimiento { get; set; } = string.Empty;
-        public int Prioridad { get; set; }
-        public DateTime FechaPriorizacion { get; set; }
-        public string Estado { get; set; } = string.Empty;
+        if (_paginaActual > 1)
+        {
+            _paginaActual--;
+            await CargarAuditoria();
+        }
+    }
+
+    private async Task PaginaSiguiente()
+    {
+        if (_paginaActual < _totalPaginas)
+        {
+            _paginaActual++;
+            await CargarAuditoria();
+        }
     }
 }

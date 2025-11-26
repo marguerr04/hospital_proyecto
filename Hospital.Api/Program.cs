@@ -30,6 +30,7 @@ builder.Services.AddSwaggerGen(c =>
 builder.Services.AddScoped<SolicitudQuirurgicaRealService>();
 builder.Services.AddScoped<ISolicitudQuirurgicaService, SolicitudQuirurgicaRealService>();
 builder.Services.AddScoped<IDiagnosticoService, DiagnosticoService>();
+builder.Services.AddScoped<IAuditoriaPriorizacionService, AuditoriaPriorizacionService>();
 
 // CORS
 builder.Services.AddCors(options =>
