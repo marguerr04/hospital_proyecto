@@ -1,10 +1,15 @@
 ﻿window.dashboardCharts = (function () {
     const charts = {};
+    let dotNetRef = null;
 
     const PALETTE = [
         "#4e79a7", "#f28e2b", "#e15759", "#76b7b2", "#59a14f",
         "#edc948", "#b07aa1", "#ff9da7", "#9c755f", "#bab0ab"
     ];
+
+    function registerDotNet(ref) {
+        dotNetRef = ref;
+    }
 
     function buildPalette(count) {
         const colors = [];
@@ -19,6 +24,24 @@
             charts[id].destroy();
             charts[id] = null;
         }
+    }
+
+    function attachClick(id, chartInstance) {
+        chartInstance.options.onClick = function (evt, activeEls) {
+            if (activeEls && activeEls.length > 0) {
+                const first = activeEls[0];
+                const idx = first.index;
+                const label = chartInstance.data.labels[idx];
+                const value = chartInstance.data.datasets[0].data[idx];
+                if (dotNetRef) {
+                    try {
+                        dotNetRef.invokeMethodAsync('OnChartPointClicked', id, label, Math.round(value));
+                    } catch (e) {
+                        console.warn('Error invocando OnChartPointClicked:', e);
+                    }
+                }
+            }
+        };
     }
 
     function renderBar(id, labels, data, options) {
@@ -92,6 +115,8 @@
                 }
             }
         });
+
+        attachClick(id, charts[id]);
     }
 
     function renderDonut(id, labels, data, colors) {
@@ -142,6 +167,8 @@
                 }
             }
         });
+
+        attachClick(id, charts[id]);
     }
 
     function renderLine(id, labels, data, options) {
@@ -212,6 +239,8 @@
                 }
             }
         });
+
+        attachClick(id, charts[id]);
     }
 
     function renderPie(id, labels, data, colors) {
@@ -262,6 +291,8 @@
                 }
             }
         });
+
+        attachClick(id, charts[id]);
     }
 
     function showDetail(label, value, sexoFilter, gesFilter) {
@@ -274,6 +305,7 @@
         renderLine,
         renderPie,
         showDetail,
-        destroyChart
+        destroyChart,
+        registerDotNet
     };
 })();

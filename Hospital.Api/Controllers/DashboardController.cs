@@ -461,5 +461,73 @@ namespace Hospital.Api.Controllers
 
             return Ok(items);
         }
+
+        // Nuevo endpoint: evolución por procedimiento
+        [HttpGet("evolucion-procedimiento")]
+        public async Task<IActionResult> GetEvolucionProcedimiento(
+            [FromQuery] string procedimiento,
+            [FromQuery] DateTime? desde,
+            [FromQuery] DateTime? hasta,
+            [FromQuery] string? sexo,
+            [FromQuery] bool? ges)
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(procedimiento))
+                    return BadRequest("procedimiento is required");
+
+                var query = _context.SOLICITUD_QUIRURGICA
+                    .Include(s => s.Consentimiento)
+                        .ThenInclude(c => c.Procedimiento)
+                    .Include(s => s.Consentimiento)
+                        .ThenInclude(c => c.Paciente)
+                    .AsQueryable();
+
+                if (desde.HasValue)
+                    query = query.Where(s => s.FechaCreacion >= desde.Value);
+
+                if (hasta.HasValue)
+                    query = query.Where(s => s.FechaCreacion <= hasta.Value);
+
+                if (!string.IsNullOrEmpty(sexo))
+                {
+                    var sClean = sexo.Trim().ToUpper();
+                    query = query.Where(s => s.Consentimiento != null &&
+                                             s.Consentimiento.Paciente != null &&
+                                             s.Consentimiento.Paciente.Sexo.Trim().ToUpper() == sClean);
+                }
+
+                if (ges.HasValue)
+                    query = query.Where(s => s.ValidacionGES == ges.Value);
+
+                var items = await query
+                    .Where(s => s.Consentimiento != null && s.Consentimiento.Procedimiento != null &&
+                                s.Consentimiento.Procedimiento.Nombre == procedimiento)
+                    .Select(s => s.FechaCreacion.Date)
+                    .ToListAsync();
+
+                if (!items.Any())
+                {
+                    // devolver 30 días con 0 para evitar errores en el cliente
+                    var fallback = Enumerable.Range(0, 30)
+                        .Select(i => new { Fecha = DateTime.Today.AddDays(-29 + i).ToString("yyyy-MM-dd"), Cantidad = 0 })
+                        .ToList();
+                    return Ok(fallback);
+                }
+
+                var grouped = items
+                    .GroupBy(d => d)
+                    .Select(g => new { Fecha = g.Key.ToString("yyyy-MM-dd"), Cantidad = g.Count() })
+                    .OrderBy(x => x.Fecha)
+                    .ToList();
+
+                return Ok(grouped);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"❌ Error en GetEvolucionProcedimiento: {ex.Message}");
+                return Ok(Array.Empty<object>());
+            }
+        }
     }
 }
