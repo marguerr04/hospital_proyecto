@@ -2,82 +2,67 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Hospital.Api.Data;
 using Hospital.Api.DTOs;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 
 namespace Hospital.Api.Controllers;
 
-[Route("api/[controller]")]
 [ApiController]
+[Route("api/[controller]")]
 public class AuthController : ControllerBase
 {
     private readonly HospitalDbContext _context;
+    private readonly IConfiguration _configuration;
 
-    public AuthController(HospitalDbContext context)
+    public AuthController(HospitalDbContext context, IConfiguration configuration)
     {
         _context = context;
+        _configuration = configuration;
     }
 
     [HttpPost("login")]
-    public async Task<ActionResult<LoginResponseDto>> Login([FromBody] LoginRequestDto request)
+    public async Task<IActionResult> Login([FromBody] LoginDto dto)
     {
-        try
-        {
-            // Validar que los campos no estén vacíos
-            if (string.IsNullOrWhiteSpace(request.Username) || 
-                string.IsNullOrWhiteSpace(request.Password) || 
-                string.IsNullOrWhiteSpace(request.Rol))
-            {
-                return Ok(new LoginResponseDto
-                {
-                    Exito = false,
-                    Mensaje = "Por favor, complete todos los campos"
-                });
-            }
+        // reutiliza la lÃ³gica de validaciÃ³n de usuario que ya tienes
+        var user = await _context.USUARIO.FirstOrDefaultAsync(u => u.Username == dto.Username);
+        if (user == null || !VerifyPassword(dto.Password, user.PasswordHash)) return Unauthorized();
 
-            // Buscar usuario en la base de datos
-            var usuario = await _context.USUARIO
-                .FirstOrDefaultAsync(u => 
-                    u.Username == request.Username && 
-                    u.Rol == request.Rol && 
-                    u.Activo);
+        if (!user.IsActive) return Forbid();
 
-            if (usuario == null)
-            {
-                return Ok(new LoginResponseDto
-                {
-                    Exito = false,
-                    Mensaje = "Usuario, contraseña o rol incorrectos"
-                });
-            }
+        var (token, expires) = GenerateJwtToken(user.Username, user.Role);
+        return Ok(new { token, expiresAt = expires, username = user.Username, role = user.Role });
+    }
 
-            // Verificar contraseña hasheada con BCrypt
-            bool passwordValida = BCrypt.Net.BCrypt.EnhancedVerify(request.Password, usuario.PasswordHash);
+    private (string, DateTime) GenerateJwtToken(string username, string role)
+    {
+        var key = _configuration["Jwt:Key"];
+        var issuer = _configuration["Jwt:Issuer"];
+        var audience = _configuration["Jwt:Audience"];
+        var expires = DateTime.UtcNow.AddMinutes(int.Parse(_configuration["Jwt:TokenExpiryMinutes"] ?? "5"));
 
-            if (!passwordValida)
-            {
-                return Ok(new LoginResponseDto
-                {
-                    Exito = false,
-                    Mensaje = "Usuario, contraseña o rol incorrectos"
-                });
-            }
+        var claims = new[] {
+            new Claim(JwtRegisteredClaimNames.Sub, username),
+            new Claim(ClaimTypes.Name, username),
+            new Claim(ClaimTypes.Role, role)
+        };
 
-            // Login exitoso
-            return Ok(new LoginResponseDto
-            {
-                Exito = true,
-                Mensaje = "Login exitoso",
-                Username = usuario.Username,
-                Rol = usuario.Rol
-            });
-        }
-        catch (Exception ex)
-        {
-            return StatusCode(500, new LoginResponseDto
-            {
-                Exito = false,
-                Mensaje = $"Error en el servidor: {ex.Message}"
-            });
-        }
+        var tokenDescriptor = new JwtSecurityToken(
+            issuer: issuer,
+            audience: audience,
+            claims: claims,
+            expires: expires,
+            signingCredentials: new SigningCredentials(new SymmetricSecurityKey(Encoding.UTF8.GetBytes(key)), SecurityAlgorithms.HmacSha256)
+        );
+
+        var token = new JwtSecurityTokenHandler().WriteToken(tokenDescriptor);
+        return (token, expires);
+    }
+
+    private bool VerifyPassword(string password, string storedHash)
+    {
+        return BCrypt.Net.BCrypt.Verify(password, storedHash);
     }
 
     [HttpPost("generate-hash")]
