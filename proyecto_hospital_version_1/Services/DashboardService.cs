@@ -144,6 +144,29 @@ namespace proyecto_hospital_version_1.Services
             }
         }
 
+        public async Task<List<EvolucionProcedimientoDto>> ObtenerEvolucionProcedimientoAsync(
+            string procedimiento,
+            DateTime? desde = null,
+            DateTime? hasta = null,
+            string? sexo = null,
+            bool? ges = null)
+        {
+            try
+            {
+                var query = BuildQueryString(desde, hasta, sexo, ges);
+                // asegurar separador correcto entre query y procedimiento
+                var separator = string.IsNullOrEmpty(query) ? "?" : "&";
+                var url = $"api/dashboard/evolucion-procedimiento{query}{separator}procedimiento={System.Net.WebUtility.UrlEncode(procedimiento)}";
+                var result = await _http.GetFromJsonAsync<List<EvolucionProcedimientoDto>>(url);
+                return result ?? new List<EvolucionProcedimientoDto>();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error en ObtenerEvolucionProcedimientoAsync: {ex.Message}");
+                return new List<EvolucionProcedimientoDto>();
+            }
+        }
+
         // ✅ Helper para construir query strings
         private string BuildQueryString(DateTime? desde, DateTime? hasta, string? sexo, bool? ges)
         {
@@ -171,5 +194,12 @@ namespace proyecto_hospital_version_1.Services
         public string Causal { get; set; } = string.Empty;
         public int Total { get; set; }
         public double Porcentaje { get; set; }
+    }
+
+    // DTO para la evolución por procedimiento
+    public class EvolucionProcedimientoDto
+    {
+        public string Fecha { get; set; } = string.Empty; // yyyy-MM-dd
+        public int Cantidad { get; set; }
     }
 }

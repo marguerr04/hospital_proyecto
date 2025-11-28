@@ -3,6 +3,7 @@
 @using proyecto_hospital_version_1.Services
 @using System.Text
 @using System.Globalization
+@using Microsoft.JSInterop
 @inject DashboardService dashboard
 @inject IJSRuntime JS
 @implements IDisposable
@@ -17,39 +18,29 @@
         Unidad de Control de Gestión · @DateTime.Now.ToString("dd/MM/yyyy")
     </MudText>
 
-    <!-- ✅ BARRA DE FILTROS -->
+    <!-- BARRA DE FILTROS SIMPLE -->
     <MudGrid>
         <MudItem xs="12">
             <MudPaper Class="pa-4">
                 <MudStack Row="true" Spacing="2" AlignItems="AlignItems.Center">
-                    <MudDateRangePicker @bind-DateRange="dateRange" Label="Filtrar por fecha" />
-                    <MudSelect T="string" Label="Sexo" @bind-Value="sexoFilter" Dense="true" Class="ml-2" Style="width:140px;">
-                        <MudSelectItem Value="@("Todos")">Todos</MudSelectItem>
-                        <MudSelectItem Value="@("M")">Masculino</MudSelectItem>
-                        <MudSelectItem Value="@("F")">Femenino</MudSelectItem>
+                    <MudDateRangePicker @bind-DateRange="dateRange" Label="Rango fechas" Dense="true" />
+                    <MudSelect T="string" @bind-Value="sexoFilter" Label="Sexo" Dense="true" Style="min-width:120px">
+                        <MudSelectItem Value="Todos">Todos</MudSelectItem>
+                        <MudSelectItem Value="M">Masculino</MudSelectItem>
+                        <MudSelectItem Value="F">Femenino</MudSelectItem>
                     </MudSelect>
-                    <MudSelect T="string" Label="GES" @bind-Value="gesFilter" Dense="true" Class="ml-2" Style="width:140px;">
-                        <MudSelectItem Value="@("Todos")">Todos</MudSelectItem>
-                        <MudSelectItem Value="@("GES")">GES</MudSelectItem>
-                        <MudSelectItem Value="@("NO")">NO GES</MudSelectItem>
+                    <MudSelect T="string" @bind-Value="gesFilter" Label="GES" Dense="true" Style="min-width:120px">
+                        <MudSelectItem Value="Todos">Todos</MudSelectItem>
+                        <MudSelectItem Value="GES">GES</MudSelectItem>
+                        <MudSelectItem Value="NoGES">No GES</MudSelectItem>
                     </MudSelect>
-                    <MudButton Color="Color.Primary" OnClick="ActualizarDatos" Class="ml-2" Disabled="@_isLoading">
-                        @if (_isLoading)
-                        {
-                            <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="me-1" />
-                        }
-                        else
-                        {
-                            <MudIcon Icon="@Icons.Material.Filled.Refresh" Class="me-1" />
-                        }
-                        Actualizar
-                    </MudButton>
+                    <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="@(async ()=> await ActualizarDatos())">Aplicar</MudButton>
                 </MudStack>
             </MudPaper>
         </MudItem>
     </MudGrid>
 
-    <!-- ✅ TARJETAS SUPERIORES KPI -->
+    <!-- TARJETAS SUPERIORES KPI -->
     <MudGrid Justify="Justify.Center" Spacing="3" Class="mt-4">
         <MudItem xs="12" sm="6" md="4">
             <MudPaper Elevation="3" Class="pa-4 text-center dashboard-card">
@@ -77,7 +68,7 @@
         </MudItem>
     </MudGrid>
 
-    <!-- ✅ SECCIÓN PRINCIPAL: TABLA + GRÁFICOS -->
+    <!-- SECCIÓN PRINCIPAL: TABLA + GRÁFICOS -->
     <MudGrid Class="mt-3" Spacing="1">
         <!-- Columna Izquierda: Tabla de Procedimientos -->
         <MudItem xs="12" md="4">
@@ -87,13 +78,13 @@
                     <HeaderContent>
                         <MudTh>Procedimiento</MudTh>
                         <MudTh>Casos</MudTh>
+                        <MudTh></MudTh>
                     </HeaderContent>
                     <RowTemplate>
                         <MudTd>@context.Key</MudTd>
+                        <MudTd>@context.Value</MudTd>
                         <MudTd>
-                            <MudLink Href="#" OnClick="@(async ()=> await OpenDetail(context.Key, context.Value))">
-                                @context.Value
-                            </MudLink>
+                            <MudButton Size="Size.Small" Variant="Variant.Outlined" OnClick="@( async ()=> await OpenDetail(context.Key, context.Value) )">Ver evolución</MudButton>
                         </MudTd>
                     </RowTemplate>
                 </MudTable>
@@ -102,42 +93,42 @@
 
         <!-- Columna Derecha: 4 Gráficos -->
         <MudItem xs="12" md="8">
-            <MudGrid Spacing="0" Class="gx-1 gy-1">
-                <!-- Estados (Procedimientos) -->
+            <MudGrid Spacing="1" Class="gx-1 gy-1">
+                <!-- Procedimientos (barras) -->
                 <MudItem xs="12" sm="6" Class="chart-grid-item">
-                    <MudPaper Class="chart-paper" Elevation="2">
-                        <MudText Typo="Typo.subtitle2" Class="chart-title mb-0">Estados</MudText>
-                        <div class="chart-wrapper">
+                    <MudPaper Class="pa-2" Style="height:220px;">
+                        <MudText Typo="Typo.subtitle2">Procedimientos</MudText>
+                        <div style="height:180px;">
                             <canvas id="chartEstado"></canvas>
                         </div>
                     </MudPaper>
                 </MudItem>
 
-                <!-- Contactabilidad -->
+                <!-- Contactabilidad (donut) -->
                 <MudItem xs="12" sm="6" Class="chart-grid-item">
-                    <MudPaper Class="chart-paper" Elevation="2">
-                        <MudText Typo="Typo.subtitle2" Class="chart-title mb-0">Contactabilidad</MudText>
-                        <div class="chart-wrapper">
+                    <MudPaper Class="pa-2" Style="height:220px;">
+                        <MudText Typo="Typo.subtitle2">Contactabilidad</MudText>
+                        <div style="height:180px;">
                             <canvas id="chartContacto"></canvas>
                         </div>
                     </MudPaper>
                 </MudItem>
 
-                <!-- Evolución Percentil 75 -->
+                <!-- Evolución Percentil (línea) -->
                 <MudItem xs="12" sm="6" Class="chart-grid-item">
-                    <MudPaper Class="chart-paper" Elevation="2">
-                        <MudText Typo="Typo.subtitle2" Class="chart-title mb-0">Evolución Percentil 75</MudText>
-                        <div class="chart-wrapper">
+                    <MudPaper Class="pa-2" Style="height:220px;">
+                        <MudText Typo="Typo.subtitle2">Evolución Percentil 75</MudText>
+                        <div style="height:180px;">
                             <canvas id="chartEvolucion"></canvas>
                         </div>
                     </MudPaper>
                 </MudItem>
 
-                <!-- Causal de Egreso -->
+                <!-- Causal de Egreso (pie) -->
                 <MudItem xs="12" sm="6" Class="chart-grid-item">
-                    <MudPaper Class="chart-paper" Elevation="2">
-                        <MudText Typo="Typo.subtitle2" Class="chart-title mb-0">Causal de Egreso</MudText>
-                        <div class="chart-wrapper">
+                    <MudPaper Class="pa-2" Style="height:220px;">
+                        <MudText Typo="Typo.subtitle2">Causal de Egreso</MudText>
+                        <div style="height:180px;">
                             <canvas id="chartEgreso"></canvas>
                         </div>
                     </MudPaper>
@@ -145,38 +136,78 @@
             </MudGrid>
         </MudItem>
     </MudGrid>
+
+    <!-- Area de detalle / evolución de procedimiento -->
+    @if (showProcedureDetail)
+    {
+        <MudGrid Class="mt-3">
+            <MudItem xs="12">
+                <MudPaper Class="pa-3" Elevation="2">
+                    <MudStack Row="true" AlignItems="AlignItems.Center" JustifyContent="JustifySpaceBetween">
+                        <MudText Typo="Typo.subtitle1">Evolución: @selectedProcedureName (@selectedProcedureValue)</MudText>
+                        <MudButton Color="Color.Primary" Variant="Variant.Text" OnClick="@( async ()=> { showProcedureDetail = false; await InvokeAsync(StateHasChanged); })">Cerrar</MudButton>
+                    </MudStack>
+                    <div style="height:320px;" class="mt-2">
+                        <canvas id="chartProcedimientoEvolucion"></canvas>
+                    </div>
+                </MudPaper>
+            </MudItem>
+        </MudGrid>
+    }
 </MudContainer>
 
 @code {
     private int Percentil75;
     private int Reduccion;
     private int Pendientes;
-    private DateRange dateRange = new DateRange(DateTime.Today.AddMonths(-6), DateTime.Today);
+    // inicia por defecto con periodo de 1 mes atrás hasta hoy
+    private DateRange dateRange = new DateRange(DateTime.Today.AddMonths(-1), DateTime.Today);
     private string sexoFilter = "Todos";
     private string gesFilter = "Todos";
     private List<KeyValuePair<string,int>> procedimientosList = new();
     private bool _isLoading = false;
     private CancellationTokenSource _cts = new();
 
+    private DotNetObjectReference<Dashboard_verdadero>? _dotNetRef;
+
+    // Detalle / evolución de procedimiento seleccionado
+    private string? selectedProcedureName;
+    private int selectedProcedureValue;
+    private bool showProcedureDetail = false;
+
     protected override async Task OnInitializedAsync()
     {
         await ActualizarDatos();
     }
 
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            _dotNetRef = DotNetObjectReference.Create(this);
+            try
+            {
+                await JS.InvokeVoidAsync("dashboardCharts.registerDotNet", _dotNetRef);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"⚠️ No fue posible registrar DotNet en JS: {ex.Message}");
+            }
+        }
+    }
+
     private async Task ActualizarDatos()
     {
         if (_isLoading) return; // Prevenir múltiples ejecuciones simultáneas
-        
         await LoadData();
     }
 
     private async Task LoadData()
     {
         _isLoading = true;
-        
+
         try
         {
-            // Cancelar operaciones anteriores si las hay
             if (_cts.IsCancellationRequested)
             {
                 _cts.Dispose();
@@ -185,7 +216,7 @@
 
             var token = _cts.Token;
 
-            // 1️⃣ Cargar KPIs básicos
+            // KPIs básicos
             Percentil75 = await dashboard.ObtenerPercentil75Async();
             if (token.IsCancellationRequested) return;
 
@@ -195,13 +226,13 @@
             Pendientes = await dashboard.ObtenerPendientesAsync();
             if (token.IsCancellationRequested) return;
 
-            // 2️⃣ Preparar parámetros de filtros
+            // filtros
             var desde = dateRange.Start;
             var hasta = dateRange.End;
             string? sexoParam = sexoFilter == "Todos" ? null : sexoFilter;
             bool? gesParam = gesFilter == "Todos" ? null : (gesFilter == "GES" ? true : (bool?)false);
 
-            // 3️⃣ Cargar datos de gráficos con filtros
+            // cargar datos
             var procedimientos = await dashboard.ObtenerProcedimientosPorTipoAsync(desde, hasta, sexoParam, gesParam);
             if (token.IsCancellationRequested) return;
 
@@ -214,28 +245,10 @@
             var causales = await dashboard.ObtenerCausalEgresoAsync(desde, hasta, sexoParam, gesParam);
             if (token.IsCancellationRequested) return;
 
-            // 4️⃣ Debug logs
-            Console.WriteLine($"✅ Procedimientos: {procedimientos?.Count ?? 0}");
-            Console.WriteLine($"✅ Contactabilidad: {contactabilidad?.Count ?? 0}");
-            Console.WriteLine($"✅ Evolución: {evolucion?.Count ?? 0}");
-            Console.WriteLine($"✅ Causales: {causales?.Count ?? 0}");
+            // renderizamos
+            await InvokeAsync(StateHasChanged);
+            await Task.Delay(150, token);
 
-            // 5️⃣ Forzar render para que los canvas existan
-            try
-            {
-                await InvokeAsync(StateHasChanged);
-                await Task.Delay(150, token); // Delay cancelable
-            }
-            catch (TaskCanceledException)
-            {
-                return;
-            }
-            catch (ObjectDisposedException)
-            {
-                return; // Componente disposed durante StateHasChanged
-            }
-
-            // 6️⃣ Renderizar gráficos con Chart.js (CON PROTECCIÓN ADICIONAL)
             if (procedimientos?.Any() == true && !token.IsCancellationRequested)
             {
                 try
@@ -243,15 +256,10 @@
                     var labels = procedimientos.Keys.ToArray();
                     var data = procedimientos.Values.Select(v => (double)v).ToArray();
                     var colors = GenerarColores(procedimientos.Count);
-                    
-                    if (token.IsCancellationRequested) return;
-                    
-                    await JS.InvokeVoidAsync("dashboardCharts.renderBar", "chartEstado", labels, data, colors);
+
+                    await JS.InvokeVoidAsync("dashboardCharts.renderBar", "chartEstado", labels, data, new { backgroundColor = colors, label = "Casos" });
                     procedimientosList = procedimientos.Select(kv => new KeyValuePair<string,int>(kv.Key, kv.Value)).ToList();
                 }
-                catch (TaskCanceledException) { return; }
-                catch (JSDisconnectedException) { return; }
-                catch (ObjectDisposedException) { return; }
                 catch (Exception ex)
                 {
                     Console.WriteLine($"⚠️ Error renderizando gráfico Estados: {ex.Message}");
@@ -265,14 +273,9 @@
                     var labels = contactabilidad.Keys.ToArray();
                     var data = contactabilidad.Values.ToArray();
                     var colors = GenerarColores(contactabilidad.Count);
-                    
-                    if (token.IsCancellationRequested) return;
-                    
+
                     await JS.InvokeVoidAsync("dashboardCharts.renderDonut", "chartContacto", labels, data, colors);
                 }
-                catch (TaskCanceledException) { return; }
-                catch (JSDisconnectedException) { return; }
-                catch (ObjectDisposedException) { return; }
                 catch (Exception ex)
                 {
                     Console.WriteLine($"⚠️ Error renderizando gráfico Contactabilidad: {ex.Message}");
@@ -286,14 +289,9 @@
                     var labels = evolucion.Select(e => e.Mes).ToArray();
                     var data = evolucion.Select(e => (double)e.Valor).ToArray();
                     var options = new { label = "Percentil 75" };
-                    
-                    if (token.IsCancellationRequested) return;
-                    
+
                     await JS.InvokeVoidAsync("dashboardCharts.renderLine", "chartEvolucion", labels, data, options);
                 }
-                catch (TaskCanceledException) { return; }
-                catch (JSDisconnectedException) { return; }
-                catch (ObjectDisposedException) { return; }
                 catch (Exception ex)
                 {
                     Console.WriteLine($"⚠️ Error renderizando gráfico Evolución: {ex.Message}");
@@ -307,29 +305,14 @@
                     var labels = causales.Keys.ToArray();
                     var data = causales.Values.Select(v => (double)v).ToArray();
                     var colors = GenerarColores(causales.Count);
-                    
-                    if (token.IsCancellationRequested) return;
-                    
+
                     await JS.InvokeVoidAsync("dashboardCharts.renderPie", "chartEgreso", labels, data, colors);
                 }
-                catch (TaskCanceledException) { return; }
-                catch (JSDisconnectedException) { return; }
-                catch (ObjectDisposedException) { return; }
                 catch (Exception ex)
                 {
                     Console.WriteLine($"⚠️ Error renderizando gráfico Causales: {ex.Message}");
                 }
             }
-        }
-        catch (ObjectDisposedException)
-        {
-            // Componente disposed, ignorar silenciosamente
-            Console.WriteLine("⚠️ Componente disposed durante LoadData");
-        }
-        catch (TaskCanceledException)
-        {
-            // Operación cancelada, ignorar
-            Console.WriteLine("⚠️ LoadData cancelado");
         }
         catch (Exception ex)
         {
@@ -338,15 +321,7 @@
         finally
         {
             _isLoading = false;
-            // Solo llamar a StateHasChanged si el componente no ha sido disposed
-            try
-            {
-                await InvokeAsync(StateHasChanged);
-            }
-            catch (ObjectDisposedException)
-            {
-                // Componente ya disposed, ignorar
-            }
+            try { await InvokeAsync(StateHasChanged); } catch { }
         }
     }
 
@@ -354,12 +329,47 @@
     {
         try
         {
+            selectedProcedureName = label;
+            selectedProcedureValue = value;
+            showProcedureDetail = true;
+            await InvokeAsync(StateHasChanged);
+
+            var desde = dateRange.Start;
+            var hasta = dateRange.End;
+            string? sexoParam = sexoFilter == "Todos" ? null : sexoFilter;
+            bool? gesParam = gesFilter == "Todos" ? null : (gesFilter == "GES" ? true : (bool?)false);
+
+            var evolucionProcedimiento = await dashboard.ObtenerEvolucionProcedimientoAsync(
+                label,
+                desde,
+                hasta,
+                sexoParam,
+                gesParam
+            );
+
+            await InvokeAsync(StateHasChanged);
+            await Task.Delay(120);
+
+            if (evolucionProcedimiento != null && evolucionProcedimiento.Any())
+            {
+                var labels = evolucionProcedimiento.Select(e => e.Fecha).ToArray();
+                var data = evolucionProcedimiento.Select(e => (double)e.Cantidad).ToArray();
+                await JS.InvokeVoidAsync("dashboardCharts.renderLine",
+                    "chartProcedimientoEvolucion", labels, data, new { label = $"Evolución {label}" });
+            }
+
             await JS.InvokeVoidAsync("dashboardCharts.showDetail", label, value, sexoFilter, gesFilter);
         }
         catch (Exception ex)
         {
             Console.WriteLine($"❌ Error abriendo detalle: {ex.Message}");
         }
+    }
+
+    [JSInvokable("OnChartPointClicked")]
+    public async Task OnChartPointClicked(string chartId, string label, int value)
+    {
+        await OpenDetail(label, value);
     }
 
     private string[] GenerarColores(int cantidad)
@@ -383,5 +393,6 @@
     {
         _cts?.Cancel();
         _cts?.Dispose();
+        _dotNetRef?.Dispose();
     }
 }
