@@ -43,6 +43,57 @@ namespace Hospital.Api.Controllers
             return Task.FromResult<ActionResult<int>>(Ok(25));
         }
 
+        //  Nuevo endpoint para reducción real de solicitudes
+        [HttpGet("reduccion-real")]
+        public async Task<ActionResult<object>> GetReduccionReal(
+            [FromQuery] DateTime? desde,
+            [FromQuery] DateTime? hasta)
+        {
+            try
+            {
+                var fechaHasta = hasta ?? DateTime.Today;
+                var fechaDesde = desde ?? fechaHasta.AddMonths(-1);
+
+                var mesActualInicio = new DateTime(fechaHasta.Year, fechaHasta.Month, 1);
+                var mesActualFin = mesActualInicio.AddMonths(1).AddDays(-1);
+
+                var mesAnteriorInicio = mesActualInicio.AddMonths(-1);
+                var mesAnteriorFin = mesActualInicio.AddDays(-1);
+
+                var solicitudesMesActual = await _context.SOLICITUD_QUIRURGICA
+                    .Where(s => s.FechaCreacion >= mesActualInicio && s.FechaCreacion <= mesActualFin)
+                    .CountAsync();
+
+                var solicitudesMesAnterior = await _context.SOLICITUD_QUIRURGICA
+                    .Where(s => s.FechaCreacion >= mesAnteriorInicio && s.FechaCreacion <= mesAnteriorFin)
+                    .CountAsync();
+
+                int porcentajeReduccion = 0;
+                if (solicitudesMesAnterior > 0)
+                {
+                    var diferencia = solicitudesMesAnterior - solicitudesMesActual;
+                    porcentajeReduccion = (int)Math.Round((diferencia * 100.0) / solicitudesMesAnterior);
+                }
+
+                return Ok(new
+                {
+                    PorcentajeReduccion = porcentajeReduccion,
+                    MesActual = solicitudesMesActual,
+                    MesAnterior = solicitudesMesAnterior
+                });
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error en GetReduccionReal: {ex.Message}");
+                return Ok(new
+                {
+                    PorcentajeReduccion = 0,
+                    MesActual = 0,
+                    MesAnterior = 0
+                });
+            }
+        }
+
         //  Total de solicitudes quirurgicas registradas
         [HttpGet("pendientes")]
         public async Task<ActionResult<int>> GetPendientes()
@@ -51,7 +102,7 @@ namespace Hospital.Api.Controllers
             return Ok(count);
         }
 
-        //  ✅ CONTACTABILIDAD CON DATOS REALES BASADOS EN CONTACTO_SOLICITUD
+        //  CONTACTABILIDAD CON DATOS REALES BASADOS EN CONTACTO_SOLICITUD
         [HttpGet("contactabilidad")]
         public async Task<ActionResult<Dictionary<string, double>>> GetContactabilidad(
             [FromQuery] DateTime? desde,
@@ -61,33 +112,33 @@ namespace Hospital.Api.Controllers
         {
             try
             {
-                // 1️⃣ Query base
+                DateTime desdeValue = (desde?.Date) ?? DateTime.MinValue;
+                DateTime hastaExclusiveValue = (hasta?.Date.AddDays(1)) ?? DateTime.MaxValue;
+
                 var query = _context.SOLICITUD_QUIRURGICA
                     .Include(s => s.Consentimiento)
                     .ThenInclude(c => c.Paciente)
                     .AsQueryable();
 
-                // 2️⃣ Aplicar filtros
-                if (desde.HasValue)
-                    query = query.Where(s => s.FechaCreacion >= desde.Value);
-                
-                if (hasta.HasValue)
-                    query = query.Where(s => s.FechaCreacion <= hasta.Value);
-                
+                query = query.Where(s => s.FechaCreacion >= desdeValue && s.FechaCreacion < hastaExclusiveValue);
+
                 if (!string.IsNullOrEmpty(sexo))
-                    query = query.Where(s => s.Consentimiento.Paciente.Sexo.Trim().ToUpper() == sexo.Trim().ToUpper());
-                
+                {
+                    var sexoLimpio = sexo.Trim().ToUpper();
+                    query = query.Where(s => s.Consentimiento != null && s.Consentimiento.Paciente != null && s.Consentimiento.Paciente.Sexo.Trim().ToUpper() == sexoLimpio);
+                }
+
                 if (ges.HasValue)
                     query = query.Where(s => s.ValidacionGES == ges.Value);
 
-                // 3️⃣ Obtener solicitudes con estado de contacto
                 var solicitudes = await query
                     .Select(s => new
                     {
                         SolicitudId = s.IdSolicitud,
                         TieneContacto = _context.CONTACTO_SOLICITUD
                             .Any(c => c.SOLICITUD_QUIRURGICA_idSolicitud == s.IdSolicitud &&
-                                     c.fechaContacto >= (desde ?? DateTime.MinValue))
+                                      c.fechaContacto >= desdeValue &&
+                                      c.fechaContacto < hastaExclusiveValue)
                     })
                     .ToListAsync();
 
@@ -104,7 +155,6 @@ namespace Hospital.Api.Controllers
                 var contactados = solicitudes.Count(s => s.TieneContacto);
                 var noContactados = total - contactados;
 
-                // Calcular porcentajes
                 var contactabilidad = new Dictionary<string, double>
                 {
                     { "Contactado", Math.Round((contactados * 100.0) / total, 1) },
@@ -115,18 +165,17 @@ namespace Hospital.Api.Controllers
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"❌ Error en GetContactabilidad: {ex.Message}");
-                
-                // Fallback
+                Console.WriteLine($"Error en GetContactabilidad: {ex.Message}");
+
                 return Ok(new Dictionary<string, double>
                 {
-                    { "Contactado", 45.0 },
-                    { "No contactado", 55.0 }
+                    { "Contactado", 0 },
+                    { "No contactado", 0 }
                 });
             }
         }
 
-        //  ✅ PROCEDIMIENTOS CON DATOS REALES Y FILTROS
+        //  PROCEDIMIENTOS CON DATOS REALES Y FILTROS
         [HttpGet("procedimientos")]
         public async Task<ActionResult<Dictionary<string, int>>> GetProcedimientosPorTipo(
             [FromQuery] DateTime? desde,
@@ -138,7 +187,9 @@ namespace Hospital.Api.Controllers
             {
                 Console.WriteLine($"[DEBUG] GetProcedimientosPorTipo - Filtros: desde={desde}, hasta={hasta}, sexo={sexo}, ges={ges}");
 
-                // 1️⃣ Query base con navegaciones
+                DateTime? desdeDate = desde?.Date;
+                DateTime? hastaExclusive = hasta?.Date.AddDays(1);
+
                 var query = _context.SOLICITUD_QUIRURGICA
                     .Include(s => s.Consentimiento)
                         .ThenInclude(c => c.Procedimiento)
@@ -146,12 +197,11 @@ namespace Hospital.Api.Controllers
                         .ThenInclude(c => c.Paciente)
                     .AsQueryable();
 
-                // 2️⃣ Aplicar filtros
-                if (desde.HasValue)
-                    query = query.Where(s => s.FechaCreacion >= desde.Value);
+                if (desdeDate.HasValue)
+                    query = query.Where(s => s.FechaCreacion >= desdeDate.Value);
 
-                if (hasta.HasValue)
-                    query = query.Where(s => s.FechaCreacion <= hasta.Value);
+                if (hastaExclusive.HasValue)
+                    query = query.Where(s => s.FechaCreacion < hastaExclusive.Value);
 
                 if (!string.IsNullOrEmpty(sexo))
                     query = query.Where(s => s.Consentimiento != null && 
@@ -161,7 +211,6 @@ namespace Hospital.Api.Controllers
                 if (ges.HasValue)
                     query = query.Where(s => s.ValidacionGES == ges.Value);
 
-                // 3️⃣ Ejecutar query
                 var procedimientosSolicitudes = await query
                     .Where(s => s.Consentimiento != null && s.Consentimiento.Procedimiento != null)
                     .Select(s => new
@@ -173,7 +222,6 @@ namespace Hospital.Api.Controllers
 
                 Console.WriteLine($"[DEBUG] Solicitudes con procedimiento: {procedimientosSolicitudes.Count}");
 
-                // 4️⃣ Agrupar y contar
                 if (procedimientosSolicitudes.Any())
                 {
                     var resultado = procedimientosSolicitudes
@@ -183,58 +231,46 @@ namespace Hospital.Api.Controllers
                         .Take(20)
                         .ToDictionary(x => x.Nombre ?? "Sin nombre", x => x.Count);
 
-                    Console.WriteLine($"[DEBUG] ✅ Resultado: {resultado.Count} procedimientos únicos");
+                    Console.WriteLine($"[DEBUG] Resultado: {resultado.Count} procedimientos únicos");
                     return Ok(resultado);
                 }
 
-                // ❌ FALLBACK: Si no hay datos, devolver sintéticos
-                Console.WriteLine("[DEBUG] ❌ No se encontraron datos - Devolviendo sintéticos");
-                var random = new Random();
-                return Ok(new Dictionary<string, int>
-                {
-                    { "Colecistectomía Lap.", random.Next(10, 25) },
-                    { "Apendicectomía", random.Next(8, 20) },
-                    { "Hernioplastía Inguinal", random.Next(7, 18) },
-                    { "Prótesis Total Cadera", random.Next(5, 15) },
-                    { "Cesárea Programada", random.Next(12, 28) },
-                    { "Histerectomía", random.Next(4, 12) },
-                    { "Prótesis Total Rodilla", random.Next(6, 16) },
-                    { "Tiroidectomía", random.Next(3, 10) }
-                });
+                Console.WriteLine("[DEBUG] No se encontraron datos - Devolviendo diccionario vacío");
+                return Ok(new Dictionary<string, int>());
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"❌ Error en GetProcedimientosPorTipo: {ex.Message}");
+                Console.WriteLine($"Error en GetProcedimientosPorTipo: {ex.Message}");
                 return Ok(new Dictionary<string, int>());
             }
         }
 
-        // 🆕 NUEVO ENDPOINT: Evolución del percentil a través del tiempo
+        // Evolución percentil
         [HttpGet("evolucion-percentil")]
         public async Task<IActionResult> GetEvolucionPercentil(
             [FromQuery] DateTime? desde,
             [FromQuery] DateTime? hasta,
-            [FromQuery] string? sexo,
+                    [FromQuery] string? sexo,
             [FromQuery] bool? ges)
         {
             try
             {
                 Console.WriteLine($"🔍 Filtros: desde={desde}, hasta={hasta}, sexo={sexo}, ges={ges}");
 
-                // 1️⃣ Query base: SOLICITUD_QUIRURGICA con navegaciones
+                DateTime? desdeDate = desde?.Date;
+                DateTime? hastaExclusive = hasta?.Date.AddDays(1);
+
                 var query = _context.SOLICITUD_QUIRURGICA
                     .Include(s => s.Consentimiento)
                     .ThenInclude(c => c.Paciente)
                     .AsQueryable();
 
-                // 2️⃣ Aplicar filtros de fecha (usar FechaCreacion de la solicitud)
-                if (desde.HasValue)
-                    query = query.Where(s => s.FechaCreacion >= desde.Value);
+                if (desdeDate.HasValue)
+                    query = query.Where(s => s.FechaCreacion >= desdeDate.Value);
 
-                if (hasta.HasValue)
-                    query = query.Where(s => s.FechaCreacion <= hasta.Value);
+                if (hastaExclusive.HasValue)
+                    query = query.Where(s => s.FechaCreacion < hastaExclusive.Value);
 
-                // 3️⃣ Aplicar filtro de sexo (ROBUSTO: limpiar espacios invisibles)
                 if (!string.IsNullOrEmpty(sexo))
                 {
                     var sexoLimpio = sexo.Trim().ToUpper(); // M o F
@@ -243,13 +279,11 @@ namespace Hospital.Api.Controllers
                                            s.Consentimiento.Paciente.Sexo.Trim().ToUpper() == sexoLimpio);
                 }
 
-                // 4️⃣ Aplicar filtro GES (usar ValidacionGES que YA EXISTE)
                 if (ges.HasValue)
                     query = query.Where(s => s.ValidacionGES == ges.Value);
 
                 Console.WriteLine($"🔍 Query construida, ejecutando...");
 
-                // 5️⃣ Ejecutar query y obtener datos para debug
                 var solicitudesFiltradas = await query
                     .Select(s => new
                     {
@@ -263,7 +297,6 @@ namespace Hospital.Api.Controllers
 
                 Console.WriteLine($"🔍 Solicitudes obtenidas: {solicitudesFiltradas.Count}");
 
-                // 6️⃣ Agrupar por mes y calcular percentil simplificado
                 var datosPorMes = solicitudesFiltradas
                     .GroupBy(s => new { Year = s.FechaCreacion.Year, Month = s.FechaCreacion.Month })
                     .Select(g => new
@@ -271,7 +304,6 @@ namespace Hospital.Api.Controllers
                         Year = g.Key.Year,
                         Month = g.Key.Month,
                         TotalSolicitudes = g.Count(),
-                        // Simplificado: usar count total como "percentil" por ahora
                         SolicitudesPorPaciente = g.GroupBy(x => x.PacienteId).Select(p => p.Count()).ToList()
                     })
                     .OrderBy(x => x.Year)
@@ -280,7 +312,6 @@ namespace Hospital.Api.Controllers
 
                 Console.WriteLine($"🔍 Meses agrupados: {datosPorMes.Count}");
 
-                // 7️⃣ Calcular percentil 75 para cada mes y formatear respuesta
                 var resultado = datosPorMes.Select(mes =>
                 {
                     var lista = mes.SolicitudesPorPaciente;
@@ -304,42 +335,23 @@ namespace Hospital.Api.Controllers
 
                 if (resultado.Any())
                 {
-                    Console.WriteLine($"✅ Evolución calculada para {resultado.Count} meses con datos reales");
+                    Console.WriteLine($"Evolución calculada para {resultado.Count} meses con datos reales");
                     return Ok(resultado);
                 }
 
-                Console.WriteLine("🔄 Sin datos reales, devolviendo fallback");
-                // 🔄 FALLBACK: datos sintéticos si no hay datos reales
-                var fallback = new[]
-                {
-                    new { Mes = "Ene", Valor = 75 },
-                    new { Mes = "Feb", Valor = 78 },
-                    new { Mes = "Mar", Valor = 72 },
-                    new { Mes = "Abr", Valor = 80 },
-                    new { Mes = "May", Valor = 82 },
-                    new { Mes = "Jun", Valor = 85 }
-                };
-                
-                return Ok(fallback);
+                Console.WriteLine("Sin datos reales, devolviendo lista vacía");
+                return Ok(new List<object>());
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"❌ Error en GetEvolucionPercentil: {ex.Message}");
-                Console.WriteLine($"❌ StackTrace: {ex.StackTrace}");
-                
-                // 🔄 FALLBACK: datos sintéticos si falla la consulta
-                var fallback = new[]
-                {
-                    new { Mes = "Ene", Valor = 75 },
-                    new { Mes = "Feb", Valor = 78 },
-                    new { Mes = "Mar", Valor = 72 }
-                };
-                
-                return Ok(fallback);
+                Console.WriteLine($"Error en GetEvolucionPercentil: {ex.Message}");
+                Console.WriteLine($"StackTrace: {ex.StackTrace}");
+
+                return Ok(new List<object>());
             }
         }
 
-        //  ✅ NUEVO: Endpoint auxiliar para verificar datos
+        //  NUEVO: Endpoint auxiliar para verificar datos
         [HttpGet("estadisticas")]
         public async Task<ActionResult<object>> GetEstadisticas()
         {
@@ -356,11 +368,7 @@ namespace Hospital.Api.Controllers
             return Ok(stats);
         }
 
-
-
         // endpoint para los egressos de solciitud
-
-
         [HttpGet("egresos/total")]
         public async Task<ActionResult<int>> GetTotalEgresos()
         {
@@ -378,17 +386,21 @@ namespace Hospital.Api.Controllers
         {
             try
             {
+                // Normalize dates
+                DateTime? desdeDate = desde?.Date;
+                DateTime? hastaExclusive = hasta?.Date.AddDays(1);
+
                 // 1️⃣ Query base con navegaciones
                 var query = _context.EGRESO_SOLICITUD
                     .Include(e => e.CausalSalida)
                     .AsQueryable();
 
                 // 2️⃣ Aplicar filtro de fecha
-                if (desde.HasValue)
-                    query = query.Where(e => e.FechaSalida >= desde.Value);
-                
-                if (hasta.HasValue)
-                    query = query.Where(e => e.FechaSalida <= hasta.Value);
+                if (desdeDate.HasValue)
+                    query = query.Where(e => e.FechaSalida >= desdeDate.Value);
+
+                if (hastaExclusive.HasValue)
+                    query = query.Where(e => e.FechaSalida < hastaExclusive.Value);
 
                 // 3️⃣ Si hay filtros de sexo o GES, necesitamos join con solicitud
                 if (!string.IsNullOrEmpty(sexo) || ges.HasValue)

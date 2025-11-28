@@ -261,7 +261,8 @@ else
 
                         <!-- Buscador de Profesionales -->
                         <div class="mb-3">
-                            <BuscadorProfesional OnProfesionalEncontrado="HandleProfesionalSeleccionado" />
+                            <BuscadorProfesional OnProfesionalEncontrado="HandleProfesionalSeleccionado"
+                             OnRutCambiado="FiltroProfesionalesPorRut" />
                         </div>
 
                         <!-- Tabla de Profesionales con Paginación -->
@@ -635,6 +636,7 @@ else
     private int _itemsPorPaginaProfesionales = 6; // Máximo 6 filas
     private int _totalProfesionales = 0;
     private int _totalPaginasProfesionales = 0;
+    private List<ProfesionalDto>? _profesionalesFiltrados;
 
     protected override async Task OnInitializedAsync()
     {
@@ -828,15 +830,60 @@ else
         StateHasChanged();
     }
 
+    private void FiltroProfesionalesPorRut(string rutTexto)
+    {
+        if (string.IsNullOrWhiteSpace(rutTexto))
+        {
+            //  RESTAURAR TODA LA LISTA cuando está vacío
+            _profesionalesFiltrados = null; // Resetear filtro
+            _totalProfesionales = _profesionalesCompletos?.Count ?? 0;
+            _totalPaginasProfesionales = (int)Math.Ceiling((double)_totalProfesionales / _itemsPorPaginaProfesionales);
+            _paginaActualProfesionales = 1;
+            ActualizarPaginaProfesionales();
+        }
+        else
+        {
+            // Filtrar profesionales por RUT
+            var rutLimpio = rutTexto.Trim();
+            _profesionalesFiltrados = _profesionalesCompletos?
+                .Where(p => !string.IsNullOrEmpty(p.RutCompleto) &&
+                           p.RutCompleto.Contains(rutLimpio, StringComparison.OrdinalIgnoreCase))
+                .ToList();
+
+            // Actualizar paginación con la lista filtrada
+            if (_profesionalesFiltrados != null && _profesionalesFiltrados.Any())
+            {
+                _totalProfesionales = _profesionalesFiltrados.Count;
+                _totalPaginasProfesionales = (int)Math.Ceiling((double)_totalProfesionales / _itemsPorPaginaProfesionales);
+                _paginaActualProfesionales = 1;
+
+                _profesionalesPaginados = _profesionalesFiltrados
+                    .Take(_itemsPorPaginaProfesionales)
+                    .ToList();
+            }
+            else
+            {
+                _profesionalesPaginados = new List<ProfesionalDto>();
+                _totalProfesionales = 0;
+                _totalPaginasProfesionales = 0;
+            }
+        }
+
+        StateHasChanged();
+    }
+
+
     private void ActualizarPaginaProfesionales()
     {
-        if (_profesionalesCompletos == null || !_profesionalesCompletos.Any())
+        var listaBase = _profesionalesFiltrados ?? _profesionalesCompletos;
+
+        if (listaBase == null || !listaBase.Any())
         {
             _profesionalesPaginados = new List<ProfesionalDto>();
             return;
         }
 
-        _profesionalesPaginados = _profesionalesCompletos
+        _profesionalesPaginados = listaBase
             .Skip((_paginaActualProfesionales - 1) * _itemsPorPaginaProfesionales)
             .Take(_itemsPorPaginaProfesionales)
             .ToList();
@@ -862,7 +909,7 @@ else
         }
     }
 
-    // ========== MÉTODOS PARA SOLICITUDES RECIENTES ==========
+    //  MÉTODOS PARA SOLICITUDES RECIENTES
     
     private async Task CargarSolicitudesRecientes()
     {
@@ -891,7 +938,7 @@ else
         }
     }
 
-    // ========== MÉTODOS PARA PACIENTES ==========
+    //  MÉTODOS PARA PACIENTES 
 
     private void HandlePacienteSeleccionado(PacienteDto? paciente)
     {

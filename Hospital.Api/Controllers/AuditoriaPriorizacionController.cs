@@ -16,12 +16,7 @@ namespace Hospital.Api.Controllers
             _service = service;
         }
 
-        /// <summary>
-        /// Obtiene el historial de auditoría de priorizaciones con paginación
-        /// </summary>
-        /// <param name="pageNumber">Número de página (por defecto 1)</param>
-        /// <param name="pageSize">Cantidad de registros por página (por defecto 20)</param>
-        /// <returns>Lista de registros de auditoría</returns>
+
         [HttpGet]
         public async Task<IActionResult> GetHistorialAuditoria([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 20)
         {
@@ -43,10 +38,6 @@ namespace Hospital.Api.Controllers
             return Ok(response);
         }
 
-        /// <summary>
-        /// Obtiene el total de registros de auditoría
-        /// </summary>
-        /// <returns>Cantidad total de registros</returns>
         [HttpGet("total")]
         public async Task<IActionResult> GetTotalRegistros()
         {

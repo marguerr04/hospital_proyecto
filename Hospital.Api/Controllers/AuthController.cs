@@ -49,7 +49,6 @@ public class AuthController : ControllerBase
                 });
             }
 
-            // Verificar contraseña hasheada con BCrypt
             bool passwordValida = BCrypt.Net.BCrypt.EnhancedVerify(request.Password, usuario.PasswordHash);
 
             if (!passwordValida)
@@ -61,7 +60,6 @@ public class AuthController : ControllerBase
                 });
             }
 
-            // Login exitoso
             return Ok(new LoginResponseDto
             {
                 Exito = true,

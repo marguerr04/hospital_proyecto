@@ -27,6 +27,26 @@ namespace proyecto_hospital_version_1.Services
             }
         }
 
+        public async Task<int> ObtenerPercentil75FiltradoAsync(
+            DateTime? desde = null,
+            DateTime? hasta = null,
+            string? sexo = null,
+            bool? ges = null)
+        {
+            try
+            {
+                var query = BuildQueryString(desde, hasta, sexo, ges);
+                var url = $"api/dashboard/percentil75-filtrado{query}";
+                var result = await _http.GetFromJsonAsync<int>(url);
+                return result;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error en ObtenerPercentil75FiltradoAsync: {ex.Message}");
+                return 0;
+            }
+        }
+
         public async Task<int> ObtenerReduccionAsync()
         {
             try
@@ -41,6 +61,24 @@ namespace proyecto_hospital_version_1.Services
             }
         }
 
+        public async Task<object> ObtenerReduccionRealAsync(
+            DateTime? desde = null,
+            DateTime? hasta = null)
+        {
+            try
+            {
+                var query = BuildQueryString(desde, hasta, null, null);
+                var url = $"api/dashboard/reduccion-real{query}";
+                var result = await _http.GetFromJsonAsync<object>(url);
+                return result ?? new { PorcentajeReduccion = 0, MesActual = 0, MesAnterior = 0 };
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error en ObtenerReduccionRealAsync: {ex.Message}");
+                return new { PorcentajeReduccion = 0, MesActual = 0, MesAnterior = 0 };
+            }
+        }
+
         public async Task<int> ObtenerPendientesAsync()
         {
             try
@@ -51,6 +89,26 @@ namespace proyecto_hospital_version_1.Services
             catch (Exception ex)
             {
                 Console.WriteLine($"Error en ObtenerPendientesAsync: {ex.Message}");
+                return 0;
+            }
+        }
+
+        public async Task<int> ObtenerPendientesFiltradoAsync(
+            DateTime? desde = null,
+            DateTime? hasta = null,
+            string? sexo = null,
+            bool? ges = null)
+        {
+            try
+            {
+                var query = BuildQueryString(desde, hasta, sexo, ges);
+                var url = $"api/dashboard/pendientes-filtrado{query}";
+                var result = await _http.GetFromJsonAsync<int>(url);
+                return result;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error en ObtenerPendientesFiltradoAsync: {ex.Message}");
                 return 0;
             }
         }
