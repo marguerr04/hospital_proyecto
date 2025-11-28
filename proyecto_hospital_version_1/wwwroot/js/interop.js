@@ -1,5 +1,4 @@
 ﻿window.select2Interop = {
-    // Función para INICIALIZAR Select2
     init: function (elementId, dotNetHelper, placeholderText) {
         var el = $('#' + elementId);
 
@@ -13,9 +12,6 @@
             placeholder: placeholderText,
             allowClear: true,
 
-            // --- ¡AQUÍ ESTÁ LA SOLUCIÓN! ---
-
-            // 1. Fuerza a que la barra de búsqueda SIEMPRE aparezca
             minimumResultsForSearch: 0,
 
             // 2. Permite que el usuario escriba un valor nuevo
@@ -35,12 +31,10 @@
         // Configurar un listener para cuando el usuario seleccione algo
         el.on('change.select2', function (e) {
             var selectedValue = $(this).val();
-            // Llamar al método de C# 'OnSelect2Changed'
             dotNetHelper.invokeMethodAsync('OnSelect2Changed', selectedValue);
         });
     },
-
-    // Función para DESTRUIR Select2 (limpieza)
+)
     destroy: function (elementId) {
         var el = $('#' + elementId);
         if (el.data('select2')) {
@@ -73,7 +67,7 @@ window.descargarArchivo = function (fileName, contentType, base64Content) {
         console.log(`[JS][descargarArchivo] Descarga de archivo '${fileName}' iniciada con éxito.`);
     } catch (e) {
         console.error(`[JS][descargarArchivo] ERROR al descargar el archivo '${fileName}':`, e);
-        // ✅ CAMBIO: Usar SweetAlert en lugar de alert nativo
+        // CAMBIO: Usar SweetAlert en lugar de alert nativo
         Swal.fire({
             icon: 'error',
             title: 'Error al descargar',
@@ -83,7 +77,7 @@ window.descargarArchivo = function (fileName, contentType, base64Content) {
     }
 };
 
-// ========== SWEET ALERT FUNCTIONS ==========
+// sweet alerts
 window.sweetAlert = {
     success: function (title, message) {
         return Swal.fire({
@@ -135,6 +129,89 @@ window.sweetAlert = {
             html: htmlContent,
             confirmButtonColor: '#d33',
             width: '600px'
+        });
+    }
+};
+
+// Logout y Session Management
+window.sessionManager = {
+    dotnetRef: null,
+    inactivityTimeout: null,
+    activityListeners: [],
+
+    registerDotNet: function (dotnetRef) {
+        console.log('📡 [sessionManager] DotNet ref registrado');
+        this.dotnetRef = dotnetRef;
+    },
+
+    startListening: function () {
+        console.log('👁️ [sessionManager] Iniciando escucha de actividad del usuario');
+
+        const events = ['mousedown', 'keydown', 'scroll', 'touchstart', 'click'];
+        
+        events.forEach(event => {
+            const handler = () => {
+                console.log(`🖱️ [sessionManager] Actividad detectada: ${event}`);
+                this.resetInactivityTimer();
+            };
+
+            document.addEventListener(event, handler, true);
+            this.activityListeners.push({ event, handler });
+        });
+    },
+
+    resetInactivityTimer: function () {
+        if (this.dotnetRef) {
+            try {
+                this.dotnetRef.invokeMethodAsync('ResetInactivity').catch(err => {
+                    console.warn('⚠️ [sessionManager] Error al resetear inactividad:', err);
+                });
+            } catch (err) {
+                console.warn('⚠️ [sessionManager] Error al invocar ResetInactivity:', err);
+            }
+        }
+    },
+
+    stopListening: function () {
+        console.log('🛑 [sessionManager] Deteniendo escucha de actividad');
+        
+        this.activityListeners.forEach(({ event, handler }) => {
+            document.removeEventListener(event, handler, true);
+        });
+        
+        this.activityListeners = [];
+
+        if (this.dotnetRef) {
+            this.dotnetRef.dispose();
+            this.dotnetRef = null;
+        }
+    },
+
+    showSessionWarning: function () {
+        console.log('⚠️ [sessionManager] Mostrando alerta de sesión');
+        
+        return Swal.fire({
+            icon: 'warning',
+            title: '⚠️ Sesión por expirar',
+            html: '<p>Tu sesión se cerrará en <strong>1 minuto</strong> por inactividad.</p><p>¿Deseas continuar?</p>',
+            confirmButtonText: 'Continuar activo',
+            cancelButtonText: 'Cerrar sesión',
+            confirmButtonColor: '#0d6efd',
+            cancelButtonColor: '#d33',
+            allowOutsideClick: false,
+            allowEscapeKey: false,
+            showCancelButton: true
+        }).then((result) => {
+            if (result.isConfirmed) {
+                console.log('✅ [sessionManager] Usuario seleccionó continuar');
+                // Resetear inactividad
+                this.resetInactivityTimer();
+            } else if (result.dismiss === Swal.DismissReason.cancel) {
+                console.log('🚪 [sessionManager] Usuario seleccionó cerrar sesión');
+                if (this.dotnetRef) {
+                    this.dotnetRef.invokeMethodAsync('LogoutAsync');
+                }
+            }
         });
     }
 };

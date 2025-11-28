@@ -212,7 +212,6 @@ namespace proyecto_hospital_version_1.Services
             try
             {
                 var query = BuildQueryString(desde, hasta, sexo, ges);
-                // asegurar separador correcto entre query y procedimiento
                 var separator = string.IsNullOrEmpty(query) ? "?" : "&";
                 var url = $"api/dashboard/evolucion-procedimiento{query}{separator}procedimiento={System.Net.WebUtility.UrlEncode(procedimiento)}";
                 var result = await _http.GetFromJsonAsync<List<EvolucionProcedimientoDto>>(url);
@@ -255,9 +254,5 @@ namespace proyecto_hospital_version_1.Services
     }
 
     // DTO para la evolución por procedimiento
-    public class EvolucionProcedimientoDto
-    {
-        public string Fecha { get; set; } = string.Empty; // yyyy-MM-dd
-        public int Cantidad { get; set; }
-    }
+    
 }

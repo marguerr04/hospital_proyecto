@@ -2,9 +2,18 @@
     const charts = {};
     let dotNetRef = null;
 
+    // Colores vibrantes 
     const PALETTE = [
-        "#4e79a7", "#f28e2b", "#e15759", "#76b7b2", "#59a14f",
-        "#edc948", "#b07aa1", "#ff9da7", "#9c755f", "#bab0ab"
+        "#1976d2", // Azul vibrante
+        "#f57c00", // Naranja vibrante
+        "#d32f2f", // Rojo vibrante
+        "#388e3c", // Verde vibrante
+        "#7b1fa2", // Púrpura vibrante
+        "#0097a7", // Cyan vibrante
+        "#fbc02d", // Amarillo vibrante
+        "#c2185b", // Rosa vibrante
+        "#6d4c41", // Marrón
+        "#455a64"  // Gris-azul vibrante
     ];
 
     function registerDotNet(ref) {
@@ -172,6 +181,10 @@
     }
 
     function renderLine(id, labels, data, options) {
+        console.log(`🎯 renderLine llamado para ${id}`);
+        console.log(`   Labels recibidos: ${labels?.length || 0} elementos`, labels);
+        console.log(`   Data recibido: ${data?.length || 0} elementos`, data);
+
         const ctx = document.getElementById(id);
         if (!ctx) {
             console.warn(`Canvas con id '${id}' no encontrado`);

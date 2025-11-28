@@ -291,7 +291,7 @@ namespace Hospital.Api.Controllers
                         s.FechaCreacion,
                         PacienteId = s.Consentimiento.PacienteId,
                         Sexo = s.Consentimiento.Paciente.Sexo,
-                        EsGes = s.ValidacionGES
+                        EsGES = s.ValidacionGES
                     })
                     .ToListAsync();
 
@@ -476,6 +476,9 @@ namespace Hospital.Api.Controllers
                 if (string.IsNullOrWhiteSpace(procedimiento))
                     return BadRequest("procedimiento is required");
 
+                Console.WriteLine($"🔍 [GetEvolucionProcedimiento] Buscando: {procedimiento}");
+                Console.WriteLine($"   Rango: {desde:yyyy-MM-dd} a {hasta:yyyy-MM-dd}");
+
                 var query = _context.SOLICITUD_QUIRURGICA
                     .Include(s => s.Consentimiento)
                         .ThenInclude(c => c.Procedimiento)
@@ -503,25 +506,30 @@ namespace Hospital.Api.Controllers
                 var items = await query
                     .Where(s => s.Consentimiento != null && s.Consentimiento.Procedimiento != null &&
                                 s.Consentimiento.Procedimiento.Nombre == procedimiento)
-                    .Select(s => s.FechaCreacion.Date)
+                    .Select(s => s.FechaCreacion)
+                    .OrderBy(d => d)
                     .ToListAsync();
+
+                Console.WriteLine($"   ✅ {items.Count} registros encontrados");
 
                 if (!items.Any())
                 {
-                    // devolver 30 días con 0 para evitar errores en el cliente
-                    var fallback = Enumerable.Range(0, 30)
-                        .Select(i => new { Fecha = DateTime.Today.AddDays(-29 + i).ToString("yyyy-MM-dd"), Cantidad = 0 })
-                        .ToList();
-                    return Ok(fallback);
+                    Console.WriteLine($"   ⚠️ Sin datos para este procedimiento");
+                    return Ok(new List<object>());
                 }
 
-                var grouped = items
-                    .GroupBy(d => d)
-                    .Select(g => new { Fecha = g.Key.ToString("yyyy-MM-dd"), Cantidad = g.Count() })
-                    .OrderBy(x => x.Fecha)
+                // Agrupar POR DÍA
+                var resultado = items
+                    .GroupBy(d => d.Date)
+                    .Select(g => new
+                    {
+                        Fecha = g.Key.ToString("dd MMM", System.Globalization.CultureInfo.CreateSpecificCulture("es-ES")),
+                        Cantidad = g.Count()
+                    })
                     .ToList();
 
-                return Ok(grouped);
+                Console.WriteLine($"   📊 {resultado.Count} días con datos");
+                return Ok(resultado);
             }
             catch (Exception ex)
             {

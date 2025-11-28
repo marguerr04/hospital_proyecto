@@ -4,92 +4,168 @@
 @using System.Text
 @using System.Globalization
 @using Microsoft.JSInterop
+@using Hospital.Api.DTOs
 @inject DashboardService dashboard
 @inject IJSRuntime JS
 @implements IDisposable
 
-<!-- estilos locales para destacar título, tarjetas, filtros y contenedores de gráficos -->
 <style>
-  :root{
-    --card-bg: #ffffff;
-    --card-border: rgba(0,0,0,0.06);
-    --accent: #0d6efd;
-    --muted: #6c757d;
-  }
+    :root {
+        --card-bg: #ffffff;
+        --card-border: rgba(0,0,0,0.06);
+        --accent: #0d6efd;
+        --muted: #6c757d;
+    }
 
-  .dashboard-container {
-    padding-top: 18px;
-    padding-bottom: 28px;
-  }
+    .dashboard-container {
+        padding-top: 18px;
+        padding-bottom: 28px;
+    }
 
-  .dashboard-title {
-    display: inline-block;
-    padding: 12px 20px;
-    border-radius: 12px;
-    color: #fff !important;
-    background: linear-gradient(90deg, rgba(13,110,253,1) 0%, rgba(79,70,229,1) 100%);
-    box-shadow: 0 6px 18px rgba(13,110,253,0.18);
-    font-size: 1.6rem;
-    font-weight: 700;
-    letter-spacing: 0.4px;
-  }
+    .dashboard-title {
+        display: inline-block;
+        padding: 12px 20px;
+        border-radius: 12px;
+        color: #fff !important;
+        background: linear-gradient(90deg, rgba(13,110,253,1) 0%, rgba(79,70,229,1) 100%);
+        box-shadow: 0 6px 18px rgba(13,110,253,0.18);
+        font-size: 1.6rem;
+        font-weight: 700;
+        letter-spacing: 0.4px;
+    }
 
-  .dashboard-subtitle {
-    color: var(--muted);
-  }
+    .dashboard-subtitle {
+        color: var(--muted);
+    }
 
-  .filters-paper {
-    border: 1px solid var(--card-border);
-    border-radius: 10px;
-    box-shadow: 0 6px 16px rgba(0,0,0,0.04);
-    background: linear-gradient(180deg, #ffffff, #fbfbff);
-  }
+    .filters-paper {
+        border: 1px solid var(--card-border);
+        border-radius: 10px;
+        box-shadow: 0 6px 16px rgba(0,0,0,0.04);
+        background: linear-gradient(180deg, #ffffff, #fbfbff);
+    }
 
-  .dashboard-card {
-    border-radius: 12px;
-    box-shadow: 0 10px 28px rgba(16,24,40,0.06);
-    border: 1px solid var(--card-border);
-    background: var(--card-bg);
-    transition: transform .18s ease, box-shadow .18s ease;
-  }
-  .dashboard-card:hover{
-    transform: translateY(-4px);
-    box-shadow: 0 18px 40px rgba(16,24,40,0.09);
-  }
-  .dashboard-card .mud-text{ margin-bottom: 0.25rem; }
+    .dashboard-card {
+        border-radius: 12px;
+        box-shadow: 0 10px 28px rgba(16,24,40,0.06);
+        border: 1px solid var(--card-border);
+        background: var(--card-bg);
+        transition: transform .18s ease, box-shadow .18s ease;
+    }
 
-  .chart-paper {
-    border-radius: 10px;
-    border: 1px solid var(--card-border);
-    background: linear-gradient(180deg,#fff,#fcfdff);
-    box-shadow: 0 8px 24px rgba(2,6,23,0.03);
-    padding: 12px;
-    height: 100%;
-  }
+        .dashboard-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 18px 40px rgba(16,24,40,0.09);
+        }
 
-  .chart-paper .mt-2 { height: calc(100% - 28px); }
+        .dashboard-card .mud-text {
+            margin-bottom: 0.25rem;
+        }
 
-  .table-paper {
-    border-radius: 10px;
-    border: 1px solid var(--card-border);
-    box-shadow: 0 8px 22px rgba(2,6,23,0.03);
-    background: #fff;
-  }
+    .chart-paper {
+        border-radius: 10px;
+        border: 1px solid var(--card-border);
+        background: linear-gradient(180deg,#fff,#fcfdff);
+        box-shadow: 0 8px 24px rgba(2,6,23,0.03);
+        padding: 16px;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+    }
 
-  .detail-paper {
-    border-radius: 10px;
-    border: 1px solid rgba(13,110,253,0.08);
-    box-shadow: 0 12px 32px rgba(13,110,253,0.06);
-    background: linear-gradient(180deg,#fff,#f7fbff);
-  }
+    .chart-container {
+        flex: 1;
+        position: relative;
+        min-height: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
 
-  /* etiquetas en canvas (legenda y tooltips están gestionados por Chart.js) */
-  .chart-grid-item { height: 220px; }
+    .chart-canvas {
+        max-height: 100% !important;
+        max-width: 100% !important;
+        width: auto !important;
+        height: auto !important;
+    }
 
-  /* responsive tweaks */
-  @media (max-width: 900px) {
-    .dashboard-title { font-size: 1.25rem; padding: 10px 14px; }
-  }
+    .table-paper {
+        border-radius: 10px;
+        border: 1px solid var(--card-border);
+        box-shadow: 0 8px 22px rgba(2,6,23,0.03);
+        background: #fff;
+    }
+
+    .table-paper thead {
+        background-color: #0d6efd !important;
+    }
+
+    .table-paper thead th {
+        background-color: #0d6efd !important;
+        color: #fff !important;
+        font-weight: 600 !important;
+    }
+
+    .detail-paper {
+        border-radius: 10px;
+        border: 1px solid rgba(13,110,253,0.08);
+        box-shadow: 0 12px 32px rgba(13,110,253,0.06);
+        background: linear-gradient(180deg,#fff,#f7fbff);
+    }
+
+    .chart-grid-item {
+        height: 260px;
+    }
+
+    .chart-grid-item-tall {
+        height: 340px;
+    }
+
+    .chart-title-wrapper {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 12px;
+    }
+
+    .chart-title-icon {
+        color: var(--accent);
+        flex-shrink: 0;
+    }
+
+    /* Botón gris con texto blanco */
+    .btn-evolution {
+        background-color: #6c757d !important;
+        border-color: #6c757d !important;
+        color: #fff !important;
+    }
+
+    .btn-evolution:hover {
+        background-color: #5a6268 !important;
+        border-color: #545b62 !important;
+    }
+
+    /* Estilos para los iconos de filtros */
+    .filter-icon {
+        font-size: 1.2rem;
+        margin-right: 0.5rem;
+        vertical-align: middle;
+    }
+
+    .media (max-width: 900px) {
+        .dashboard-title {
+            font-size: 1.25rem;
+            padding: 10px 14px;
+        }
+        
+        .chart-grid-item {
+            height: 240px;
+        }
+
+        .chart-grid-item-tall {
+            height: 300px;
+        }
+    }
 </style>
 
 <MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="mt-6 mb-8 dashboard-container">
@@ -100,27 +176,60 @@
         Unidad de Control de Gestión · @DateTime.Now.ToString("dd/MM/yyyy")
     </MudText>
 
-<<<<<<< HEAD
     <!-- BARRA DE FILTROS -->
-=======
-    <!-- BARRA DE FILTROS SIMPLE -->
->>>>>>> dd413d2b225aff632c3e4c5908ccfaa09ee0421b
     <MudGrid>
         <MudItem xs="12">
             <MudPaper Class="pa-4 filters-paper">
-                <MudStack Row="true" Spacing="2" AlignItems="AlignItems.Center" JustifyContent="JustifySpaceBetween" Style="gap:12px;">
-                    <MudDateRangePicker @bind-DateRange="dateRange" Label="Rango fechas" Dense="true" />
-                    <MudSelect T="string" @bind-Value="sexoFilter" Label="Sexo" Dense="true" Style="min-width:140px">
-                        <MudSelectItem Value="Todos">Todos</MudSelectItem>
-                        <MudSelectItem Value="M">Masculino</MudSelectItem>
-                        <MudSelectItem Value="F">Femenino</MudSelectItem>
-                    </MudSelect>
-                    <MudSelect T="string" @bind-Value="gesFilter" Label="GES" Dense="true" Style="min-width:140px">
-                        <MudSelectItem Value="Todos">Todos</MudSelectItem>
-                        <MudSelectItem Value="GES">GES</MudSelectItem>
-                        <MudSelectItem Value="NoGES">No GES</MudSelectItem>
-                    </MudSelect>
-                    <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="@(async ()=> await ActualizarDatos())">Aplicar</MudButton>
+                <MudStack Row="true" Spacing="0" AlignItems="AlignItems.Center" Style="gap: 12px; width: 100%;">
+                    <!-- Fecha: flexible -->
+                    <div style="flex: 1; min-width: 240px;">
+                        <MudDateRangePicker 
+                            @bind-DateRange="dateRange" 
+                            Label="📅 Rango fechas" 
+                            Dense="true"
+                            Adornment="Adornment.Start"
+                            AdornmentIcon="@Icons.Material.Filled.CalendarMonth" />
+                    </div>
+                    
+                    <!-- Sexo: ancho fijo -->
+                    <div style="min-width: 160px;">
+                        <MudSelect 
+                            T="string" 
+                            @bind-Value="sexoFilter" 
+                            Label="Sexo" 
+                            Dense="true"
+                            Adornment="Adornment.Start"
+                            AdornmentIcon="@Icons.Material.Filled.Wc">
+                            <MudSelectItem Value="@("Todos")">Todos</MudSelectItem>
+                            <MudSelectItem Value="@("M")">Masculino</MudSelectItem>
+                            <MudSelectItem Value="@("F")">Femenino</MudSelectItem>
+                        </MudSelect>
+                    </div>
+                    
+                    <!-- GES: ancho fijo -->
+                    <div style="min-width: 160px;">
+                        <MudSelect 
+                            T="string" 
+                            @bind-Value="gesFilter" 
+                            Label="GES" 
+                            Dense="true"
+                            Adornment="Adornment.Start"
+                            AdornmentIcon="@Icons.Material.Filled.HealthAndSafety">
+                            <MudSelectItem Value="@("Todos")">Todos</MudSelectItem>
+                            <MudSelectItem Value="@("GES")">GES</MudSelectItem>
+                            <MudSelectItem Value="@("NoGES")">No GES</MudSelectItem>
+                        </MudSelect>
+                    </div>
+                    
+                    <!-- Botón: ancho fijo -->
+                    <MudButton 
+                        Variant="Variant.Filled" 
+                        Color="Color.Primary" 
+                        StartIcon="@Icons.Material.Filled.FilterAlt"
+                        OnClick="@(async () => await ActualizarDatos())"
+                        Style="white-space: nowrap;">
+                        Aplicar
+                    </MudButton>
                 </MudStack>
             </MudPaper>
         </MudItem>
@@ -155,11 +264,11 @@
     </MudGrid>
 
     <!-- SECCIÓN PRINCIPAL: TABLA + GRÁFICOS -->
-    <MudGrid Class="mt-3" Spacing="1">
+    <MudGrid Class="mt-4" Spacing="3">
         <!-- Columna Izquierda: Tabla de Procedimientos -->
         <MudItem xs="12" md="4">
-            <MudPaper Class="pa-2 table-paper">
-                <MudText Typo="Typo.h6">Tabla de procedimientos</MudText>
+            <MudPaper Class="pa-3 table-paper" Style="height: 100%;">
+                <MudText Typo="Typo.h6" Class="mb-3">Tabla de procedimientos</MudText>
                 <MudTable Dense="true" Items="procedimientosList" Hover="true" Bordered="true">
                     <HeaderContent>
                         <MudTh>Procedimiento</MudTh>
@@ -170,7 +279,7 @@
                         <MudTd>@context.Key</MudTd>
                         <MudTd>@context.Value</MudTd>
                         <MudTd>
-                            <MudButton Size="Size.Small" Variant="Variant.Outlined" OnClick="@( async ()=> await OpenDetail(context.Key, context.Value) )">Ver evolución</MudButton>
+                            <MudButton Size="Size.Small" Variant="Variant.Outlined" Class="btn-evolution" OnClick="@(async () => await OpenDetail(context.Key, context.Value))">Ver evolución</MudButton>
                         </MudTd>
                     </RowTemplate>
                 </MudTable>
@@ -179,43 +288,51 @@
 
         <!-- Columna Derecha: 4 Gráficos -->
         <MudItem xs="12" md="8">
-            <MudGrid Spacing="1" Class="gx-1 gy-1">
-                <!-- Procedimientos (barras) -->
+            <MudGrid Spacing="3">
                 <MudItem xs="12" sm="6" Class="chart-grid-item">
-                    <MudPaper Class="pa-2 chart-paper" Style="height:220px;">
-                        <MudText Typo="Typo.subtitle2">Procedimientos</MudText>
-                        <div style="height:180px;">
-                            <canvas id="chartEstado"></canvas>
+                    <MudPaper Class="chart-paper">
+                        <div class="chart-title-wrapper">
+                            <MudIcon Icon="@Icons.Material.Filled.BarChart" Class="chart-title-icon" Size="Size.Small" />
+                            <MudText Typo="Typo.subtitle2">Procedimientos</MudText>
+                        </div>
+                        <div class="chart-container">
+                            <canvas id="chartEstado" class="chart-canvas"></canvas>
                         </div>
                     </MudPaper>
                 </MudItem>
 
-                <!-- Contactabilidad (donut) -->
                 <MudItem xs="12" sm="6" Class="chart-grid-item">
-                    <MudPaper Class="pa-2 chart-paper" Style="height:220px;">
-                        <MudText Typo="Typo.subtitle2">Contactabilidad</MudText>
-                        <div style="height:180px;">
-                            <canvas id="chartContacto"></canvas>
+                    <MudPaper Class="chart-paper">
+                        <div class="chart-title-wrapper">
+                            <MudIcon Icon="@Icons.Material.Filled.DonutLarge" Class="chart-title-icon" Size="Size.Small" />
+                            <MudText Typo="Typo.subtitle2">Contactabilidad</MudText>
+                        </div>
+                        <div class="chart-container">
+                            <canvas id="chartContacto" class="chart-canvas"></canvas>
                         </div>
                     </MudPaper>
                 </MudItem>
 
-                <!-- Evolución Percentil (línea) -->
-                <MudItem xs="12" sm="6" Class="chart-grid-item">
-                    <MudPaper Class="pa-2 chart-paper" Style="height:220px;">
-                        <MudText Typo="Typo.subtitle2">Evolución Percentil 75</MudText>
-                        <div style="height:180px;">
-                            <canvas id="chartEvolucion"></canvas>
+                <MudItem xs="12" sm="6" Class="chart-grid-item-tall">
+                    <MudPaper Class="chart-paper">
+                        <div class="chart-title-wrapper">
+                            <MudIcon Icon="@Icons.Material.Filled.TrendingUp" Class="chart-title-icon" Size="Size.Small" />
+                            <MudText Typo="Typo.subtitle2">Evolución Percentil 75</MudText>
+                        </div>
+                        <div class="chart-container">
+                            <canvas id="chartEvolucion" class="chart-canvas"></canvas>
                         </div>
                     </MudPaper>
                 </MudItem>
 
-                <!-- Causal de Egreso (pie) -->
                 <MudItem xs="12" sm="6" Class="chart-grid-item">
-                    <MudPaper Class="pa-2 chart-paper" Style="height:220px;">
-                        <MudText Typo="Typo.subtitle2">Causal de Egreso</MudText>
-                        <div style="height:180px;">
-                            <canvas id="chartEgreso"></canvas>
+                    <MudPaper Class="chart-paper">
+                        <div class="chart-title-wrapper">
+                            <MudIcon Icon="@Icons.Material.Filled.PieChart" Class="chart-title-icon" Size="Size.Small" />
+                            <MudText Typo="Typo.subtitle2">Causal de Egreso</MudText>
+                        </div>
+                        <div class="chart-container">
+                            <canvas id="chartEgreso" class="chart-canvas"></canvas>
                         </div>
                     </MudPaper>
                 </MudItem>
@@ -226,15 +343,15 @@
     <!-- Area de detalle / evolución de procedimiento -->
     @if (showProcedureDetail)
     {
-        <MudGrid Class="mt-3">
+        <MudGrid Class="mt-4">
             <MudItem xs="12">
-                <MudPaper Class="pa-3 detail-paper" Elevation="2">
+                <MudPaper Class="pa-4 detail-paper" Elevation="2">
                     <MudStack Row="true" AlignItems="AlignItems.Center" JustifyContent="JustifySpaceBetween">
                         <MudText Typo="Typo.subtitle1">Evolución: @selectedProcedureName (@selectedProcedureValue)</MudText>
-                        <MudButton Color="Color.Primary" Variant="Variant.Text" OnClick="@( async ()=> { showProcedureDetail = false; await InvokeAsync(StateHasChanged); })">Cerrar</MudButton>
+                        <MudButton Color="Color.Primary" Variant="Variant.Text" OnClick="@(async () => { showProcedureDetail = false; await InvokeAsync(StateHasChanged); })">Cerrar</MudButton>
                     </MudStack>
-                    <div style="height:320px;" class="mt-2">
-                        <canvas id="chartProcedimientoEvolucion"></canvas>
+                    <div style="height: 320px; margin-top: 16px; position: relative; width: 100%; display: block;">
+                        <canvas id="chartProcedimientoEvolucion" style="width: 100% !important; height: 100% !important; max-height: 320px !important; max-width: 100% !important;"></canvas>
                     </div>
                 </MudPaper>
             </MudItem>
@@ -246,17 +363,14 @@
     private int Percentil75;
     private int Reduccion;
     private int Pendientes;
-    // inicia por defecto con periodo de 1 mes atrás hasta hoy
     private DateRange dateRange = new DateRange(DateTime.Today.AddMonths(-1), DateTime.Today);
     private string sexoFilter = "Todos";
     private string gesFilter = "Todos";
-    private List<KeyValuePair<string,int>> procedimientosList = new();
+    private List<KeyValuePair<string, int>> procedimientosList = new();
     private bool _isLoading = false;
     private CancellationTokenSource _cts = new();
-
     private DotNetObjectReference<Dashboard_verdadero>? _dotNetRef;
 
-    // Detalle / evolución de procedimiento seleccionado
     private string? selectedProcedureName;
     private int selectedProcedureValue;
     private bool showProcedureDetail = false;
@@ -284,7 +398,7 @@
 
     private async Task ActualizarDatos()
     {
-        if (_isLoading) return; // Prevenir múltiples ejecuciones simultáneas
+        if (_isLoading) return;
         await LoadData();
     }
 
@@ -302,11 +416,7 @@
 
             var token = _cts.Token;
 
-<<<<<<< HEAD
-            // 1️⃣ Cargar KPIs básicos (sin cambios)
-=======
-            // KPIs básicos
->>>>>>> dd413d2b225aff632c3e4c5908ccfaa09ee0421b
+            // Cargar KPIs básicos
             Percentil75 = await dashboard.ObtenerPercentil75Async();
             if (token.IsCancellationRequested) return;
 
@@ -316,13 +426,13 @@
             Pendientes = await dashboard.ObtenerPendientesAsync();
             if (token.IsCancellationRequested) return;
 
-            // filtros
+            // Aplicar filtros
             var desde = dateRange.Start;
             var hasta = dateRange.End;
             string? sexoParam = sexoFilter == "Todos" ? null : sexoFilter;
             bool? gesParam = gesFilter == "Todos" ? null : (gesFilter == "GES" ? true : (bool?)false);
 
-            // cargar datos
+            // Cargar datos
             var procedimientos = await dashboard.ObtenerProcedimientosPorTipoAsync(desde, hasta, sexoParam, gesParam);
             if (token.IsCancellationRequested) return;
 
@@ -335,63 +445,30 @@
             var causales = await dashboard.ObtenerCausalEgresoAsync(desde, hasta, sexoParam, gesParam);
             if (token.IsCancellationRequested) return;
 
-            // renderizamos
+            // Forzar render
             await InvokeAsync(StateHasChanged);
             await Task.Delay(150, token);
 
-<<<<<<< HEAD
-            // 5️⃣ Forzar render para que los canvas existan
-            try
-            {
-                await InvokeAsync(StateHasChanged);
-                await Task.Delay(150, token); // Delay cancelable
-            }
-            catch (TaskCanceledException)
-            {
-                return;
-            }
-            catch (ObjectDisposedException)
-            {
-                return; // Componente disposed durante StateHasChanged
-            }
-
-            // 6️⃣ Renderizar gráficos con Chart.js (proteger y mostrar "Sin datos" cuando corresponda)
-            if (!token.IsCancellationRequested)
-=======
+            // Renderizar gráficos
             if (procedimientos?.Any() == true && !token.IsCancellationRequested)
->>>>>>> dd413d2b225aff632c3e4c5908ccfaa09ee0421b
             {
-                // Estados (procedimientos)
                 try
                 {
-<<<<<<< HEAD
-                    if (procedimientos?.Any() == true)
-                    {
-                        var labels = procedimientos.Keys.ToArray();
-                        var data = procedimientos.Values.Select(v => (double)v).ToArray();
-                        var colors = GenerarColores(procedimientos.Count);
-
-                        await JS.InvokeVoidAsync("dashboardCharts.renderBar", "chartEstado", labels, data, colors);
-                        procedimientosList = procedimientos.Select(kv => new KeyValuePair<string,int>(kv.Key, kv.Value)).ToList();
-                    }
-                    else
-                    {
-                        // Render placeholder empty bar
-                        await JS.InvokeVoidAsync("dashboardCharts.renderBar", "chartEstado", new[] { "Sin datos" }, new[] { 0.0 }, new[] { "rgba(200,200,200,0.5)" });
-                        procedimientosList = new List<KeyValuePair<string,int>>();
-                    }
-=======
                     var labels = procedimientos.Keys.ToArray();
                     var data = procedimientos.Values.Select(v => (double)v).ToArray();
                     var colors = GenerarColores(procedimientos.Count);
 
-                    await JS.InvokeVoidAsync("dashboardCharts.renderBar", "chartEstado", labels, data, new { backgroundColor = colors, label = "Casos" });
-                    procedimientosList = procedimientos.Select(kv => new KeyValuePair<string,int>(kv.Key, kv.Value)).ToList();
+                    await JS.InvokeVoidAsync("dashboardCharts.renderBar", "chartEstado", labels, data, colors);
+                    procedimientosList = procedimientos.Select(kv => new KeyValuePair<string, int>(kv.Key, kv.Value)).ToList();
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine($"⚠️ Error renderizando gráfico Estados: {ex.Message}");
+                    Console.WriteLine($"Error renderizando Estado: {ex.Message}");
                 }
+            }
+            else
+            {
+                procedimientosList = new List<KeyValuePair<string, int>>();
             }
 
             if (contactabilidad?.Any() == true && !token.IsCancellationRequested)
@@ -403,30 +480,17 @@
                     var colors = GenerarColores(contactabilidad.Count);
 
                     await JS.InvokeVoidAsync("dashboardCharts.renderDonut", "chartContacto", labels, data, colors);
->>>>>>> dd413d2b225aff632c3e4c5908ccfaa09ee0421b
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine($"Error renderizando Estado: {ex.Message}");
+                    Console.WriteLine($"Error renderizando Contactabilidad: {ex.Message}");
                 }
+            }
 
-                // Contactabilidad
+            if (evolucion?.Any() == true && !token.IsCancellationRequested)
+            {
                 try
                 {
-<<<<<<< HEAD
-                    if (contactabilidad?.Any() == true)
-                    {
-                        var labels = contactabilidad.Keys.ToArray();
-                        var data = contactabilidad.Values.ToArray();
-                        var colors = GenerarColores(contactabilidad.Count);
-
-                        await JS.InvokeVoidAsync("dashboardCharts.renderDonut", "chartContacto", labels, data, colors);
-                    }
-                    else
-                    {
-                        await JS.InvokeVoidAsync("dashboardCharts.renderDonut", "chartContacto", new[] { "Sin datos" }, new[] { 1.0 }, new[] { "rgba(200,200,200,0.5)" });
-                    }
-=======
                     var labels = evolucion.Select(e => e.Mes).ToArray();
                     var data = evolucion.Select(e => (double)e.Valor).ToArray();
                     var options = new { label = "Percentil 75" };
@@ -435,7 +499,7 @@
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine($"⚠️ Error renderizando gráfico Evolución: {ex.Message}");
+                    Console.WriteLine($"Error renderizando Evolución: {ex.Message}");
                 }
             }
 
@@ -448,49 +512,6 @@
                     var colors = GenerarColores(causales.Count);
 
                     await JS.InvokeVoidAsync("dashboardCharts.renderPie", "chartEgreso", labels, data, colors);
->>>>>>> dd413d2b225aff632c3e4c5908ccfaa09ee0421b
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine($"Error renderizando Contactabilidad: {ex.Message}");
-                }
-
-                // Evolución Percentil
-                try
-                {
-                    if (evolucion?.Any() == true)
-                    {
-                        var labels = evolucion.Select(e => e.Mes).ToArray();
-                        var data = evolucion.Select(e => (double)e.Valor).ToArray();
-                        var options = new { label = "Percentil 75" };
-
-                        await JS.InvokeVoidAsync("dashboardCharts.renderLine", "chartEvolucion", labels, data, options);
-                    }
-                    else
-                    {
-                        await JS.InvokeVoidAsync("dashboardCharts.renderLine", "chartEvolucion", new[] { "Sin datos" }, new[] { 0.0 }, new { label = "Percentil 75" });
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine($"Error renderizando Evolución: {ex.Message}");
-                }
-
-                // Causales
-                try
-                {
-                    if (causales?.Any() == true)
-                    {
-                        var labels = causales.Keys.ToArray();
-                        var data = causales.Values.Select(v => (double)v).ToArray();
-                        var colors = GenerarColores(causales.Count);
-
-                        await JS.InvokeVoidAsync("dashboardCharts.renderPie", "chartEgreso", labels, data, colors);
-                    }
-                    else
-                    {
-                        await JS.InvokeVoidAsync("dashboardCharts.renderPie", "chartEgreso", new[] { "Sin datos" }, new[] { 1.0 }, new[] { "rgba(200,200,200,0.5)" });
-                    }
                 }
                 catch (Exception ex)
                 {
@@ -498,98 +519,93 @@
                 }
             }
         }
-<<<<<<< HEAD
-        catch (ObjectDisposedException)
-        {
-            Console.WriteLine("Componente disposed durante LoadData");
-        }
         catch (TaskCanceledException)
         {
-            Console.WriteLine("LoadData cancelado");
+            Console.WriteLine("⚠️ Operación cancelada.");
         }
-=======
->>>>>>> dd413d2b225aff632c3e4c5908ccfaa09ee0421b
         catch (Exception ex)
         {
-            Console.WriteLine($"Error actualizando datos: {ex.Message}");
+            Console.WriteLine($"❌ Error en LoadData: {ex.Message}");
         }
         finally
         {
             _isLoading = false;
-<<<<<<< HEAD
-            try
-            {
-                await InvokeAsync(StateHasChanged);
-            }
-            catch (ObjectDisposedException) { }
-=======
-            try { await InvokeAsync(StateHasChanged); } catch { }
->>>>>>> dd413d2b225aff632c3e4c5908ccfaa09ee0421b
+            await InvokeAsync(StateHasChanged);
         }
     }
 
-    private async Task OpenDetail(string label, int value)
+    private async Task OpenDetail(string procedureName, int value)
     {
+        selectedProcedureName = procedureName;
+        selectedProcedureValue = value;
+        showProcedureDetail = true;
+
+        await InvokeAsync(StateHasChanged);
+        await Task.Delay(350);
+
         try
         {
-            selectedProcedureName = label;
-            selectedProcedureValue = value;
-            showProcedureDetail = true;
-            await InvokeAsync(StateHasChanged);
-
             var desde = dateRange.Start;
             var hasta = dateRange.End;
             string? sexoParam = sexoFilter == "Todos" ? null : sexoFilter;
             bool? gesParam = gesFilter == "Todos" ? null : (gesFilter == "GES" ? true : (bool?)false);
 
-            var evolucionProcedimiento = await dashboard.ObtenerEvolucionProcedimientoAsync(
-                label,
-                desde,
-                hasta,
-                sexoParam,
-                gesParam
-            );
+            Console.WriteLine($"📍 [OpenDetail] Procedimiento: {procedureName}");
+            var evolucionData = await dashboard.ObtenerEvolucionProcedimientoAsync(procedureName, desde, hasta, sexoParam, gesParam);
 
-            await InvokeAsync(StateHasChanged);
-            await Task.Delay(120);
+            Console.WriteLine($"   Datos recibidos: {evolucionData?.Count ?? 0}");
 
-            if (evolucionProcedimiento != null && evolucionProcedimiento.Any())
+            if (evolucionData?.Any() == true)
             {
-                var labels = evolucionProcedimiento.Select(e => e.Fecha).ToArray();
-                var data = evolucionProcedimiento.Select(e => (double)e.Cantidad).ToArray();
-                await JS.InvokeVoidAsync("dashboardCharts.renderLine",
-                    "chartProcedimientoEvolucion", labels, data, new { label = $"Evolución {label}" });
-            }
+                var labels = evolucionData.Select(e => e.Fecha).ToArray();
+                var data = evolucionData.Select(e => (double)e.Cantidad).ToArray();
 
-            await JS.InvokeVoidAsync("dashboardCharts.showDetail", label, value, sexoFilter, gesFilter);
+                Console.WriteLine($"   ✅ Labels: {string.Join(", ", labels.Take(3))}... (total: {labels.Length})");
+                Console.WriteLine($"   ✅ Data: {string.Join(", ", data.Take(3))}... (total: {data.Length})");
+
+                var options = new { label = $"Evolución: {procedureName}" };
+
+                if (labels.Length > 0 && data.Length > 0)
+                {
+                    await JS.InvokeVoidAsync("dashboardCharts.renderLine", "chartProcedimientoEvolucion", labels, data, options);
+                    Console.WriteLine($"   ✅ Gráfico renderizado exitosamente");
+                }
+                else
+                {
+                    Console.WriteLine($"   ❌ Arrays vacíos");
+                }
+            }
+            else
+            {
+                Console.WriteLine($"   ⚠️ Sin datos");
+            }
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Error abriendo detalle: {ex.Message}");
+            Console.WriteLine($"❌ Error OpenDetail: {ex.Message}");
         }
-    }
-
-    [JSInvokable("OnChartPointClicked")]
-    public async Task OnChartPointClicked(string chartId, string label, int value)
-    {
-        await OpenDetail(label, value);
     }
 
     private string[] GenerarColores(int cantidad)
     {
-        (int r, int g, int b)[] paletaRgb = new (int, int, int)[]
+        // Colores 
+        var colores = new[]
         {
-            (25,118,210), (229,57,53), (67,160,71), (251,192,45), (142,36,170),
-            (255,87,34), (0,172,193), (192,202,51), (255,152,0), (123,31,162)
+            "rgba(25, 118, 210, 0.85)",     // Azul vibrante
+            "rgba(245, 124, 0, 0.85)",       // Naranja vibrante
+            "rgba(211, 47, 47, 0.85)",       // Rojo vibrante
+            "rgba(56, 142, 60, 0.85)",       // Verde vibrante
+            "rgba(123, 31, 162, 0.85)",      // Púrpura vibrante
+            "rgba(0, 151, 167, 0.85)",       // Cyan vibrante
+            "rgba(251, 192, 45, 0.85)",      // Amarillo vibrante
+            "rgba(194, 24, 91, 0.85)",       // Rosa vibrante
+            "rgba(109, 76, 65, 0.85)",       // Marrón
+            "rgba(69, 90, 100, 0.85)"        // Gris-azul vibrante
         };
 
-        string[] colores = new string[cantidad];
-        for (int i = 0; i < cantidad; i++)
-        {
-            var (r, g, b) = paletaRgb[i % paletaRgb.Length];
-            colores[i] = $"rgba({r},{g},{b},0.85)";
-        }
-        return colores;
+        return Enumerable.Range(0, cantidad)
+            .Select(i => colores[i % colores.Length])
+            .ToArray();
     }
 
     public void Dispose()

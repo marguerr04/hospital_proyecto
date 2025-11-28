@@ -4,7 +4,7 @@
 @using proyecto_hospital_version_1.Services
 @inject HttpClient Http
 @inject NavigationManager Navigation
-@inject AuthStateService AuthStateService
+@inject AuthStateService AuthState
 
 <PageTitle>Portal Médico - Hospital Padre Hurtado</PageTitle>
 
@@ -232,11 +232,23 @@
 
     protected override async Task OnInitializedAsync()
     {
-        if (!AuthStateService.IsAuthenticated)
+        Console.WriteLine($"🔍 [HomeMedico] OnInitializedAsync - Verificando autenticación...");
+
+        // ✅ CARGAR TOKEN DESDE LOCALSTORAGE
+        await AuthState.LoadFromStorageAsync();
+
+        Console.WriteLine($"   IsAuthenticated: {AuthState.IsAuthenticated}");
+        Console.WriteLine($"   Username: {AuthState.Username}");
+        Console.WriteLine($"   Role: {AuthState.Role}");
+
+        if (!AuthState.IsAuthenticated)
         {
-            Navigation.NavigateTo("/login", forceLoad: true);
+            Console.WriteLine($"❌ [HomeMedico] Usuario NO autenticado, redirigiendo a /login");
+            Navigation.NavigateTo("/login");
             return;
         }
+
+        Console.WriteLine($"✅ [HomeMedico] Usuario autenticado correctamente");
 
         await CargarSolicitudes();
     }

@@ -71,67 +71,57 @@
 
         try
         {
+            Console.WriteLine($" [Login] Iniciando login - User: {Username}, Rol: {SelectedRole}");
+
             if (string.IsNullOrEmpty(Username) || string.IsNullOrEmpty(Password) || string.IsNullOrEmpty(SelectedRole))
             {
                 ErrorMessage = "Por favor, complete todos los campos";
                 return;
             }
 
-            var loginRequest = new
+            // ✅ Hacer login (esto guarda el token en localStorage)
+            bool loginExitoso = await AuthStateService.LoginAsync(Username, Password);
+
+            if (loginExitoso)
             {
-                Username = Username,
-                Password = Password,
-                Rol = SelectedRole
-            };
+                Console.WriteLine($" [Login] Token guardado correctamente");
+                Console.WriteLine($"   Usuario: {AuthStateService.Username}");
+                Console.WriteLine($"   Rol BD: '{AuthStateService.Role}'");
+                Console.WriteLine($"   Rol seleccionado: '{SelectedRole}'");
 
-            var response = await Http.PostAsJsonAsync("https://localhost:7032/api/Auth/login", loginRequest);
-
-            if (response.IsSuccessStatusCode)
-            {
-                var result = await response.Content.ReadFromJsonAsync<LoginResponse>();
-
-                if (result?.Exito == true)
+                // Validar rol
+                if (AuthStateService.Role != SelectedRole)
                 {
-                    Console.WriteLine($"[Login] Login exitoso. Usuario: {result.Username}, Rol: {result.Rol}");
-                    
-                    // Guardar estado de autenticación
-                    AuthStateService.Login(result.Username!, result.Rol!);
-                    
-                    Console.WriteLine($"[Login] AuthStateService.IsAuthenticated: {AuthStateService.IsAuthenticated}");
+                    Console.WriteLine($"❌ [Login] Rol no coincide");
+                    ErrorMessage = $"Rol incorrecto. Tu usuario es '{AuthStateService.Role}', no '{SelectedRole}'";
+                    await AuthStateService.LogoutAsync();
+                    return;
+                }
 
-                    // Redirigir según rol (SIN forceLoad para mantener el servicio Scoped)
-                    string redirectUrl = result.Rol == "Administrador" ? "/dashboard" : "/home-medico";
-                    Console.WriteLine($"[Login] Redirigiendo a: {redirectUrl}");
-                    
-                    Navigation.NavigateTo(redirectUrl);
-                }
-                else
-                {
-                    ErrorMessage = result?.Mensaje ?? "Usuario, contraseña o rol incorrectos";
-                }
+                // ✅ Redirigir SIN forceLoad
+                string redirectUrl = AuthStateService.Role == "Administrador" 
+                    ? "/dashboard" 
+                    : "/home-medico";
+
+                Console.WriteLine($" [Login] Navegando a: {redirectUrl}");
+                
+                // ⚠️ IMPORTANTE: NO usar forceLoad: true
+                Navigation.NavigateTo(redirectUrl);
             }
             else
             {
-                ErrorMessage = "Error al comunicarse con el servidor";
+                ErrorMessage = "Usuario o contraseña incorrectos";
             }
         }
         catch (Exception ex)
         {
+            Console.WriteLine($" [Login] Error: {ex.Message}");
             ErrorMessage = $"Error: {ex.Message}";
-            Console.WriteLine($"Error en login: {ex}");
         }
         finally
         {
             _cargando = false;
             StateHasChanged();
         }
-    }
-
-    private class LoginResponse
-    {
-        public bool Exito { get; set; }
-        public string? Mensaje { get; set; }
-        public string? Username { get; set; }
-        public string? Rol { get; set; }
     }
 }

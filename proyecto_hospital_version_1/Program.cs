@@ -94,7 +94,12 @@ builder.Services.AddHttpClient<IAuditoriaPriorizacionApiService, AuditoriaPriori
 builder.Services.AddScoped<SweetAlertHelper>();
 
 // ========== AUTENTICACIÓN ==========
-builder.Services.AddScoped<AuthStateService>();
+builder.Services.AddHttpClient<AuthStateService>(client =>
+{
+    client.BaseAddress = new Uri("https://localhost:7032/");
+    client.Timeout = TimeSpan.FromSeconds(30);
+    client.DefaultRequestHeaders.Add("Accept", "application/json");
+});
 
 // ========== BLAZOR ==========
 builder.Services.AddRazorPages();
@@ -117,3 +122,4 @@ app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
 
 app.Run();
+

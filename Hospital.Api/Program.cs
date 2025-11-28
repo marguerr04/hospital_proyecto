@@ -1,4 +1,4 @@
-*using Hospital.Api.Data;
+using Hospital.Api.Data;
 using Hospital.Api.Data.Services;
 using Hospital.Api.Services;
 using Microsoft.EntityFrameworkCore;
@@ -13,7 +13,11 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddDbContext<HospitalDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("HospitalV4")));
 
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.PropertyNameCaseInsensitive = true;
+    });
 
 // ? Configuraci�n mejorada de Swagger
 builder.Services.AddEndpointsApiExplorer();
