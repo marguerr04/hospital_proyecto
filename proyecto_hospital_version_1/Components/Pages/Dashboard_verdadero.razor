@@ -8,28 +8,110 @@
 @inject IJSRuntime JS
 @implements IDisposable
 
-<PageTitle>Panel de Control - Administración Hospitalaria</PageTitle>
+<!-- estilos locales para destacar título, tarjetas, filtros y contenedores de gráficos -->
+<style>
+  :root{
+    --card-bg: #ffffff;
+    --card-border: rgba(0,0,0,0.06);
+    --accent: #0d6efd;
+    --muted: #6c757d;
+  }
 
-<MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="mt-6 mb-8">
-    <MudText Typo="Typo.h4" Align="Align.Center" GutterBottom="true" Class="mb-1 text-primary">
+  .dashboard-container {
+    padding-top: 18px;
+    padding-bottom: 28px;
+  }
+
+  .dashboard-title {
+    display: inline-block;
+    padding: 12px 20px;
+    border-radius: 12px;
+    color: #fff !important;
+    background: linear-gradient(90deg, rgba(13,110,253,1) 0%, rgba(79,70,229,1) 100%);
+    box-shadow: 0 6px 18px rgba(13,110,253,0.18);
+    font-size: 1.6rem;
+    font-weight: 700;
+    letter-spacing: 0.4px;
+  }
+
+  .dashboard-subtitle {
+    color: var(--muted);
+  }
+
+  .filters-paper {
+    border: 1px solid var(--card-border);
+    border-radius: 10px;
+    box-shadow: 0 6px 16px rgba(0,0,0,0.04);
+    background: linear-gradient(180deg, #ffffff, #fbfbff);
+  }
+
+  .dashboard-card {
+    border-radius: 12px;
+    box-shadow: 0 10px 28px rgba(16,24,40,0.06);
+    border: 1px solid var(--card-border);
+    background: var(--card-bg);
+    transition: transform .18s ease, box-shadow .18s ease;
+  }
+  .dashboard-card:hover{
+    transform: translateY(-4px);
+    box-shadow: 0 18px 40px rgba(16,24,40,0.09);
+  }
+  .dashboard-card .mud-text{ margin-bottom: 0.25rem; }
+
+  .chart-paper {
+    border-radius: 10px;
+    border: 1px solid var(--card-border);
+    background: linear-gradient(180deg,#fff,#fcfdff);
+    box-shadow: 0 8px 24px rgba(2,6,23,0.03);
+    padding: 12px;
+    height: 100%;
+  }
+
+  .chart-paper .mt-2 { height: calc(100% - 28px); }
+
+  .table-paper {
+    border-radius: 10px;
+    border: 1px solid var(--card-border);
+    box-shadow: 0 8px 22px rgba(2,6,23,0.03);
+    background: #fff;
+  }
+
+  .detail-paper {
+    border-radius: 10px;
+    border: 1px solid rgba(13,110,253,0.08);
+    box-shadow: 0 12px 32px rgba(13,110,253,0.06);
+    background: linear-gradient(180deg,#fff,#f7fbff);
+  }
+
+  /* etiquetas en canvas (legenda y tooltips están gestionados por Chart.js) */
+  .chart-grid-item { height: 220px; }
+
+  /* responsive tweaks */
+  @media (max-width: 900px) {
+    .dashboard-title { font-size: 1.25rem; padding: 10px 14px; }
+  }
+</style>
+
+<MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="mt-6 mb-8 dashboard-container">
+    <MudText Typo="Typo.h4" Align="Align.Center" GutterBottom="true" Class="mb-1 text-primary dashboard-title">
         🏥 Panel de Gestión Clínica
     </MudText>
-    <MudText Typo="Typo.subtitle1" Align="Align.Center" Class="mb-6 text-secondary">
+    <MudText Typo="Typo.subtitle1" Align="Align.Center" Class="mb-6 text-secondary dashboard-subtitle">
         Unidad de Control de Gestión · @DateTime.Now.ToString("dd/MM/yyyy")
     </MudText>
 
     <!-- BARRA DE FILTROS SIMPLE -->
     <MudGrid>
         <MudItem xs="12">
-            <MudPaper Class="pa-4">
-                <MudStack Row="true" Spacing="2" AlignItems="AlignItems.Center">
+            <MudPaper Class="pa-4 filters-paper">
+                <MudStack Row="true" Spacing="2" AlignItems="AlignItems.Center" JustifyContent="JustifySpaceBetween" Style="gap:12px;">
                     <MudDateRangePicker @bind-DateRange="dateRange" Label="Rango fechas" Dense="true" />
-                    <MudSelect T="string" @bind-Value="sexoFilter" Label="Sexo" Dense="true" Style="min-width:120px">
+                    <MudSelect T="string" @bind-Value="sexoFilter" Label="Sexo" Dense="true" Style="min-width:140px">
                         <MudSelectItem Value="Todos">Todos</MudSelectItem>
                         <MudSelectItem Value="M">Masculino</MudSelectItem>
                         <MudSelectItem Value="F">Femenino</MudSelectItem>
                     </MudSelect>
-                    <MudSelect T="string" @bind-Value="gesFilter" Label="GES" Dense="true" Style="min-width:120px">
+                    <MudSelect T="string" @bind-Value="gesFilter" Label="GES" Dense="true" Style="min-width:140px">
                         <MudSelectItem Value="Todos">Todos</MudSelectItem>
                         <MudSelectItem Value="GES">GES</MudSelectItem>
                         <MudSelectItem Value="NoGES">No GES</MudSelectItem>
@@ -72,7 +154,7 @@
     <MudGrid Class="mt-3" Spacing="1">
         <!-- Columna Izquierda: Tabla de Procedimientos -->
         <MudItem xs="12" md="4">
-            <MudPaper Class="pa-2">
+            <MudPaper Class="pa-2 table-paper">
                 <MudText Typo="Typo.h6">Tabla de procedimientos</MudText>
                 <MudTable Dense="true" Items="procedimientosList" Hover="true" Bordered="true">
                     <HeaderContent>
@@ -96,7 +178,7 @@
             <MudGrid Spacing="1" Class="gx-1 gy-1">
                 <!-- Procedimientos (barras) -->
                 <MudItem xs="12" sm="6" Class="chart-grid-item">
-                    <MudPaper Class="pa-2" Style="height:220px;">
+                    <MudPaper Class="pa-2 chart-paper" Style="height:220px;">
                         <MudText Typo="Typo.subtitle2">Procedimientos</MudText>
                         <div style="height:180px;">
                             <canvas id="chartEstado"></canvas>
@@ -106,7 +188,7 @@
 
                 <!-- Contactabilidad (donut) -->
                 <MudItem xs="12" sm="6" Class="chart-grid-item">
-                    <MudPaper Class="pa-2" Style="height:220px;">
+                    <MudPaper Class="pa-2 chart-paper" Style="height:220px;">
                         <MudText Typo="Typo.subtitle2">Contactabilidad</MudText>
                         <div style="height:180px;">
                             <canvas id="chartContacto"></canvas>
@@ -116,7 +198,7 @@
 
                 <!-- Evolución Percentil (línea) -->
                 <MudItem xs="12" sm="6" Class="chart-grid-item">
-                    <MudPaper Class="pa-2" Style="height:220px;">
+                    <MudPaper Class="pa-2 chart-paper" Style="height:220px;">
                         <MudText Typo="Typo.subtitle2">Evolución Percentil 75</MudText>
                         <div style="height:180px;">
                             <canvas id="chartEvolucion"></canvas>
@@ -126,7 +208,7 @@
 
                 <!-- Causal de Egreso (pie) -->
                 <MudItem xs="12" sm="6" Class="chart-grid-item">
-                    <MudPaper Class="pa-2" Style="height:220px;">
+                    <MudPaper Class="pa-2 chart-paper" Style="height:220px;">
                         <MudText Typo="Typo.subtitle2">Causal de Egreso</MudText>
                         <div style="height:180px;">
                             <canvas id="chartEgreso"></canvas>
@@ -142,7 +224,7 @@
     {
         <MudGrid Class="mt-3">
             <MudItem xs="12">
-                <MudPaper Class="pa-3" Elevation="2">
+                <MudPaper Class="pa-3 detail-paper" Elevation="2">
                     <MudStack Row="true" AlignItems="AlignItems.Center" JustifyContent="JustifySpaceBetween">
                         <MudText Typo="Typo.subtitle1">Evolución: @selectedProcedureName (@selectedProcedureValue)</MudText>
                         <MudButton Color="Color.Primary" Variant="Variant.Text" OnClick="@( async ()=> { showProcedureDetail = false; await InvokeAsync(StateHasChanged); })">Cerrar</MudButton>

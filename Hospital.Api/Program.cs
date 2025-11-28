@@ -1,4 +1,4 @@
-using Hospital.Api.Data;
+*using Hospital.Api.Data;
 using Hospital.Api.Data.Services;
 using Hospital.Api.Services;
 using Microsoft.EntityFrameworkCore;
